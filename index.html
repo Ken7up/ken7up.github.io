@@ -7,174 +7,183 @@
 <style>
   :root{ --bg:#e1f5d3; --card:#ffffffcc; --muted:#5f6f52; --accent:#4caf50; }
   *{box-sizing:border-box}
-  body{ margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial;
-        /* ĐÃ CHỈNH SỬA: CHỈ DÙNG MÀU NỀN CỨNG */
-        background: var(--bg);
-        /* KẾT THÚC CHỈNH SỬA */
-        color:#2b3a1f; min-height:100vh; display:flex; flex-direction:column; }
+  
+  /* === ĐÃ CHỈNH SỬA: BODY dùng flex để căn giữa wrapper trên mọi màn hình === */
+  body{ 
+    margin:0; 
+    font-family:Inter,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial;
+    background: var(--bg);
+    color:#2b3a1f; 
+    min-height:100vh; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    overflow: hidden; /* Ẩn phần bị tràn do scale */
+  }
+
+  /* === ĐÃ CHỈNH SỬA: Wrapper để giới hạn kích thước thiết kế và sẵn sàng cho SCALE === */
+  .app-wrapper {
+    /* Kích thước thiết kế cố định (Mobile Vertical - 400x750) */
+    width: 400px; 
+    height: 750px; 
+    margin: 0; 
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1); 
+    position: relative; 
+    text-align: left; 
+
+    /* === QUAN TRỌNG: Thiết lập SCALE === */
+    transform-origin: top center; /* Điểm neo để scale */
+    transform: scale(1); 
+    transition: transform 0.1s ease-out;
+    flex-shrink: 0;
+  }
+  /* === KẾT THÚC CHỈNH SỬA WRAPPER === */
+
   header{ display:flex; align-items:center; justify-content:space-between;
           padding:16px 20px; border-bottom:1px solid rgba(0,0,0,0.07);
-          backdrop-filter:blur(6px); background:#ffffff88; white-space:nowrap; }
+          backdrop-filter:blur(6px); background:#ffffff88; white-space:nowrap; 
+          z-index: 20; 
+        }
   
-  /* ĐÃ CHỈNH SỬA: XÓA ẢNH NỀN VÀ CĂN CHỈNH */
   main{ flex:1; display:flex; justify-content:center; 
-        align-items:flex-start; /* Giữ căn lên trên */
+        align-items:flex-start; 
         padding:0; 
-        /* XÓA ẢNH NỀN */
         overflow: hidden;
-        /* THÊM: Thiết lập main làm gốc cho định vị tuyệt đối của ảnh */
         position: relative;
   }
   main > div {
-    display: none; /* Ẩn div trống */
+    display: none; 
   }
   
   /* THÊM CSS CHO ẢNH NỀN */
   #beanstalk-bg {
-    position: absolute; /* Định vị tuyệt đối để nằm dưới header */
-    top: 0; /* Đặt ảnh ngay dưới header (tương ứng với top của main) */
-    left: 50%; /* Căn giữa theo chiều ngang */
-    transform: translateX(-50%); /* Dịch chuyển ngược 50% chiều rộng để căn chính xác */
-    max-width: 100%; /* Đảm bảo ảnh không tràn màn màn hình ngang */
+    position: absolute; 
+    top: 0; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    width: 100%; 
     height: auto;
-    z-index: 1; /* Đảm bảo ảnh nằm ở lớp dưới so với các popup, nhưng trên nền */
-    /* Điều chỉnh nếu cần: đặt chiều cao cố định hoặc max-height */
-    max-height: 90vh;
+    z-index: 1; 
+    max-height: 100%; 
+    object-fit: cover; 
   }
-  /* KẾT THÚC THÊM CSS CHO ẢNH NỀN */
 
   /* THÊM CSS CHO BÓNG ĐÈN */
   #light-bulb {
       position: absolute;
-      /* ĐÃ CHỈNH SỬA: Xích xuống 8px */
       top: 8px; 
-      /* ĐÃ CHỈNH SỬA: Dịch sang trái 30% (Từ 45% sang 30%) */
       left: 30%; 
       transform: translateX(-50%);
-      width: 60px; /* Kích thước phù hợp */
+      width: 60px; 
       height: auto;
-      z-index: 8; /* Trên ảnh nền, dưới các popup */
-      cursor: pointer; /* THÊM: Cho biết có thể click */
+      z-index: 8; 
+      cursor: pointer; 
   }
-  /* KẾT THÚC THÊM CSS CHO BÓNG ĐÈN */
 
-  /* *** ĐÃ CHỈNH SỬA: CÂN ĐẨU VÂN (Slot 0) - Dịch chuyển lên trên 100px (150px -> 50px) *** */
+  /* CÂN ĐẨU VÂN (Slot 0) */
   #kinto-cloud {
-      position: absolute; /* Định vị tuyệt đối */
-      top: 50px; /* <--- ĐÃ CHỈNH SỬA: Giảm xuống 50px để xích lên trên */
-      left: 60%; /* Giữ nguyên vị trí ngang */
-      transform: translateX(-50%); /* Dịch chuyển ngược 50% chiều rộng để căn chính xác */
-      width: 80px; /* Giảm kích thước xuống 80px */
-      height: 80px; /* Giảm kích thước xuống 80px */
-      z-index: 10; /* Đảm bảo nằm trên mọi thứ (trừ popup) */
-      cursor: pointer; /* Cho biết có thể click */
+      position: absolute; 
+      top: 50px; 
+      left: 60%; 
+      transform: translateX(-50%); 
+      width: 80px; 
+      height: 80px; 
+      z-index: 10; 
+      cursor: pointer; 
       transition: transform 0.1s, box-shadow 0.1s; 
   }
-  /* *** KẾT THÚC SỬA CSS CÂN ĐẨU VÂN *** */
 
   /* THÊM CSS CHO Ô ĐẶT CHẬU */
   #pot-container {
       position: absolute;
-      top: 0; /* Căn với top của main/beanstalk-bg */
+      top: 0; 
       left: 50%;
       transform: translateX(-50%);
-      /* Tối đa hóa kích thước vùng chứa ô để khớp với ảnh nền beanstalk-bg */
-      max-width: 100%; 
-      max-height: 90vh; /* Giống max-height của beanstalk-bg */
-      width: 100vw; /* Chiều rộng ban đầu bằng viewport */
-      height: 100vh; /* Chiều cao ban đầu bằng viewport */
-      z-index: 5; /* Đặt trên ảnh nền nhưng dưới popup */
+      width: 100%; 
+      height: 100%; 
+      z-index: 5; 
       display: flex;
       justify-content: center;
-      pointer-events: none; /* Mặc định không nhận click, chỉ các ô con nhận */
+      pointer-events: none; 
   }
 
-  /* ĐÃ CHỈNH SỬA: Kích thước ô nhỏ hơn */
   .pot-slot {
       position: absolute;
-      width: 50px; /* Đã giảm từ 70px xuống 50px */
-      height: 50px; /* Đã giảm từ 70px xuống 50px */
-      background: rgba(100, 150, 100, 0.5); /* Màu nền mờ dễ nhìn */
-      border-radius: 50%; /* Hình tròn */
-      border: 2px dashed var(--accent); /* Giảm độ dày viền */
+      width: 50px; 
+      height: 50px; 
+      background: transparent; 
+      border: none; 
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 700;
-      font-size: 1em; /* Giảm cỡ chữ */
-      color: white; /* Màu chữ số */
+      font-size: 1em; 
+      color: white; 
       cursor: pointer;
       transition: transform 0.1s, box-shadow 0.1s;
-      pointer-events: auto; /* Cho phép nhận click */
+      pointer-events: auto; 
   }
 
-  /* THÊM: CSS cho ảnh chậu đất bên trong pot-slot */
   .pot-slot img {
-      width: 120%; /* Phóng to ảnh để lấp đầy ô */
-      height: 120%; /* Phóng to ảnh để lấp đầy ô */
+      width: 120%; 
+      height: 120%; 
       object-fit: contain;
-      position: absolute; /* Định vị tuyệt đối trong ô */
-      /* Để chậu nằm cân đối hơn trong hình tròn 50x50 */
+      position: absolute; 
       top: -10px; 
       left: -10px;
   }
-  /* KẾT THÚC THÊM CSS */
 
-  /* ĐÃ THÊM: CSS cho ảnh nhân vật trong Slot 1 */
   #slot-1 img {
-      width: 150%; /* Tăng kích thước ảnh nhân vật */
-      height: 150%; /* Tăng kích thước ảnh nhân vật */
-      top: -30px; /* Dịch chuyển lên trên để cân bằng */
-      left: -20px; /* Dịch chuyển sang trái một chút */
-  }
-  /* KẾT THÚC THÊM CSS */
-
-  /* ĐÃ CHỈNH SỬA: Vị trí của từng ô để chúng NGANG HÀNG và SÁT NHAU HƠN */
-  /* *** ĐÃ CHỈNH SỬA: DỊCH CHUYỂN TOÀN BỘ LÊN TRÊN (170px -> 165px) *** */
-  /* Căn vị trí dựa trên phần tử cha #pot-container */
-  #slot-1 { top: 165px; left: calc(50% - 150px + 20px); } /* Cực Trái */
-  #slot-2 { top: 165px; left: calc(50% - 90px + 10px); }  /* Giữa-Trái */
-  #slot-3 { top: 165px; left: calc(50% - 30px + 10px); }   /* Giữa */
-  
-  /* === ĐÃ CHỈNH SỬA: CSS ĐỊNH VỊ CHO SLOT 6 (Phía dưới Slot 3) - DỊCH LÊN 50PX (425px -> 375px) === */
-  #slot-6 { top: 375px; left: calc(50% - 30px + 10px); }
-  /* ==================================================== */
-
-  #slot-4 { top: 165px; left: calc(50% + 30px + 10px); }  /* Giữa-Phải */
-  #slot-5 { top: 165px; left: calc(50% + 90px + 10px); } /* Cực Phải */
-  
-  /* THÊM: Xóa viền nền click của các ô chậu đã có chậu đất (slot-2 đến slot-5) */
-  #slot-2, #slot-3, #slot-4, #slot-5 {
-      background: transparent; /* Xóa nền mờ */
-      border: none;          /* Xóa viền nét đứt */
+      width: 150%; 
+      height: 150%; 
+      top: -30px; 
+      left: -20px; 
   }
   
-  /* ĐÃ CHỈ SỬA: XÓA viền nền click của #slot-1 (vì giờ đã có ảnh) */
-  #slot-1 {
-      background: transparent; /* Xóa nền mờ */
-      border: none;          /* Xóa viền nét đứt */
-  }
-
-  /* === ĐÃ THÊM: CSS cho Slot 6 (Nhân vật ngồi cầm bát) === */
-  #slot-6 {
-      background: transparent; /* Xóa nền mờ */
-      border: none;          /* Xóa viền nét đứt */
-  }
   #slot-6 img {
-      width: 200%; /* Tăng kích thước ảnh */
+      width: 200%; 
       height: 200%; 
-      top: -50px; /* Dịch chuyển lên trên để cân bằng */
-      left: -25px; /* Dịch chuyển sang trái một chút */
+      top: -50px; 
+      left: -25px; 
   }
-  /* ==================================================== */
 
-  /* ĐÃ CHỈ SỬA: XÓA TOÀN BỘ CSS CỦA .bottom-menu */
-  /* .bottom-menu{ display:flex; justify-content:center; gap:20px; padding:14px 0; background:#ffffffaa; backdrop-filter:blur(6px); border-top:1px solid rgba(0,0,0,0.07); font-size:20px; font-weight:600; } */ 
-  #exp-popup{ position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:12px; box-shadow:0 4px 18px rgba(0,0,0,0.25); display:none; z-index:999; text-align:center; min-width:240px; }
+  /* ĐỊNH VỊ CHO CÁC SLOT */
+  #slot-1 { top: 165px; left: calc(50% - 150px + 20px); } 
+  #slot-2 { top: 165px; left: calc(50% - 90px + 10px); }  
+  #slot-3 { top: 165px; left: calc(50% - 30px + 10px); }   
+  #slot-6 { top: 375px; left: calc(50% - 30px + 10px); }
+  #slot-4 { top: 165px; left: calc(50% + 30px + 10px); }  
+  #slot-5 { top: 165px; left: calc(50% + 90px + 10px); } 
+  
+  #slot-2, #slot-3, #slot-4, #slot-5, #slot-1, #slot-6 {
+      background: transparent; 
+      border: none;          
+  }
+
+  /* POPUPs cần được đặt cố định tương đối với màn hình thật */
+  #exp-popup, #equip-box, #shop-box, #online-box { 
+    position:fixed; 
+    top:50%; 
+    left:50%; 
+    transform:translate(-50%, -50%); 
+    background:white; 
+    padding:20px; 
+    border-radius:12px; 
+    box-shadow:0 4px 18px rgba(0,0,0,0.25); 
+    display:none; 
+    z-index:999; 
+    text-align:center; 
+    min-width:240px; 
+  }
   
 </style>
 </head>
 <body>
+<div class="app-wrapper"> 
+
 <header>
   <div class="brand"><div style="font-weight:700">🌾 Farm LOL 🌾</div></div>
   <div class="controls">
@@ -201,7 +210,7 @@ Tên bạn là gì?
 </div>
 </div>
 
-<div id="equip-box" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:12px; box-shadow:0 4px 18px rgba(0,0,0,0.25); text-align:center; min-width:260px; z-index:999;">
+<div id="equip-box">
 <h3>⚒️ Trang bị</h3>
 <div style="text-align:left; margin-bottom:10px;">
   <div id="tool-name"></div>
@@ -215,7 +224,7 @@ Tên bạn là gì?
 <button id="btn-equip-close" onclick="equipBox.style.display='none'">Đóng</button>
 </div>
 
-<div id="shop-box" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:12px; box-shadow:0 4px 18px rgba(0,0,0,0.25); text-align:center; min-width:260px; z-index:999;">
+<div id="shop-box">
 <h3>💰 Cửa hàng</h3>
 <div style="font-size:0.9em; margin-bottom:10px; color:var(--muted);">
   Xu: <span id="coin-xu">0</span> | USD: <span id="coin-usd">0</span>
@@ -226,7 +235,7 @@ Tên bạn là gì?
 <button onclick="shopBox.style.display='none'" style="margin-top:15px;">Đóng</button>
 </div>
 
-<div id="online-box" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:12px; box-shadow:0 4px 18px rgba(0,0,0,0.25); text-align:center; min-width:260px; z-index:999;">
+<div id="online-box">
 <h3>🌐 Online</h3>
 <div style="margin-bottom:15px;">
   Chức năng này hiện chưa khả dụng.
@@ -273,6 +282,8 @@ Tên bạn là gì?
   <div>
     </div>
 </main>
+
+</div> 
 
 <script>
 // ==== Biến Trạng thái Trò chơi ==== //
@@ -468,7 +479,7 @@ function deleteGame(){
 }
 btnDelete.addEventListener('click', deleteGame);
 
-// === THÊM: LOGIC CHO CÁC NÚT CLICK (Ánh xạ với ảnh) ===
+// === LOGIC CHO CÁC NÚT CLICK ===
 
 // 1. CÂN ĐẨU VÂN (Slot 0) - Mở Cửa hàng
 const kintoCloud = document.getElementById("kinto-cloud");
@@ -478,7 +489,7 @@ if (kintoCloud) {
             alert("Bạn cần tạo nông trại trước! Vui lòng nhấn nút '🆕 Tạo' ở trên.");
             return;
         }
-        updateShop(); // Đảm bảo cửa hàng được cập nhật
+        updateShop(); 
         shopBox.style.display = 'block';
     });
 }
@@ -493,7 +504,7 @@ if (lightBulb) {
         }
         // Cập nhật nội dung popup Trang bị
         document.getElementById("tool-name").textContent = tool.name;
-        document.getElementById("tool-desc").textContent = "Công cụ thu hoạch cơ bản"; // Mô tả mặc định
+        document.getElementById("tool-desc").textContent = "Công cụ thu hoạch cơ bản"; 
         document.getElementById("tool-pow").textContent = tool.power;
         document.getElementById("tool-hp").textContent = `${tool.currentHP}/${tool.maxHP}`;
         
@@ -510,22 +521,60 @@ potSlots.forEach(slot => {
             return;
         }
         const slotNum = slot.getAttribute('data-slot');
-        // Logic Tạm thời: Khi click vào ô chậu (hoặc ảnh nhân vật trong đó) sẽ hiện popup EXP.
         expText.innerHTML = `Bạn đã kiểm tra **Ô ${slotNum}**.<br>Chức năng trồng trọt/thu hoạch sẽ có ở phiên bản tiếp theo!`;
         expPopup.style.display = 'block';
     });
 });
 
-// === KẾT THÚC THÊM LOGIC CHO CÁC NÚT CLICK ===
+// === QUAN TRỌNG: HÀM ĐIỀU CHỈNH SCALE GIAO DIỆN ===
+function adjustAppWrapperScale() {
+    const appWrapper = document.querySelector(".app-wrapper");
+    if (!appWrapper) return;
+
+    // Kích thước thiết kế cố định
+    const designWidth = 400; // px
+    const designHeight = 750; // px
+
+    // Kích thước thực tế của viewport
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    // Tính toán tỷ lệ
+    const scaleX = viewportWidth / designWidth;
+    const scaleY = viewportHeight / designHeight;
+
+    // Chọn tỷ lệ nhỏ hơn để đảm bảo toàn bộ ứng dụng nằm vừa trong màn hình
+    const scale = Math.min(scaleX, scaleY);
+    
+    // Áp dụng transform scale
+    appWrapper.style.transform = `scale(${scale})`;
+
+    // Điều chỉnh margin để căn giữa theo chiều dọc nếu có khoảng trống (Chỉ áp dụng khi viewport cao hơn nhiều so với thiết kế)
+    if (viewportHeight > designHeight * scale) { 
+        const scaledHeight = designHeight * scale;
+        const marginTop = (viewportHeight - scaledHeight) / 2;
+        appWrapper.style.marginTop = `${marginTop}px`;
+        appWrapper.style.marginBottom = `${marginTop}px`;
+    } else {
+        appWrapper.style.marginTop = '0';
+        appWrapper.style.marginBottom = '0';
+    }
+}
+// === KẾT THÚC HÀM ĐIỀU CHỈNH SCALE ===
+
 
 // Hàm Khởi tạo/Tải game
 function initializeGame(){
     loadGame(); // Tải dữ liệu từ Local Storage
     updateDisplay();
     updateControlButtons();
+    adjustAppWrapperScale(); // Chạy hàm scale lần đầu
 }
+
 // Chạy hàm khởi tạo khi trang tải xong
 window.onload = initializeGame;
+// Chạy hàm scale mỗi khi cửa sổ thay đổi kích thước
+window.addEventListener('resize', adjustAppWrapperScale);
 </script>
 </body>
 </html>
