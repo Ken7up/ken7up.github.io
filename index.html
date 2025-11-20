@@ -18,7 +18,7 @@
     display: flex; 
     justify-content: center; 
     align-items: center; 
-    overflow: hidden; /* Ẩn phần bị tràn do scale */
+    /* Đã loại bỏ 'overflow: hidden;' để tránh cắt nội dung trên màn hình lớn */
   }
 
   /* === ĐÃ CHỈNH SỬA: Wrapper để giới hạn kích thước thiết kế và sẵn sàng cho SCALE === */
@@ -526,7 +526,7 @@ potSlots.forEach(slot => {
     });
 });
 
-// === QUAN TRỌNG: HÀM ĐIỀU CHỈNH SCALE GIAO DIỆN ===
+// === QUAN TRỌNG: HÀM ĐIỀU CHỈNH SCALE GIAO DIỆN (Đã khắc phục lỗi hiển thị trên PC) ===
 function adjustAppWrapperScale() {
     const appWrapper = document.querySelector(".app-wrapper");
     if (!appWrapper) return;
@@ -543,13 +543,18 @@ function adjustAppWrapperScale() {
     const scaleX = viewportWidth / designWidth;
     const scaleY = viewportHeight / designHeight;
 
-    // Chọn tỷ lệ nhỏ hơn để đảm bảo toàn bộ ứng dụng nằm vừa trong màn hình
-    const scale = Math.min(scaleX, scaleY);
+    // 1. Chọn tỷ lệ nhỏ hơn để đảm bảo toàn bộ ứng dụng nằm vừa trong màn hình
+    let scale = Math.min(scaleX, scaleY);
     
-    // Áp dụng transform scale
+    // 2. 🌟 GIỚI HẠN TỶ LỆ TỐI ĐA 🌟
+    // Đảm bảo giao diện không bị phóng to quá mức trên màn hình PC lớn
+    const MAX_SCALE = 1.0; 
+    scale = Math.min(scale, MAX_SCALE);
+    
+    // 3. Áp dụng transform scale
     appWrapper.style.transform = `scale(${scale})`;
 
-    // Điều chỉnh margin để căn giữa theo chiều dọc nếu có khoảng trống (Chỉ áp dụng khi viewport cao hơn nhiều so với thiết kế)
+    // Điều chỉnh margin để căn giữa theo chiều dọc nếu có khoảng trống
     if (viewportHeight > designHeight * scale) { 
         const scaledHeight = designHeight * scale;
         const marginTop = (viewportHeight - scaledHeight) / 2;
