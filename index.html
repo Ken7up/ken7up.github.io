@@ -150,13 +150,15 @@
       left: -25px; 
   }
 
-  /* ĐỊNH VỊ CHO CÁC SLOT */
-  #slot-1 { top: 165px; left: calc(50% - 150px + 20px); } 
-  #slot-2 { top: 165px; left: calc(50% - 90px + 10px); }  
-  #slot-3 { top: 165px; left: calc(50% - 30px + 10px); }   
-  #slot-6 { top: 375px; left: calc(50% - 30px + 10px); }
-  #slot-4 { top: 165px; left: calc(50% + 30px + 10px); }  
-  #slot-5 { top: 165px; left: calc(50% + 90px + 10px); } 
+  /* ĐỊNH VỊ CHO CÁC SLOT (Đã chỉnh sửa top +15px tổng cộng) */
+  #slot-1 { top: 180px; left: calc(50% - 150px + 20px); } 
+  #slot-2 { top: 180px; left: calc(50% - 90px + 10px); }  
+  #slot-3 { top: 180px; left: calc(50% - 30px + 10px); }   
+  /* ĐÃ SỬA: Dịch chuyển xuống thêm 10px (400px -> 410px) */
+  /* === ĐÃ CHỈNH SỬA: Thêm 15px sang phải theo yêu cầu === */
+  #slot-6 { top: 410px; left: calc(50% - 30px + 10px + 15px); }
+  #slot-4 { top: 180px; left: calc(50% + 30px + 10px); }  
+  #slot-5 { top: 180px; left: calc(50% + 90px + 10px); } 
   
   #slot-2, #slot-3, #slot-4, #slot-5, #slot-1, #slot-6 {
       background: transparent; 
@@ -214,7 +216,7 @@ Tên bạn là gì?
 <h3>⚒️ Trang bị</h3>
 <div style="text-align:left; margin-bottom:10px;">
   <div id="tool-name"></div>
-  <div id="tool-desc" style="font-size:0.9em; color:#5f6f52;"></div>
+  <div id="tool-desc" style="font-size:0.9em; color:var(--muted);"></div>
 </div>
 <hr style="border:0; border-top:1px solid #eee; margin:10px 0;" />
 <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
