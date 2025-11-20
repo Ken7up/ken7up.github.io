@@ -1,521 +1,531 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Cuộc Chiến Icon</title>
+<title>Farm lol</title>
 <style>
-body{font-family:'Segoe UI',sans-serif;margin:0;padding:16px;background:linear-gradient(135deg,#e0f7fa,#fce4ec);color:#111;}
-.header{text-align:center;}
-.button{background:#2196f3;border:none;color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer;margin:4px;}
-.small{font-size:13px;color:#444;}
-.container{max-width:980px;margin:10px auto;background:rgba(255,255,255,0.85);padding:12px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08);}
-.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:center;}
-#gameArea{text-align:center;margin-bottom:10px;}
-.topbar{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;}
-.stats{text-align:left;}
-.hidden{display:none;}
-.barContainer{width:100%;background:#ddd;border-radius:8px;overflow:hidden;height:14px;margin:6px 0; cursor:pointer;} 
-.bar{height:100%;transition:width .4s ease;}
-.panel{padding:10px;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-top:10px;}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;}
-.item-row{display:flex;justify-content:space-between;align-items:center;padding:8px 6px;border-bottom:1px dashed #eee;}
-.level-badge{background:#222;color:#fff;padding:2px 6px;border-radius:6px;font-size:12px;margin-left:8px;}
-.plot{height:80px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 8px rgba(0,0,0,.06);}
-.plot.empty{background:linear-gradient(160deg,#b27f57,#8f5f3f);color:#fff;}
-.plot.growing{background:linear-gradient(160deg,#8e6f4f,#6f8f5f);color:#fff;}
-.plot.ready{background:linear-gradient(160deg,#ffd54f,#ffb300);color:#222;}
-#log{height:160px;overflow:auto;padding:8px;border-radius:8px;background:#fafafa;border:1px solid #eee;font-size:14px;}
-footer{text-align:center;margin-top:12px;font-size:12px;color:#666;}
-.rainbow-title {
-  font-size: 25px;
-  font-weight: bold;
-  text-align: center;
-  background: linear-gradient(90deg, #ff4081, #ffeb3b, #4caf50, #2196f3, #9c27b0);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: rainbowShift 3s linear infinite;
-  margin-bottom: 12px;
-  text-shadow: 0 2px 6px rgba(0,0,0,0.25);
-}
+  :root{ --bg:#e1f5d3; --card:#ffffffcc; --muted:#5f6f52; --accent:#4caf50; }
+  *{box-sizing:border-box}
+  body{ margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial;
+        /* ĐÃ CHỈNH SỬA: CHỈ DÙNG MÀU NỀN CỨNG */
+        background: var(--bg);
+        /* KẾT THÚC CHỈNH SỬA */
+        color:#2b3a1f; min-height:100vh; display:flex; flex-direction:column; }
+  header{ display:flex; align-items:center; justify-content:space-between;
+          padding:16px 20px; border-bottom:1px solid rgba(0,0,0,0.07);
+          backdrop-filter:blur(6px); background:#ffffff88; white-space:nowrap; }
+  
+  /* ĐÃ CHỈNH SỬA: XÓA ẢNH NỀN VÀ CĂN CHỈNH */
+  main{ flex:1; display:flex; justify-content:center; 
+        align-items:flex-start; /* Giữ căn lên trên */
+        padding:0; 
+        /* XÓA ẢNH NỀN */
+        overflow: hidden;
+        /* THÊM: Thiết lập main làm gốc cho định vị tuyệt đối của ảnh */
+        position: relative;
+  }
+  main > div {
+    display: none; /* Ẩn div trống */
+  }
+  
+  /* THÊM CSS CHO ẢNH NỀN */
+  #beanstalk-bg {
+    position: absolute; /* Định vị tuyệt đối để nằm dưới header */
+    top: 0; /* Đặt ảnh ngay dưới header (tương ứng với top của main) */
+    left: 50%; /* Căn giữa theo chiều ngang */
+    transform: translateX(-50%); /* Dịch chuyển ngược 50% chiều rộng để căn chính xác */
+    max-width: 100%; /* Đảm bảo ảnh không tràn màn màn hình ngang */
+    height: auto;
+    z-index: 1; /* Đảm bảo ảnh nằm ở lớp dưới so với các popup, nhưng trên nền */
+    /* Điều chỉnh nếu cần: đặt chiều cao cố định hoặc max-height */
+    max-height: 90vh;
+  }
+  /* KẾT THÚC THÊM CSS CHO ẢNH NỀN */
 
-@keyframes rainbowShift {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 100% 50%; }
-}
+  /* THÊM CSS CHO BÓNG ĐÈN */
+  #light-bulb {
+      position: absolute;
+      /* ĐÃ CHỈNH SỬA: Xích xuống 8px */
+      top: 8px; 
+      /* ĐÃ CHỈNH SỬA: Dịch sang trái 30% (Từ 45% sang 30%) */
+      left: 30%; 
+      transform: translateX(-50%);
+      width: 60px; /* Kích thước phù hợp */
+      height: auto;
+      z-index: 8; /* Trên ảnh nền, dưới các popup */
+      cursor: pointer; /* THÊM: Cho biết có thể click */
+  }
+  /* KẾT THÚC THÊM CSS CHO BÓNG ĐÈN */
+
+  /* *** ĐÃ CHỈNH SỬA: CÂN ĐẨU VÂN (Slot 0) - Dịch chuyển lên trên 100px (150px -> 50px) *** */
+  #kinto-cloud {
+      position: absolute; /* Định vị tuyệt đối */
+      top: 50px; /* <--- ĐÃ CHỈNH SỬA: Giảm xuống 50px để xích lên trên */
+      left: 60%; /* Giữ nguyên vị trí ngang */
+      transform: translateX(-50%); /* Dịch chuyển ngược 50% chiều rộng để căn chính xác */
+      width: 80px; /* Giảm kích thước xuống 80px */
+      height: 80px; /* Giảm kích thước xuống 80px */
+      z-index: 10; /* Đảm bảo nằm trên mọi thứ (trừ popup) */
+      cursor: pointer; /* Cho biết có thể click */
+      transition: transform 0.1s, box-shadow 0.1s; 
+  }
+  /* *** KẾT THÚC SỬA CSS CÂN ĐẨU VÂN *** */
+
+  /* THÊM CSS CHO Ô ĐẶT CHẬU */
+  #pot-container {
+      position: absolute;
+      top: 0; /* Căn với top của main/beanstalk-bg */
+      left: 50%;
+      transform: translateX(-50%);
+      /* Tối đa hóa kích thước vùng chứa ô để khớp với ảnh nền beanstalk-bg */
+      max-width: 100%; 
+      max-height: 90vh; /* Giống max-height của beanstalk-bg */
+      width: 100vw; /* Chiều rộng ban đầu bằng viewport */
+      height: 100vh; /* Chiều cao ban đầu bằng viewport */
+      z-index: 5; /* Đặt trên ảnh nền nhưng dưới popup */
+      display: flex;
+      justify-content: center;
+      pointer-events: none; /* Mặc định không nhận click, chỉ các ô con nhận */
+  }
+
+  /* ĐÃ CHỈNH SỬA: Kích thước ô nhỏ hơn */
+  .pot-slot {
+      position: absolute;
+      width: 50px; /* Đã giảm từ 70px xuống 50px */
+      height: 50px; /* Đã giảm từ 70px xuống 50px */
+      background: rgba(100, 150, 100, 0.5); /* Màu nền mờ dễ nhìn */
+      border-radius: 50%; /* Hình tròn */
+      border: 2px dashed var(--accent); /* Giảm độ dày viền */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1em; /* Giảm cỡ chữ */
+      color: white; /* Màu chữ số */
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s;
+      pointer-events: auto; /* Cho phép nhận click */
+  }
+
+  /* THÊM: CSS cho ảnh chậu đất bên trong pot-slot */
+  .pot-slot img {
+      width: 120%; /* Phóng to ảnh để lấp đầy ô */
+      height: 120%; /* Phóng to ảnh để lấp đầy ô */
+      object-fit: contain;
+      position: absolute; /* Định vị tuyệt đối trong ô */
+      /* Để chậu nằm cân đối hơn trong hình tròn 50x50 */
+      top: -10px; 
+      left: -10px;
+  }
+  /* KẾT THÚC THÊM CSS */
+
+  /* ĐÃ THÊM: CSS cho ảnh nhân vật trong Slot 1 */
+  #slot-1 img {
+      width: 150%; /* Tăng kích thước ảnh nhân vật */
+      height: 150%; /* Tăng kích thước ảnh nhân vật */
+      top: -30px; /* Dịch chuyển lên trên để cân bằng */
+      left: -20px; /* Dịch chuyển sang trái một chút */
+  }
+  /* KẾT THÚC THÊM CSS */
+
+  /* ĐÃ CHỈNH SỬA: Vị trí của từng ô để chúng NGANG HÀNG và SÁT NHAU HƠN */
+  /* *** ĐÃ CHỈNH SỬA: DỊCH CHUYỂN TOÀN BỘ LÊN TRÊN (170px -> 165px) *** */
+  /* Căn vị trí dựa trên phần tử cha #pot-container */
+  #slot-1 { top: 165px; left: calc(50% - 150px + 20px); } /* Cực Trái */
+  #slot-2 { top: 165px; left: calc(50% - 90px + 10px); }  /* Giữa-Trái */
+  #slot-3 { top: 165px; left: calc(50% - 30px + 10px); }   /* Giữa */
+  
+  /* === ĐÃ CHỈNH SỬA: CSS ĐỊNH VỊ CHO SLOT 6 (Phía dưới Slot 3) - DỊCH LÊN 50PX (425px -> 375px) === */
+  #slot-6 { top: 375px; left: calc(50% - 30px + 10px); }
+  /* ==================================================== */
+
+  #slot-4 { top: 165px; left: calc(50% + 30px + 10px); }  /* Giữa-Phải */
+  #slot-5 { top: 165px; left: calc(50% + 90px + 10px); } /* Cực Phải */
+  
+  /* THÊM: Xóa viền nền click của các ô chậu đã có chậu đất (slot-2 đến slot-5) */
+  #slot-2, #slot-3, #slot-4, #slot-5 {
+      background: transparent; /* Xóa nền mờ */
+      border: none;          /* Xóa viền nét đứt */
+  }
+  
+  /* ĐÃ CHỈ SỬA: XÓA viền nền click của #slot-1 (vì giờ đã có ảnh) */
+  #slot-1 {
+      background: transparent; /* Xóa nền mờ */
+      border: none;          /* Xóa viền nét đứt */
+  }
+
+  /* === ĐÃ THÊM: CSS cho Slot 6 (Nhân vật ngồi cầm bát) === */
+  #slot-6 {
+      background: transparent; /* Xóa nền mờ */
+      border: none;          /* Xóa viền nét đứt */
+  }
+  #slot-6 img {
+      width: 200%; /* Tăng kích thước ảnh */
+      height: 200%; 
+      top: -50px; /* Dịch chuyển lên trên để cân bằng */
+      left: -25px; /* Dịch chuyển sang trái một chút */
+  }
+  /* ==================================================== */
+
+  /* ĐÃ CHỈ SỬA: XÓA TOÀN BỘ CSS CỦA .bottom-menu */
+  /* .bottom-menu{ display:flex; justify-content:center; gap:20px; padding:14px 0; background:#ffffffaa; backdrop-filter:blur(6px); border-top:1px solid rgba(0,0,0,0.07); font-size:20px; font-weight:600; } */ 
+  #exp-popup{ position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:12px; box-shadow:0 4px 18px rgba(0,0,0,0.25); display:none; z-index:999; text-align:center; min-width:240px; }
+  
 </style>
 </head>
 <body>
-<div class="container">
-  <div class="header">
-    <div class="rainbow-title">⚔️ Cuộc Chiến Icon ⚔️</div>
-    <div id="gameArea" class="panel">
-      <button class="button" id="createBtn" onclick="createCharacter()">🆕 Tạo</button>
-      <button class="button hidden" id="deleteBtn" onclick="deleteCharacter()">🗑️ Xóa</button>
-      <button class="button hidden" id="saveBtn" onclick="saveGame()">💾 Lưu</button>
-      <button class="button" onclick="showPanel('shopPanel')">🏪 Shop</button>
-      <button class="button" onclick="claimDailyReward()">🎁 Online</button>
-    </div>
+<header>
+  <div class="brand"><div style="font-weight:700">🌾 Farm LOL 🌾</div></div>
+  <div class="controls">
+    <button id="btn-new">🆕 Tạo</button>
+    <button id="btn-delete" disabled>🗑️ Xoá</button>
+    <button id="btn-save" disabled>💾 Lưu</button>
   </div>
+</header>
 
-  <div class="topbar">
-    <div class="stats panel" style="flex:1;">
-      <div id="characterInfo"><em>Chưa có nhân vật</em></div>
-<div id="expBarContainer" class="barContainer" onclick="showStatValue('exp')"><div id="expBar" class="bar" style="width:0;background:linear-gradient(90deg,#ffee58,#fdd835);height:10px;"></div></div>
-<div id="hpBarContainer" class="barContainer" onclick="showStatValue('hp')"><div id="hpBar" class="bar" style="width:0;background:linear-gradient(90deg,#ff5252,#ff1744);"></div></div>
-<div id="mpBarContainer" class="barContainer" onclick="showStatValue('mp')"><div id="mpBar" class="bar" style="width:0;background:linear-gradient(90deg,#42a5f5,#1e88e5);"></div></div>
-    </div>
-    <div style="width:280px;" class="panel">
-      <div id="characterIcon" style="font-size:48px;text-align:center;">❓</div>
-      <div id="petIcon" style="font-size:30px;text-align:center;display:none;margin-top:6px;">🐾</div>
-    </div>
-  </div>
+<div id="name-box" style="display:none; text-align:center; padding:15px; font-size:22px;">
+<div style="font-weight:600; margin-bottom:10px;">Xin chào nông dân!</div>
+Tên bạn là gì?
+<input type="text" id="player-name" placeholder="Ví dụ: Alice" style="margin:10px 0; padding:8px; border-radius:6px; border:1px solid #ccc; width:80%; max-width:200px;" />
+<br>
+<button id="btn-next">Tiếp theo &rarr;</button>
+</div>
 
-  <div class="row">
-    <button class="button" onclick="startBattle()">🌏 Chọn Map 🌎</button>
+<div id="choose-box" style="display:none; text-align:center; padding:15px; font-size:26px;">
+<div style="font-weight:600; margin-bottom:10px;">Chọn icon nông trại!</div>
+<div id="icon-choices" style="display:flex; justify-content:center; gap:15px;">
+  <button class="choose-icon" data-icon="🏠">🏠</button>
+  <button class="choose-icon" data-icon="🏡">🏡</button>
+  <button class="choose-icon" data-icon="🏰">🏰</button>
+</div>
+</div>
+
+<div id="equip-box" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:12px; box-shadow:0 4px 18px rgba(0,0,0,0.25); text-align:center; min-width:260px; z-index:999;">
+<h3>⚒️ Trang bị</h3>
+<div style="text-align:left; margin-bottom:10px;">
+  <div id="tool-name"></div>
+  <div id="tool-desc" style="font-size:0.9em; color:#5f6f52;"></div>
+</div>
+<hr style="border:0; border-top:1px solid #eee; margin:10px 0;" />
+<div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+  <div>Sức mạnh: <span id="tool-pow"></span></div>
+  <div>Độ bền: <span id="tool-hp"></span></div>
+</div>
+<button id="btn-equip-close" onclick="equipBox.style.display='none'">Đóng</button>
+</div>
+
+<div id="shop-box" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:12px; box-shadow:0 4px 18px rgba(0,0,0,0.25); text-align:center; min-width:260px; z-index:999;">
+<h3>💰 Cửa hàng</h3>
+<div style="font-size:0.9em; margin-bottom:10px; color:var(--muted);">
+  Xu: <span id="coin-xu">0</span> | USD: <span id="coin-usd">0</span>
+</div>
+<hr style="border:0; border-top:1px solid #eee; margin:10px 0;" />
+<div id="shop-items" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
   </div>
+<button onclick="shopBox.style.display='none'" style="margin-top:15px;">Đóng</button>
+</div>
+
+<div id="online-box" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:12px; box-shadow:0 4px 18px rgba(0,0,0,0.25); text-align:center; min-width:260px; z-index:999;">
+<h3>🌐 Online</h3>
+<div style="margin-bottom:15px;">
+  Chức năng này hiện chưa khả dụng.
+</div>
+<button onclick="onlineBox.style.display='none'">Đóng</button>
+</div>
+
+<div id="exp-popup">
+  <h3>📊 Kinh nghiệm</h3>
+  <div id="exp-text"></div>
+  <br>
+  <button onclick="expPopup.style.display='none'">Đóng</button>
+</div>
+
+<main>
+  <img id="beanstalk-bg" src="1000000683.jpg" alt="Cây đậu thần" />
   
-  <div class="row">
-    <button class="button" onclick="showPanel('farmPanel')">🌾 Farm</button>
-  </div>
-  <div id="farmPanel" class="panel hidden">
-    <h3>🌾 Nông trại</h3>
-    <div id="farmArea" class="grid"></div>
-    <div style="margin-top:8px;">
-      <button class="button" onclick="buySeed()">🫘 Mua hạt (💸 USD: 10)</button>
-      <button class="button" onclick="buyPlot()">🪙 Mua ô đất</button>
+  <img id="light-bulb" src="bongdensoidot.png" alt="Bóng đèn sợi đốt" />
+  <div id="pot-container">
+    <div class="pot-slot" id="slot-1" data-slot="1">
+        <img src="1763444144946.png" alt="Nhân vật đen-đỏ" />
     </div>
-    <div style="text-align:center;margin-top:8px;"><button class="button" onclick="showPanel('')">Đóng</button></div>
-  </div>
-  <div id="mainPanels">
-    <div id="inventoryPanel" class="panel hidden">
-  <h3>🎒 Túi đồ</h3>
-  <div style="text-align:center;margin-bottom:8px;">🪙 Xu: <span id="goldDisplay"></span> | 💸 USD: <span id="diamondDisplay"></span></div>
-  <div id="inventoryList"></div>
-  <div style="text-align:center;margin-top:8px;"><button class="button" onclick="showPanel('')">Đóng</button></div>
-</div>
+    
+    <div class="pot-slot" id="slot-2" data-slot="2">
+        <img src="1763442967614.png" alt="Chậu đất" />
+    </div>
+    <div class="pot-slot" id="slot-3" data-slot="3">
+        <img src="1763442967614.png" alt="Chậu đất" />
+    </div>
+    
+    <div class="pot-slot" id="slot-6" data-slot="6">
+        <img src="1000000688.png" alt="Nhân vật ngồi cầm bát" />
+    </div>
+    <div class="pot-slot" id="slot-4" data-slot="4">
+        <img src="1763442967614.png" alt="Chậu đất" />
+    </div>
+    <div class="pot-slot" id="slot-5" data-slot="5">
+        <img src="1763442967614.png" alt="Chậu đất" />
+    </div>
+    </div>
+  
+  <img id="kinto-cloud" src="candauvan.png" alt="Cân Đẩu Vân" data-slot="0" />
+  
+  <div>
+    </div>
+</main>
 
-<div id="shopPanel" class="panel hidden">
-  <h3>🏪 Shop</h3>
-  <div style="text-align:center;margin-bottom:8px;">🪙 Xu: <span id="goldDisplayShop"></span> | 💸 USD: <span id="diamondDisplayShop"></span></div>
-  <div id="shopContainer"></div>
-  <div style="text-align:center;margin-top:8px;"><button class="button" onclick="showPanel('')">Đóng</button></div>
-</div>
-    <div id="forgePanel" class="panel hidden"><h3>⚒️ Lò rèn</h3><div id="forgeArea"></div><div style="text-align:center;margin-top:8px;"><button class="button" onclick="showPanel('')">Đóng</button></div></div>
-    <div id="skillPanel" class="panel hidden"><h3>📒 Kỹ năng</h3><div id="skillContainer"></div><div style="text-align:center;margin-top:8px;"><button class="button" onclick="showPanel('')">Đóng</button></div></div>
-</div>
-
-<div id="createCharacterModal" class="panel hidden" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;padding:20px;border: 2px solid #2196f3;">
-  <h3>🆕 Tạo Nhân Vật Mới</h3>
-  <p>Tên nhân vật:</p>
-  <input type="text" id="charNameInput" value="Anh hùng" style="width: 90%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;">
-  <p>Chọn giới tính/Icon:</p>
-  <select id="charGenderSelect" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 15px;">
-    <option value="1">🙎‍♂️ Nam</option>
-    <option value="2">🙎‍♀️ Nữ</option>
-  </select>
-  <div style="display: flex; justify-content: space-between;">
-    <button class="button" onclick="confirmCreateCharacter()">Tạo</button>
-    <button class="button" style="background:#f44336;" onclick="document.getElementById('createCharacterModal').classList.add('hidden')">Hủy</button>
-  </div>
-</div>
-<div class="panel" style="margin-top:12px;"><div id="battleControls" style="text-align:center;"></div><div id="log"></div><div class="row" style="margin-top:8px;">
-  <button class="button" onclick="showPanel('inventoryPanel')">🎒 3 lô</button>
-  <button class="button" onclick="showPanel('skillPanel')">📒 Kill</button>
-  <button class="button" onclick="showPanel('forgePanel')">⚒️ Lò rèn</button>
-  </div>
-  </div>
-<footer>Sửa lỗi, cập nhật... LH Zalo: 0868600865.</footer>
 <script>
-let player=null,gold=0,diamonds=0,enemy=null,battleActive=false;
-let pet={key:null,name:'🐾 Chưa có',displayName:'Chưa có thú cưng',level:0,love:0};
-let farm={plots:[{seed:null,plantedAt:null}],seeds:0,storage:{}, shownSeedHint: false};
-let fruits={chestnut:0,coconut:0,appleGreen:0,appleRed:0,bamboo:0,flower:0};
+// ==== Biến Trạng thái Trò chơi ==== //
+let playerName = "Nông dân";
+let farmIcon = "🌾";
+let level = 0;
+let exp = 0;
+let xu = 0;
+let usd = 0;
+let tool = { name: "Xẻng Gỗ", power: 1, maxHP: 100, currentHP: 100 };
+let shopItems = [
+  { id: 1, name: "Gói Xu Nhỏ", price: 1, currency: "usd", type: "currency", value: 100 },
+  { id: 2, name: "Búa Sắt", price: 500, currency: "xu", type: "tool", value: { name: "Búa Sắt", power: 3, maxHP: 250, currentHP: 250 } },
+];
+let farmSlots = Array(5).fill(null); // 5 ô trồng cây
 
-function log(t){
-  const l=document.getElementById('log');
-  l.insertAdjacentHTML('beforeend',`<div>${t}</div>`);
-  while(l.children.length>100) l.removeChild(l.firstChild);
-  l.scrollTop=l.scrollHeight;
-}
-function saveGame(){
-  const save={player,gold,diamonds,pet,farm,fruits};
-  localStorage.setItem('miniRPG2_save',JSON.stringify(save));
-  log('💾 Đã lưu game.');
-}
-function loadGame(){
-  const raw=localStorage.getItem('miniRPG2_save');
-  if(!raw)return;
-  try{
-    const obj=JSON.parse(raw);
-    player=obj.player||player;
-    gold=obj.gold||gold;
-    diamonds=obj.diamonds||diamonds;
-    pet=obj.pet||pet;
-    
-    farm=obj.farm||farm;
-    if (typeof farm.shownSeedHint === 'undefined') {
-        farm.shownSeedHint = false;
-    }
-    if (player && typeof player.icon === 'undefined') {
-        player.icon = player.class === 'Female' ? '🙎‍♀️' : '🙎‍♂️'; 
-    }
+// ==== Biến DOM ==== //
+const btnNew = document.getElementById("btn-new");
+const btnDelete = document.getElementById("btn-delete"); 
+const btnSave = document.getElementById("btn-save");     
+const nameBox = document.getElementById("name-box");
+const chooseBox = document.getElementById("choose-box");
+const btnNext = document.getElementById("btn-next");
+const nameInput = document.getElementById("player-name");
+const chooseIcons = document.querySelectorAll(".choose-icon");
+const expFill = document.getElementById("exp-fill");
+const shopBox = document.getElementById("shop-box");
+const coinXu = document.getElementById("coin-xu");
+const coinUSD = document.getElementById("coin-usd");
+const expText = document.getElementById("exp-text");
+const expPopup = document.getElementById("exp-popup");
+const onlineBox = document.getElementById("online-box");
+const shopItemsContainer = document.getElementById("shop-items");
+const equipBox = document.getElementById("equip-box");
 
+// ==== HÀM LOGIC CHÍNH ==== //
+function expNeeded(lv){ return lv * 100; }
 
-    fruits=obj.fruits||fruits;
-    log('🔄 Dữ liệu đã tải.');
-  }catch(e){console.error(e);log('⚠️ Không thể tải dữ liệu!');}
-  updateUI();
-  renderAll();
-  updateGameControls();
-}
-
-function updateGameControls() {
-  const createBtn = document.getElementById('createBtn');
-  const deleteBtn = document.getElementById('deleteBtn');
-  const saveBtn = document.getElementById('saveBtn');
-
-  if (player) {
-    createBtn && createBtn.classList.add('hidden');
-    deleteBtn && deleteBtn.classList.remove('hidden');
-    saveBtn && saveBtn.classList.remove('hidden');
-  } else {
-    createBtn && createBtn.classList.remove('hidden');
-    deleteBtn && deleteBtn.classList.add('hidden');
-    saveBtn && saveBtn.classList.add('hidden');
+function updateDisplay(){
+  // Kiểm tra tồn tại và cập nhật EXP bar (nếu có)
+  const expBar = document.querySelector("#exp-bar");
+  if(level > 0 && expBar){
+      expBar.style.width = (exp / expNeeded(level)) * 100 + "%";
   }
+
+  // Cập nhật tiền tệ
+  if (coinXu) coinXu.textContent = xu.toLocaleString('vi-VN');
+  if (coinUSD) coinUSD.textContent = usd.toLocaleString('vi-VN');
 }
 
-function showPanel(id){
-  document.querySelectorAll('#mainPanels > div').forEach(d=>d.classList.add('hidden'));
-  document.getElementById('farmPanel').classList.add('hidden'); 
+function updateShop(){
+  if(!shopItemsContainer) return;
+  shopItemsContainer.innerHTML = "";
+  shopItems.forEach(item => {
+    const itemDiv = document.createElement("div");
+    itemDiv.className = "shop-item";
+    itemDiv.style.border = "1px solid var(--muted)";
+    itemDiv.style.borderRadius = "8px";
+    itemDiv.style.padding = "10px";
+    itemDiv.style.textAlign = "center";
+    itemDiv.innerHTML = `
+      <div style="font-weight:600;">${item.name}</div>
+      <div style="font-size:0.9em; margin:5px 0;">${item.currency === "xu" ? 'Xu' : 'USD'}: ${item.price}</div>
+      <button class="btn-buy" data-id="${item.id}" style="padding:5px 10px; border:none; border-radius:5px; background:var(--accent); color:white; cursor:pointer;">
+        Mua
+      </button>
+    `;
+    shopItemsContainer.appendChild(itemDiv);
+  });
   
-  if(id){
-      const panel = document.getElementById(id);
-      if(panel) {
-          panel.classList.remove('hidden');
+  // Gắn sự kiện mua hàng
+  document.querySelectorAll(".btn-buy").forEach(btn => {
+    btn.addEventListener("click", handleBuy);
+  });
+}
+
+function updateControlButtons(){
+  const hasGame = level > 0;
+  btnNew.disabled = hasGame;
+  btnDelete.disabled = !hasGame;
+  btnSave.disabled = !hasGame;
+}
+
+function handleBuy(event) {
+  const itemId = parseInt(event.target.getAttribute("data-id"));
+  const item = shopItems.find(i => i.id === itemId);
+  if (!item) return;
+
+  let canBuy = false;
+  if (item.currency === "xu" && xu >= item.price) {
+    xu -= item.price;
+    canBuy = true;
+  } else if (item.currency === "usd" && usd >= item.price) {
+    usd -= item.price;
+    canBuy = true;
+  }
+
+  if (canBuy) {
+    if (item.type === "currency") {
+      if (item.currency === "usd") {
+        xu += item.value;
+        alert(`Bạn đã mua thành công ${item.name}! Nhận ${item.value} Xu.`);
       }
-  }
-  renderAll();
-}
-
-function updateUI(){
-  if(!player){
-    document.getElementById('characterInfo').innerHTML='<em>Chưa có nhân vật</em>';
-    document.getElementById('characterIcon').textContent='❓';
-    document.getElementById('hpBar').style.width='0%';
-    document.getElementById('mpBar').style.width='0%';
-    document.getElementById('expBar').style.width='0%';
-    
-    const goldEls = [document.getElementById('goldDisplay'), document.getElementById('goldDisplayShop')];
-    const diaEls = [document.getElementById('diamondDisplay'), document.getElementById('diamondDisplayShop')];
-
-    goldEls.forEach(el => el && (el.textContent = gold));
-    diaEls.forEach(el => el && (el.textContent = diamonds));
-    
-    return;
-  }
-  
-  document.getElementById('characterInfo').innerHTML =
-  `😀 <b>${player.name}</b> | Lv ${player.level} | 💪 ${player.power}`;
-
-  document.getElementById('hpBar').style.width=((player.health/player.maxHealth)*100)+'%';
-  document.getElementById('mpBar').style.width=((player.mp/player.maxMp)*100)+'%';
-  document.getElementById('expBar').style.width=Math.min(100,(player.exp/expNeeded(player.level))*100)+'%';
-  
-  const icon=player.icon || '❓';
-  document.getElementById('characterIcon').textContent=icon;
-
-  const goldEls = [document.getElementById('goldDisplay'), document.getElementById('goldDisplayShop')];
-  const diaEls = [document.getElementById('diamondDisplay'), document.getElementById('diamondDisplayShop')];
-
-  goldEls.forEach(el => el && (el.textContent = gold));
-  diaEls.forEach(el => el && (el.textContent = diamonds));
-}
-
-function expNeeded(lv) {
-  return lv * 100;
-}
-
-function showStatValue(type) {
-  if (!player) {
-    log("⚠️ Bạn chưa có nhân vật!");
-    return;
-  }
-
-  let message = '';
-  switch (type) {
-    case 'hp':
-      message = `❤️ HP: ${player.health} / ${player.maxHealth}`;
-      break;
-    case 'mp':
-      message = `🔋 MP: ${player.mp} / ${player.maxMp}`;
-      break;
-    case 'exp':
-      const needed = expNeeded(player.level);
-      const percent = Math.min(100, (player.exp / needed) * 100).toFixed(2);
-      message = `✨ EXP: ${player.exp} / ${needed} (${percent}%)`;
-      break;
-    default:
-      return;
-  }
-  
-  log(`[Thông số]: ${message}`);
-}
-// ĐÃ SỬA: Hàm createCharacter chỉ mở modal
-function createCharacter(){
-  if (player) {
-    log("⚠️ Đã có nhân vật. Vui lòng xóa nhân vật cũ trước!");
-    return;
-  }
-  document.getElementById('createCharacterModal').classList.remove('hidden');
-}
-
-// HÀM MỚI: Xử lý logic tạo nhân vật từ modal
-function confirmCreateCharacter() {
-  const name = document.getElementById('charNameInput').value;
-  const genderChoice = document.getElementById('charGenderSelect').value;
-
-  if (!name || name.trim() === '') {
-    log('⚠️ Tên nhân vật không được để trống!');
-    return;
-  }
-  
-  document.getElementById('createCharacterModal').classList.add('hidden');
-  
-  let className = 'Novice'; 
-  let icon = '❓'; 
-
-  if (genderChoice === '1') {
-      className = 'Male';
-      icon = '🙎‍♂️';
-  } else if (genderChoice === '2') {
-      className = 'Female';
-      icon = '🙎‍♀️';
-  } else {
-      className = 'Male';
-      icon = '🙎‍♂️';
-  }
-
-  localStorage.removeItem('miniRPG2_save');
-  localStorage.removeItem('miniRPG2_lastClaim');
-
-  const weapon = 'Stick'; 
-
-  player = {
-    name,
-    class: className,
-    level: 1,
-    basePower: 10,
-    baseMaxHealth: 100,
-    health: 100,
-    maxHealth: 100,
-    mp: 50,
-    maxMp: 50,
-    exp: 0,
-    equipment: [{ type: weapon, level: 1, equipped: true }],
-    icon: icon
-  };
-
-  player.power = player.basePower * player.level;
-  gold = 0; 
-  diamonds = 0; 
-  
-  farm={plots:[{seed:null,plantedAt:null}],seeds:0,storage:{}, shownSeedHint: false};
-  fruits={chestnut:0,coconut:0,appleGreen:0,appleRed:0,bamboo:0,flower:0};
-
-  updateUI();
-  renderAll();
-  updateGameControls(); 
-  log('✅ Nhân vật mới đã tạo!');
-  log('🎁 Phần thưởng Online đã được đặt lại, bạn có thể nhận lại từ hôm nay!');
-}
-// END HÀM SỬA LỖI
-
-function deleteCharacter(){
-  if (!confirm('Xóa toàn bộ dữ liệu?')) return;
-  localStorage.removeItem('miniRPG2_save');
-  localStorage.removeItem('miniRPG2_lastClaim');
-
-  player = null;
-  gold = 0;
-  diamonds = 0;
-  farm={plots:[{seed:null,plantedAt:null}],seeds:0,storage:{}, shownSeedHint: false};
-  fruits={chestnut:0,coconut:0,appleGreen:0,appleRed:0,bamboo:0,flower:0};
-  
-  updateUI();
-  updateGameControls(); 
-  
-  document.getElementById('log').innerHTML = '';
-  log('🗑️ Dữ liệu đã xóa.');
-}
-function claimDailyReward() {
-  if (!player) {
-    log("⚠️ Bạn chưa có nhân vật!");
-    return;
-  }
-  const today = new Date().toISOString().split('T')[0];
-  const last = localStorage.getItem('miniRPG2_lastClaim');
-
-  if (last === today) {
-    log('🎁 Bạn đã nhận quà hôm nay rồi, quay lại vào ngày mai nhé!');
-    return;
-  }
-
-  const goldReward = 100; 
-  const diamondReward = 10; 
-
-  gold += goldReward;
-  diamonds += diamondReward;
-
-  localStorage.setItem('miniRPG2_lastClaim', today);
-
-  updateUI();
-  log(`🎁 Bạn nhận được ${goldReward} Xu và ${diamondReward} USD từ phần thưởng Online hôm nay!`);
-  saveGame();
-}
-
-function renderAll() {
-  function renderFarm() {
-    const farmArea = document.getElementById('farmArea');
-    if (!farmArea) return;
-    farmArea.innerHTML = '';
-    
-    if (!farm.shownSeedHint && farm.seeds === 0 && diamonds >= 10) { // Sửa giá 5 thành 10
-      log("Gợi ý: Hãy mua hạt giống để bắt đầu trồng trọt!");
-      farm.shownSeedHint = true; 
-      saveGame(); 
+    } else if (item.type === "tool") {
+      tool = item.value;
+      alert(`Bạn đã trang bị ${item.name}!`);
     }
-    
-    farm.plots.forEach((plot, index) => {
-      let content = 'Trống (Click để trồng)';
-      let className = 'empty';
-      let action = `harvestPlot(${index})`; 
-      
-      if (plot.seed) {
-        const timeToGrow = 10000;
-        const isReady = (Date.now() - plot.plantedAt) > timeToGrow; 
-        
-        if (isReady) {
-            content = 'Sẵn sàng thu hoạch (Click!)';
-            className = 'ready';
-        } else {
-            const progress = (Date.now() - plot.plantedAt) / timeToGrow;
-            const remaining = Math.ceil(timeToGrow/1000 - (Date.now() - plot.plantedAt) / 1000);
-            content = `Đang lớn... (${Math.floor(progress*100)}% | ${remaining}s)`;
-            className = 'growing';
-        }
-      }
-      farmArea.innerHTML += `<div class="plot ${className}" onclick="${action}">${content}</div>`;
-    });
-  }
-  
-  if (document.getElementById('farmPanel') && !document.getElementById('farmPanel').classList.contains('hidden')) {
-    renderFarm();
-  }
-  if (document.getElementById('inventoryPanel') && !document.getElementById('inventoryPanel').classList.contains('hidden')) {
-    document.getElementById('inventoryList').innerHTML = `<div class="item-row">Hạt Dẻ (🌰) <span>x${fruits.chestnut}</span></div>
-                                                         <div class="item-row">Hạt Giống <span>x${farm.seeds}</span></div>`;
-  }
-}
-
-function gainExp(amount) {
-  if (!player) return;
-  player.exp += amount;
-  log(`✨ Nhận ${amount} EXP`);
-
-  while (player.exp >= expNeeded(player.level)) {
-    player.exp -= expNeeded(player.level);
-    player.level++;
-    player.maxHealth += 20;
-    player.health = player.maxHealth;
-    player.maxMp += 10;
-    player.mp = player.maxMp;
-    player.power += 5;
-    log(`🆙 Lên cấp ${player.level}! ❤️ Hồi đầy máu + 🔋 Hồi đầy mana + 💪 tăng sức mạnh!`);
-  }
-
-  updateUI();
-  saveGame();
-}
-
-function harvestPlot(index) {
-  if (!player) {
-    log("⚠️ Bạn chưa có nhân vật!");
-    return;
-  }
-  
-  const plot = farm.plots[index];
-  
-  if (plot.seed) {
-    const timeToGrow = 10000; 
-    const isReady = (Date.now() - plot.plantedAt) > timeToGrow;
-    
-    if (isReady) {
-      const fruit = 'chestnut';
-      fruits[fruit] = (fruits[fruit] || 0) + 1;
-      log(`🌰 Thu hoạch thành công 1 hạt dẻ!`);
-      farm.plots[index] = { seed: null, plantedAt: null };
-      saveGame();
-      renderAll();
-    } else {
-      const remaining = Math.ceil((timeToGrow - (Date.now() - plot.plantedAt)) / 1000);
-      log(`⏳ Cây chưa lớn xong, còn ${remaining} giây!`);
-    }
+    updateDisplay();
+    updateShop(); // Cập nhật lại cửa hàng sau khi mua
   } else {
-    if (farm.seeds > 0) {
-      farm.seeds--;
-      plot.seed = 'chestnutSeed';
-      plot.plantedAt = Date.now();
-      log("🌱 Đã trồng hạt dẻ!");
-      saveGame();
-      renderAll();
-    } else {
-      log("⚠️ Bạn không có hạt giống! Mua hạt ở nút bên dưới.");
-    }
+    alert("Không đủ tiền!");
   }
 }
 
-function buySeed() { 
-  if (!player) {
-    log("⚠️ Bạn chưa có nhân vật!");
-    return;
-  }
-  const seedPrice = 10;
-  if (diamonds >= seedPrice) {
-    diamonds -= seedPrice;
-    farm.seeds += 1;
-    log("🫘 Đã mua 1 hạt giống!");
-    updateUI();
-    saveGame();
-    renderAll();
-  } else {
-    log(`💸 Không đủ ${seedPrice} USD!`);
-  }
-}
-function buyPlot() { 
-  if (!player) {
-    log("⚠️ Bạn chưa có nhân vật!");
-    return;
-  }
-  const plotPrice = (farm.plots.length + 1) * 50;
-  if (gold >= plotPrice) {
-    gold -= plotPrice;
-    farm.plots.push({seed:null, plantedAt:null});
-    log(`🪙 Đã mua ô đất mới với giá ${plotPrice} Xu!`);
-    updateUI();
-    saveGame();
-    renderAll();
-  } else {
-    log(`🪙 Không đủ ${plotPrice} Xu để mua ô đất mới!`);
-  }
+// Hàm Xử lý Tạo game mới
+function handleNewGame(){
+    nameBox.style.display = 'block';
 }
 
-function startBattle() { log("🌏 Chức năng chọn bản đồ chưa được triển khai."); }
+btnNew.addEventListener('click', handleNewGame);
 
-window.addEventListener('load',()=>{
-  loadGame();
-  setInterval(renderAll, 1000);
+btnNext.addEventListener('click', () => {
+    playerName = nameInput.value || "Nông dân";
+    nameBox.style.display = 'none';
+    chooseBox.style.display = 'block';
 });
+
+chooseIcons.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        farmIcon = e.target.getAttribute('data-icon');
+        // Khởi tạo game
+        level = 1;
+        exp = 0;
+        xu = 100; // Tiền khởi tạo
+        usd = 1;  // Tiền khởi tạo
+        
+        chooseBox.style.display = 'none';
+        
+        // Thêm thông báo
+        alert(`Chào mừng ${playerName} (${farmIcon}) đến với Farm LOL!`);
+        
+        updateDisplay();
+        updateControlButtons();
+        saveGame();
+    });
+});
+
+// Hàm Tải game
+function loadGame(){
+    const savedGame = localStorage.getItem('farmLolGame');
+    if(savedGame){
+        const gameData = JSON.parse(savedGame);
+        playerName = gameData.playerName;
+        farmIcon = gameData.farmIcon;
+        level = gameData.level;
+        exp = gameData.exp;
+        xu = gameData.xu;
+        usd = gameData.usd;
+        tool = gameData.tool;
+        farmSlots = gameData.farmSlots;
+        
+        // Thêm thông báo
+        console.log(`Đã tải game của ${playerName} (Cấp ${level})`);
+    }
+}
+
+// Hàm Lưu game
+function saveGame(){
+    const gameData = { playerName, farmIcon, level, exp, xu, usd, tool, farmSlots };
+    localStorage.setItem('farmLolGame', JSON.stringify(gameData));
+    alert("Đã lưu trò chơi!");
+}
+btnSave.addEventListener('click', saveGame);
+
+// Hàm Xóa game
+function deleteGame(){
+    if(confirm("Bạn có chắc chắn muốn xóa nông trại hiện tại?")){
+        localStorage.removeItem('farmLolGame');
+        // Reset biến trạng thái
+        playerName = "Nông dân";
+        farmIcon = "🌾";
+        level = 0;
+        exp = 0;
+        xu = 0;
+        usd = 0;
+        tool = { name: "Xẻng Gỗ", power: 1, maxHP: 100, currentHP: 100 };
+        farmSlots = Array(5).fill(null);
+        
+        alert("Đã xóa nông trại!");
+        updateDisplay();
+        updateControlButtons();
+    }
+}
+btnDelete.addEventListener('click', deleteGame);
+
+// === THÊM: LOGIC CHO CÁC NÚT CLICK (Ánh xạ với ảnh) ===
+
+// 1. CÂN ĐẨU VÂN (Slot 0) - Mở Cửa hàng
+const kintoCloud = document.getElementById("kinto-cloud");
+if (kintoCloud) {
+    kintoCloud.addEventListener("click", () => {
+        if (level === 0) {
+            alert("Bạn cần tạo nông trại trước! Vui lòng nhấn nút '🆕 Tạo' ở trên.");
+            return;
+        }
+        updateShop(); // Đảm bảo cửa hàng được cập nhật
+        shopBox.style.display = 'block';
+    });
+}
+
+// 2. BÓNG ĐÈN SỢI ĐỐT - Mở Trang bị (Công cụ)
+const lightBulb = document.getElementById("light-bulb");
+if (lightBulb) {
+    lightBulb.addEventListener("click", () => {
+        if (level === 0) {
+            alert("Bạn cần tạo nông trại trước! Vui lòng nhấn nút '🆕 Tạo' ở trên.");
+            return;
+        }
+        // Cập nhật nội dung popup Trang bị
+        document.getElementById("tool-name").textContent = tool.name;
+        document.getElementById("tool-desc").textContent = "Công cụ thu hoạch cơ bản"; // Mô tả mặc định
+        document.getElementById("tool-pow").textContent = tool.power;
+        document.getElementById("tool-hp").textContent = `${tool.currentHP}/${tool.maxHP}`;
+        
+        equipBox.style.display = 'block';
+    });
+}
+
+// 3. CÁC Ô CHẬU (Slot 1 đến Slot 6) - Hiện popup EXP (Tạm thời)
+const potSlots = document.querySelectorAll(".pot-slot");
+potSlots.forEach(slot => {
+    slot.addEventListener("click", () => {
+        if (level === 0) {
+            alert("Bạn cần tạo nông trại trước! Vui lòng nhấn nút '🆕 Tạo' ở trên.");
+            return;
+        }
+        const slotNum = slot.getAttribute('data-slot');
+        // Logic Tạm thời: Khi click vào ô chậu (hoặc ảnh nhân vật trong đó) sẽ hiện popup EXP.
+        expText.innerHTML = `Bạn đã kiểm tra **Ô ${slotNum}**.<br>Chức năng trồng trọt/thu hoạch sẽ có ở phiên bản tiếp theo!`;
+        expPopup.style.display = 'block';
+    });
+});
+
+// === KẾT THÚC THÊM LOGIC CHO CÁC NÚT CLICK ===
+
+// Hàm Khởi tạo/Tải game
+function initializeGame(){
+    loadGame(); // Tải dữ liệu từ Local Storage
+    updateDisplay();
+    updateControlButtons();
+}
+// Chạy hàm khởi tạo khi trang tải xong
+window.onload = initializeGame;
 </script>
-</body></html>
+</body>
+</html>
