@@ -2,152 +2,320 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Farm lol</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<title>Farm LOL - Pet Daily Reward</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <style>
-  :root{ 
-    --bg:#e1f5d3; 
-    --card:#ffffffcc; 
-    --muted:#5f6f52; 
-    --accent:#4caf50; 
+  :root { 
+    /* Palette màu tươi sáng */
+    --bg-gradient: linear-gradient(180deg, #a1ffce 0%, #faffd1 100%);
+    --primary: #4CAF50; 
+    --primary-dark: #388E3C;
+    --accent: #FF9800;
+    --accent-dark: #F57C00;
+    --text-main: #3e2723;
+    --text-muted: #795548;
     
-    --dark-bg: #1c1c1c; 
-    --dark-main-text: #e0e0e0; 
-    --dark-muted-text: #a0a0a0; 
-    --dark-card: #2c2c2ccc; 
+    /* UI Variables */
+    --card-bg: rgba(255, 255, 255, 0.95);
+    --card-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    --btn-shadow: 0 4px 0px;
+    --radius-lg: 20px;
+    --radius-md: 12px;
+    --radius-sm: 8px;
+    
+    /* Dark Mode Palette */
+    --dark-bg-gradient: linear-gradient(180deg, #1a237e 0%, #311b92 100%);
+    --dark-card-bg: rgba(30, 30, 40, 0.95);
+    --dark-text: #e0e0e0;
   }
   
-  *{box-sizing:border-box}
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   
-  body{ 
-    margin:0; 
-    font-family:Inter,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial;
-    background: var(--bg);
-    color:#2b3a1f; 
-    min-height:100vh; 
+  body { 
+    margin: 0; 
+    font-family: 'Fredoka', sans-serif; 
+    background: #333; 
+    color: var(--text-main); 
+    min-height: 100vh; 
     display: flex; 
     justify-content: center; 
     align-items: center; 
-    transition: background 0.3s, color 0.3s; 
+    overflow: hidden;
+    transition: background 0.3s;
   }
 
-  body.dark-mode {
-    background: var(--dark-bg);
-    color: var(--dark-main-text);
-  }
-
+  /* --- APP CONTAINER (FIXED RATIO SCALING) --- */
   .app-wrapper {
     width: 400px; 
     height: 750px; 
-    margin: 0; 
-    background: var(--bg);
+    background: var(--bg-gradient);
     display: flex;
     flex-direction: column;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1); 
+    box-shadow: 0 0 50px rgba(0,0,0,0.5); 
     position: relative; 
     text-align: left; 
+    
+    /* Quan trọng cho việc Scale */
     transform-origin: top center; 
     transform: scale(1); 
     transition: transform 0.1s ease-out, background 0.3s;
     flex-shrink: 0;
-  }
-  
-  .dark-mode .app-wrapper {
-      background: var(--dark-bg);
-      box-shadow: 0 0 10px rgba(255,255,255,0.1); 
+    overflow: hidden; /* Cắt phần thừa nếu có */
   }
 
-  header{ 
-      display:flex; 
-      align-items:center; 
-      justify-content:space-between;
-      padding: 6px 12px; 
-      border-bottom:1px solid rgba(0,0,0,0.05);
-      backdrop-filter:blur(4px); 
-      background: rgba(255, 255, 255, 0.5); 
-      white-space:nowrap; 
-      z-index: 20; 
-      transition: background 0.3s, border-color 0.3s;
-      height: 46px;
+  /* --- DARK MODE --- */
+  body.dark-mode .app-wrapper {
+    background: var(--dark-bg-gradient);
+    color: var(--dark-text);
+  }
+  body.dark-mode .card-panel, 
+  body.dark-mode #shop-box, 
+  body.dark-mode #online-box, 
+  body.dark-mode #pet-house-box, 
+  body.dark-mode #interaction-popup, 
+  body.dark-mode #seed-box {
+      background: var(--dark-card-bg);
+      color: var(--dark-text);
+      border: 1px solid rgba(255,255,255,0.1);
   }
 
-  .controls button {
-      font-size: 11px;
-      padding: 4px 8px;
+  /* --- MENU TOGGLE BTN --- */
+  #menu-btn {
+      position: absolute;
+      top: 15px; left: 15px;
+      width: 46px; height: 46px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.5);
+      background: rgba(255, 255, 255, 0.9);
+      color: var(--primary-dark);
+      font-size: 20px;
       cursor: pointer;
-      margin-left: 3px;
+      z-index: 101; 
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
-  
-  #player-level-display {
-      font-size: 14px;
+  #menu-btn:active { transform: scale(0.9); }
+  body.dark-mode #menu-btn { background: #311b92; color: white; border-color: #5c6bc0; }
+
+  /* --- HEADER --- */
+  header { 
+      position: absolute;
+      top: 15px; 
+      left: 70px; 
+      right: 15px;
+      display: flex; 
+      flex-direction: column; 
+      align-items: center;    
+      padding: 8px 15px; 
+      background: rgba(255, 255, 255, 0.65); 
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-radius: 20px; 
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      z-index: 100; 
+      border: 1px solid rgba(255,255,255,0.4);
+      
+      /* Animation */
+      transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+      transform-origin: left center;
+      opacity: 1;
+      transform: scaleX(1);
+  }
+
+  header.collapsed {
+      opacity: 0;
+      transform: scaleX(0) translateX(-20px);
+      pointer-events: none;
   }
 
   .dark-mode header {
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(44, 44, 44, 0.6); 
-      color: var(--dark-main-text);
+      background: rgba(20, 20, 30, 0.7);
+      border-color: rgba(255,255,255,0.1);
+      color: white;
   }
 
   .brand {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: flex-start;
-      cursor: pointer; 
-      user-select: none; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center;
+      width: 100%;
+      cursor: pointer;
+      margin-bottom: 5px;
   }
   
+  #player-level-display {
+      font-size: 15px; font-weight: 700; color: var(--primary-dark);
+      text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+  }
+  .dark-mode #player-level-display { color: #81c784; text-shadow: none; }
+
+  /* EXP BAR */
   #exp-bar-container {
-      width: 80px; 
-      height: 4px; 
+      width: 120px; 
+      height: 6px; 
       background: rgba(0,0,0,0.1); 
-      border-radius: 3px;
-      margin-top: 3px;
-      overflow: hidden;
-      display: none; 
+      border-radius: 10px; margin-top: 4px; overflow: hidden;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
   }
-
-  .dark-mode #exp-bar-container {
-      background: rgba(255,255,255,0.2); 
-  }
-
   #exp-fill {
-      height: 100%;
-      width: 0%;
-      background: var(--accent);
-      transition: width 0.3s ease;
-      border-radius: 3px;
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, #66bb6a, #43a047);
+      border-radius: 10px;
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* --- BUTTONS --- */
+  button { font-family: 'Fredoka', sans-serif; }
+  
+  .controls { 
+      display: flex; 
+      flex-wrap: nowrap; 
+      justify-content: center;
+      width: 100%;
+      gap: 6px;
+  } 
+  
+  .controls button {
+      font-size: 10px; font-weight: 700;
+      padding: 5px 10px;
+      margin: 0;
+      border: none; border-radius: 20px;
+      cursor: pointer;
+      color: white;
+      text-transform: uppercase;
+      transition: transform 0.1s;
+      box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+      white-space: nowrap;
   }
   
-  main{ flex:1; display:flex; justify-content:center; 
+  .controls button:active { transform: translateY(2px); box-shadow: none; }
+
+  #btn-new { background: #29b6f6; box-shadow: 0 2px 0 #0288d1; }
+  #btn-save { background: #66bb6a; box-shadow: 0 2px 0 #388e3c; }
+  #btn-delete { background: #ef5350; box-shadow: 0 2px 0 #d32f2f; }
+  
+  button:disabled { background: #bdbdbd !important; box-shadow: none !important; color: #757575 !important; cursor: not-allowed; transform: none !important; }
+
+  /* --- MAIN GAME AREA --- */
+  main { 
+        flex: 1; display:flex; justify-content:center; 
         align-items:flex-start; 
         padding:0; 
         overflow: hidden;
         position: relative;
   }
-  main > div {
-    display: none; 
-  }
   
   #beanstalk-bg {
-    position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 100%; height: auto;
-    z-index: 3; max-height: 100%; object-fit: cover; mix-blend-mode: normal;
+    position: absolute; 
+    top: 0; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    width: 100%; 
+    height: 100%;
+    z-index: 3; 
+    object-fit: cover;
   }
 
-  #light-bulb {
-      position: absolute; 
-      top: 8px; 
-      left: calc(30% - 5px); 
-      transform: translateX(-50%);
-      z-index: 8; 
-      cursor: pointer; 
-      width: 30px; 
-      height: auto;
+  /* UI Game Object Animations */
+  @keyframes float { 0% { transform: translate(-50%, 0px); } 50% { transform: translate(-50%, -10px); } 100% { transform: translate(-50%, 0px); } }
+  
+  /* --- ANIMATION THỞ CHO PET (SQUASH & STRETCH) --- */
+  @keyframes pet-breathing {
+      0%, 100% { 
+          /* Trạng thái bình thường */
+          transform: scale(1, 1); 
+      }
+      50% { 
+          /* Hiệu ứng xẹp phồng: Bè ngang (1.06) và thấp xuống (0.94) */
+          transform: scale(1.06, 0.94); 
+      } 
+  }
+
+  /* --- ANIMATION THIÊN THẦN / THẦN CHẾT BAY THU HOẠCH --- */
+  @keyframes angel-fly-harvest {
+      0% { transform: translateX(0) scaleX(1); }
+      45% { transform: translateX(340px) scaleX(1); } /* Bay sang phải */
+      50% { transform: translateX(340px) scaleX(-1); } /* Quay đầu */
+      95% { transform: translateX(0) scaleX(-1); } /* Bay về */
+      100% { transform: translateX(0) scaleX(1); } /* Quay lại */
+  }
+
+  .angel-harvesting {
+      animation: angel-fly-harvest 2s ease-in-out forwards;
+      z-index: 100 !important;
+      position: relative; 
+  }
+
+  /* --- CLASS MỚI ĐỂ KÍCH HOẠT HIỆU ỨNG THỞ --- */
+  .pet-breathing-effect {
+      animation: pet-breathing 2s ease-in-out infinite;
   }
 
   #kinto-cloud {
       position: absolute; top: 30px; left: calc(60% + 15px); transform: translateX(-50%); 
-      width: 30px; height: 30px; z-index: 10; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; 
+      width: 30px; height: 30px; z-index: 10; cursor: pointer; 
+      animation: float 3s ease-in-out infinite;
+      filter: drop-shadow(0 5px 5px rgba(0,0,0,0.1));
+  }
+  
+  #light-bulb {
+      position: absolute; 
+      top: 15px; 
+      left: calc(30% - 10px); 
+      transform: translateX(-50%);
+      z-index: 8; 
+      cursor: pointer; 
+      width: 60px; 
+      height: auto;
+      filter: drop-shadow(0 2px 5px rgba(0,0,0,0.2));
+  }
+
+  #pet-house {
+      position: absolute; bottom: 210px; left: 50%; transform: translateX(calc(-50% + 100px)); 
+      width: 150px; height: auto; z-index: 7; cursor: pointer;
+      filter: drop-shadow(0 5px 5px rgba(0,0,0,0.2));
+  }
+
+  #chaos-blacksmith {
+      position: absolute; bottom: 260px; left: 50%; transform: translateX(calc(-50% - 130px));
+      width: 90px; height: auto; z-index: 7; cursor: pointer;
+      filter: drop-shadow(0 5px 5px rgba(0,0,0,0.2));
+  }
+
+  #chaos-blacksmith-working {
+      position: absolute; 
+      bottom: 270px; 
+      left: 50%; 
+      transform: translateX(calc(-50% - 130px));
+      width: 60px; 
+      height: auto; 
+      z-index: 7; 
+      cursor: pointer;
+      filter: drop-shadow(0 5px 5px rgba(0,0,0,0.2));
+  }
+  
+  #pug-pet {
+      position: absolute; 
+      bottom: 35px; 
+      left: 50%; 
+      transform: translateX(calc(-50% - 50px)); 
+      width: 120px; 
+      height: auto; 
+      z-index: 7; 
+      cursor: pointer;
+      transform-origin: bottom center; 
+      will-change: transform;
+  }
+  
+  #bone-bowl {
+      position: absolute; bottom: 130px; left: 50%; transform: translateX(calc(-50% + 110px)); 
+      width: 50px; height: auto; z-index: 7; cursor: pointer; 
+      filter: drop-shadow(0 5px 5px rgba(0,0,0,0.2));
   }
 
   #pot-container {
@@ -157,9 +325,11 @@
 
   .pot-slot {
       position: absolute; width: 50px; height: 50px; background: transparent; border: none; 
-      display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1em; 
-      color: white; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; pointer-events: auto; 
+      display: flex; align-items: center; justify-content: center; 
+      cursor: pointer; transition: transform 0.1s; pointer-events: auto; 
   }
+  .pot-slot:hover { transform: scale(1.1); filter: brightness(1.1); }
+  .pot-slot:active { transform: scale(0.95); }
 
   .pot-slot img {
       width: 120%; height: 120%; object-fit: contain; position: absolute; top: -10px; left: -10px;
@@ -170,15 +340,13 @@
       transition: opacity 0.3s;
   }
 
-  /* --- SLOT 1 (RỒNG) --- */
-  #slot-1 { width: 50px; height: 50px; top: 125px; left: calc(50% - 160px); }
+  /* --- SLOT POSITIONS --- */
+  #slot-1 { width: 50px; height: 50px; top: 140px; left: calc(50% - 160px); }
   #slot-1 img { width: 120%; height: 120%; top: -10px; left: -10px; }
   
-  /* --- SLOT 6 (NPC) --- */
-  #slot-6 { width: 35px; height: 35px; top: 315px; left: calc(50% - 30px + 10px + 15px); }
-  #slot-6 img { width: 130%; height: 130%; top: -15px; left: -5px; }
+  #slot-6 { width: 50px; height: 35px; top: 335px; left: calc(50% - 30px + 10px + 15px); }
+  #slot-6 img { width: 130%; height: 130%; top: -15px; left: -10px; }
   
-  /* --- CÁC SLOT TRỒNG CÂY (2, 3, 4, 5, 7) --- */
   #slot-2, #slot-3, #slot-4, #slot-5, #slot-7 { width: 35px; height: 35px; }
   #slot-2 img, #slot-3 img, #slot-4 img, #slot-5 img, #slot-7 img { width: 130%; height: 130%; top: -5px; left: -5px; }
   
@@ -194,191 +362,247 @@
       transform: translateX(-50%) !important; 
       z-index: 6;
       pointer-events: none;
+      transition: all 0.3s ease; 
   }
 
-  /* VỊ TRÍ CÁC Ô ĐẤT */
-  #slot-2 { top: 135px; left: calc(50% - 90px - 10px); }
-  #slot-3 { top: 135px; left: calc(50% - 30px - 10px); } 
-  #slot-4 { top: 135px; left: calc(50% + 30px - 10px); }
-  #slot-5 { top: 135px; left: calc(50% + 90px - 10px); }
-  #slot-7 { top: 135px; left: calc(50% + 150px - 10px); }
+  /* --- VỊ TRÍ CÁC Ô ĐẤT --- */
+  #slot-2 { top: 155px; left: calc(50% - 90px - 10px); }
+  #slot-3 { top: 155px; left: calc(50% - 30px - 10px); } 
+  #slot-4 { top: 155px; left: calc(50% + 30px - 10px); }
+  #slot-5 { top: 155px; left: calc(50% + 90px - 10px); }
+  #slot-7 { top: 155px; left: calc(50% + 150px - 10px); }
+
+
+  /* --- POPUPS (MODALS) --- */
+  .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.4); backdrop-filter: blur(3px);
+      z-index: 990; display: none;
+  }
+
+  #shop-box, #online-box, #pet-house-box, #interaction-popup, #seed-box, #name-box { 
+    position: fixed; top: 50%; left: 50%; 
+    transform: translate(-50%, -50%) scale(0.9); 
+    background: var(--card-bg);
+    width: 90%; max-width: 320px;
+    padding: 20px; 
+    border-radius: var(--radius-lg); 
+    box-shadow: var(--card-shadow); 
+    z-index: 1000; 
+    text-align: center; 
+    border: 4px solid white;
+    opacity: 0; pointer-events: none; 
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .popup-active {
+      transform: translate(-50%, -50%) scale(1) !important;
+      opacity: 1 !important;
+      pointer-events: auto !important;
+      display: block !important;
+  }
+
+  h3 { 
+      margin: 0 0 15px 0; color: var(--primary-dark); font-size: 1.2em; 
+      text-transform: uppercase; letter-spacing: 1px;
+  }
+  .dark-mode h3 { color: #81c784; }
+
+  hr { border: 0; border-top: 2px dashed #ddd; margin: 15px 0; }
+
+  .btn-close, button[onclick*="none"] {
+      margin-top: 15px;
+      padding: 8px 25px;
+      background: #f44336;
+      color: white;
+      border: none; border-radius: 30px;
+      font-weight: 600;
+      box-shadow: 0 3px 0 #d32f2f;
+      cursor: pointer;
+      width: 100%;
+      font-size: 0.9em;
+  }
+  .btn-close:active, button[onclick*="none"]:active { transform: translateY(4px); box-shadow: none; }
+
+  /* --- SHOP ITEMS (GRID) --- */
+  .shop-item, .pet-shop-item {
+      background: white;
+      border: 1px solid #eee;
+      border-radius: var(--radius-md);
+      padding: 10px;
+      display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      transition: transform 0.2s;
+      position: relative;
+      overflow: hidden;
+  }
+  .dark-mode .shop-item, .dark-mode .pet-shop-item { background: #2c2c35; border-color: #444; }
+
+  .shop-item:hover, .pet-shop-item:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+  .btn-buy, .btn-buy-pet, .btn-plant-now, .btn-equip-pot, .btn-crafting {
+      width: 100%; border: none; border-radius: 8px;
+      padding: 6px; margin-top: 8px;
+      font-weight: 700; font-size: 11px;
+      color: white; cursor: pointer;
+      box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+      transition: all 0.1s;
+  }
+  .btn-buy:active, .btn-plant-now:active { transform: translateY(2px); box-shadow: none; }
   
-  #slot-2, #slot-3, #slot-4, #slot-5, #slot-7, #slot-1, #slot-6 { background: transparent; border: none; }
+  .btn-buy, .btn-plant-now { background: var(--accent); box-shadow: 0 2px 0 var(--accent-dark); }
+  /* Override btn-plant-now specific color if needed, but keeping accent is fine */
 
-  #pet-house {
-      position: absolute; bottom: 210px; left: 50%; transform: translateX(calc(-50% + 100px)); 
-      width: 150px; height: auto; z-index: 7; cursor: pointer;
+  /* --- TABS --- */
+  .tab-container {
+      background: #f5f5f5; padding: 4px; border-radius: 12px;
+      display: flex; gap: 5px; margin-bottom: 15px; border: none;
   }
+  .dark-mode .tab-container { background: #2a2a35; }
+
+  .tab-btn {
+      flex: 1; padding: 8px; border-radius: 8px; border: none;
+      background: transparent; color: #777; font-weight: 600; font-size: 0.9em;
+      transition: all 0.2s; cursor: pointer;
+  }
+  .tab-btn.active {
+      background: white; color: var(--primary);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  .dark-mode .tab-btn.active { background: #4caf50; color: white; }
+
+  /* --- BLACKSMITH TABLE --- */
+  .blacksmith-table { display: block; width: 100%; }
+  .blacksmith-table thead { display: none; } 
+  .blacksmith-table tbody { display: flex; flex-direction: column; gap: 10px; }
+  .blacksmith-table tr {
+      display: flex; align-items: center; justify-content: space-between;
+      background: #fff; padding: 8px; border-radius: 12px;
+      border: 1px solid #eee; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  }
+  .dark-mode .blacksmith-table tr { background: #2c2c35; border-color: #444; }
+
+  .blacksmith-table td { border: none !important; padding: 0 5px !important; display: block; }
   
-  #pug-pet {
-      position: absolute; bottom: 50px; left: 50%; transform: translateX(calc(-50% - 50px)); 
-      width: 120px; height: auto; z-index: 7; cursor: pointer;
-  }
+  .blacksmith-table td:first-child { flex: 1; }
+  .blacksmith-recipe { display: flex; align-items: center; gap: 10px; }
   
-  #bone-bowl {
-      position: absolute; bottom: 130px; left: 50%; transform: translateX(calc(-50% + 110px)); 
-      width: 50px; height: auto; z-index: 7; cursor: pointer; 
-  }
+  .blacksmith-table td:nth-child(2) { flex: 2; font-size: 0.8em; }
   
-  #shop-box, #online-box, #pet-house-box, #interaction-popup, #seed-box { 
-    position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); 
-    background:white; padding:20px; border-radius:12px; box-shadow:0 4px 18px rgba(0,0,0,0.25); 
-    display:none; z-index:999; text-align:center; min-width:240px; 
-    transition: background 0.3s, color 0.3s, box-shadow 0.3s;
+  .blacksmith-table td:last-child { flex: 1; text-align: right; }
+
+  .req-status-ok { color: var(--primary); font-weight: 700; }
+  .req-status-fail { color: #f44336; }
+
+  /* --- INPUT NAME BOX --- */
+  #name-box input {
+      width: 100%; padding: 10px; margin: 15px 0;
+      border: 2px solid #ddd; border-radius: 10px;
+      font-family: inherit; font-size: 14px; text-align: center;
+      outline: none; transition: border 0.3s;
+  }
+  #name-box input:focus { border-color: var(--primary); }
+  #btn-next {
+      background: var(--primary); color: white;
+      padding: 10px 30px; border-radius: 30px;
+      font-size: 14px; font-weight: bold; border: none;
+      box-shadow: 0 3px 0 var(--primary-dark);
+  }
+  #btn-next:active { transform: translateY(3px); box-shadow: none; }
+
+  /* --- SCROLLBAR --- */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: #aaa; }
+
+    /* --- CSS CHO CÂY TO --- */
+  .seed-image.big-plant {
+      width: 220% !important;        
+      max-height: 250px !important;  
+      bottom: 27px !important;       
+      filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3)); 
+      z-index: 10;                   
   }
 
-  #seed-box { min-width: 200px; }
-  
-  #pet-shop-items { 
-    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px; padding: 5px; 
+  /* --- CSS CHO QUÀ TẶNG HÀNG NGÀY (Daily Reward) --- */
+  .daily-reward-bubble {
+    position: absolute;
+    width: 60px; /* Kích thước ảnh quả đào */
+    height: 60px;
+    z-index: 90; /* Cao hơn pet, thấp hơn popup */
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    animation: popInReward 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.6)); /* Hiệu ứng phát sáng nhẹ */
+}
+
+/* Hiệu ứng xuất hiện */
+@keyframes popInReward {
+    0% { transform: scale(0) translateY(20px); opacity: 0; }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+/* Hiệu ứng bay lên khi nhận xong */
+@keyframes flyUpReward {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(-80px) scale(1.5); opacity: 0; }
+}
+/* --- CSS CHO ICON ẤP TRỨNG (🦢) --- */
+  #incubator-icon {
+      position: absolute;
+      
+      /* Căn chỉnh vị trí: Đặt lại top cho phù hợp với kích thước mới */
+      top: -18px;                   /* Đã sửa: Đẩy thấp xuống một chút cho gần trứng hơn (cũ là -35px) */
+      left: 40%;
+      transform: translateX(-50%);  /* Căn giữa ngang */
+      
+      /* Giao diện: Kích thước nhỏ lại */
+      font-size: 10px;              /* Đã sửa: Nhỏ lại (cũ là 40px) */
+      z-index: 20;
+      
+      /* Hiệu ứng: Cố định (Bỏ animation float) */
+      /* animation: float 2s ease-in-out infinite; */ /* <-- Đã comment dòng này để tắt hiệu ứng bay */
+      
+      filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
+      pointer-events: none;
   }
-
-  .pet-shop-item {
-      border: 1px solid var(--muted); border-radius: 8px; padding: 6px; text-align: center;
-      transition: background 0.1s; cursor: pointer;
-  }
-  .pet-shop-item:hover { background: rgba(0, 0, 0, 0.05); }
-  .pet-shop-item img { width: 40px; height: 40px; margin-bottom: 3px; object-fit: contain; }
-
-  .shop-item { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-  .shop-item img { width: 60px; height: 60px; object-fit: contain; margin-bottom: 5px; }
-  
-  #seed-items .shop-item {
-      display: flex; flex-direction: row; justify-content: space-between; align-items: center;
-      padding: 8px 10px; border: 1px solid var(--muted); border-radius: 8px; margin-bottom: 5px;
-  }
-  
-  #seed-items .shop-item img { width: 80px; height: 80px; margin: 0 10px 0 0; }
-  #seed-items .shop-item > div:first-of-type { text-align: left; flex-grow: 1; }
-
-  .dark-mode #shop-box, .dark-mode #online-box, .dark-mode #pet-house-box, .dark-mode #interaction-popup, .dark-mode #seed-box {
-    background: var(--dark-card); color: var(--dark-main-text); box-shadow: 0 4px 18px rgba(255,255,255,0.1); 
-  }
-  
-  .dark-mode #tool-desc { color: var(--dark-muted-text); }
-  .dark-mode input[type="text"] { background: #3c3c3c; border: 1px solid #555; color: var(--dark-main-text); }
-  
-  #pet-may-items, #hat-may-items {
-      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; overflow: hidden;
-      max-height: 0; opacity: 0; transition: max-height 0.4s ease-in-out, opacity 0.4s ease-in-out; 
-  }
-  
-  .shop-items-visible { max-height: 500px !important; opacity: 1 !important; padding-top: 10px; }
-
-  .shop-collapsible-header { cursor: pointer; user-select: none; transition: color 0.2s; }
-  .shop-collapsible-header:hover { color: #388e3c; }
-
-  @keyframes pulse {
-    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.7); }
-    70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(255, 152, 0, 0); }
-    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 152, 0, 0); }
-  }
-
-  .pet-rarity-white { color: #ffffff; text-shadow: 0 0 3px rgba(0, 0, 0, 0.5); }
-  .pet-rarity-green { color: #4CAF50; text-shadow: 0 0 3px rgba(0, 0, 0, 0.5); }
-  .pet-rarity-blue { color: #2196F3; text-shadow: 0 0 3px rgba(0, 0, 0, 0.5); }
-  .pet-rarity-stars { 
-      display: block; 
-      text-align: center; 
-      font-size: 1.2em; 
-      margin-top: 5px; 
-      color: gold; 
-      text-shadow: 0 0 2px rgba(0, 0, 0, 0.5); 
-  }
-
-  .dark-mode .pet-rarity-white { color: #f0f0f0; }
-  .dark-mode .pet-rarity-green { color: #66BB6A; }
-  .dark-mode .pet-rarity-blue { color: #64B5F6; }
-
 </style>
 </head>
 <body>
+<div class="modal-overlay" id="global-overlay"></div> 
+
 <div class="app-wrapper"> 
 
-<header>
+<button id="menu-btn" onclick="toggleHeader()">◀</button>
+
+<header id="main-header">
   <div class="brand">
-    <div id="player-level-display" style="font-weight:700">🌾 Farm LOL 🌾</div>
+    <div id="player-level-display">🌾 Farm LOL 🌾</div>
     <div id="exp-bar-container">
         <div id="exp-fill"></div>
     </div>
   </div>
   <div class="controls">
     <button id="btn-new">🆕 Tạo</button>
-    <button id="btn-delete" disabled>🗑️ Xoá</button>
     <button id="btn-save" disabled>💾 Lưu</button>
+    <button id="btn-delete" disabled>🗑️ Xoá</button>
   </div>
 </header>
 
-<div id="name-box" style="display:none; text-align:center; padding:15px; font-size:22px;">
-<div style="font-weight:600; margin-bottom:10px;">Xin chào nông dân!</div>
-Tên bạn là gì?
-<input type="text" id="player-name" placeholder="Ví dụ: Alice" style="margin:10px 0; padding:8px; border-radius:6px; border:1px solid #ccc; width:80%; max-width:200px;" />
-<br>
-<button id="btn-next">Tiếp theo &rarr;</button>
-</div>
-
-<div id="shop-box" style="padding: 15px; width: 320px;">
-  <h3 style="margin: 0 0 5px 0; font-size: 1.2em;">☁️ Shop Mây</h3> 
-  <div style="font-size:0.85em; margin-bottom:8px; color:var(--muted);">
-    <span style="font-size:1em; color:gold;">🪙</span>: <span id="coin-xu-shop">0</span> Xu | 
-    <span style="font-size:1em; color:green;">💸</span>: <span id="coin-usd-shop">0</span> Đô
-  </div>
-  <hr style="border:0; border-top:1px solid #eee; margin:5px 0;" />
-
-  <h4 id="header-pet-may" class="shop-collapsible-header" data-target="pet-may-items" style="margin-top:10px; margin-bottom: 5px; text-align:left; color:var(--accent); font-size: 1em;">
-    🐾 Pet Mây
-  </h4>
-  <div id="pet-may-items"></div>
-
-  <h4 id="header-hat-may" class="shop-collapsible-header" data-target="hat-may-items" style="margin-top:10px; margin-bottom: 5px; text-align:left; color:var(--accent); font-size: 1em;">
-    🫘 Hạt Mây
-  </h4>
-  <div id="hat-may-items"></div>
-
-  <div id="shop-items" style="display:none; grid-template-columns:1fr 1fr; gap:10px;"></div>
-  
-  <button onclick="shopBox.style.display='none'" style="margin-top:12px; padding: 6px 15px; font-size: 0.9em;">Đóng</button>
-</div>
-
-<div id="seed-box">
-<h3>🌱 Shop Hạt Giống</h3> <div style="font-size:0.9em; margin-bottom:10px; color:var(--muted);">
-  <span style="font-size:1.1em; color:gold;">🪙</span>: <span id="coin-xu-seed">0</span> Xu | 
-  <span style="font-size:1.1em; color:green;">💸</span>: <span id="coin-usd-seed">0</span> Đô
-</div>
-<hr style="border:0; border-top:1px solid #eee; margin:10px 0;" />
-<div id="seed-items" style="display:grid; grid-template-columns:1fr; gap:10px;"></div>
-<button onclick="seedBox.style.display='none'" style="margin-top:15px;">Đóng</button>
-</div>
-
-<div id="online-box">
-<h3>🌐 Online</h3>
-<div style="margin-bottom:15px;">Chức năng này hiện chưa khả dụng.</div>
-<button onclick="onlineBox.style.display='none'">Đóng</button>
-</div>
-
-<div id="pet-house-box" style="padding: 15px;">
-  <h3 id="pet-house-title" style="margin-top:0;">🐾 Nhà Pet</h3> 
-  <div style="font-size:0.9em; margin-bottom:8px; color:var(--muted);">
-      <span style="font-size:1.1em; color:gold;">🪙</span>: <span id="coin-xu-pet">0</span> Xu | 
-      <span style="font-size:1.1em; color:green;">💸</span>: <span id="coin-usd-pet">0</span> Đô
-  </div>
-  <div id="pet-shop-items"></div>
-  <button onclick="document.getElementById('pet-house-box').style.display='none'" style="margin-top: 12px; padding: 6px 15px; font-size: 0.9em;">Đóng</button>
-</div>
-<div id="interaction-popup">
-    <h3 id="interaction-title"></h3> 
-    <div id="interaction-text" style="min-height: 50px;"></div>
-    <br>
-    <div id="interaction-controls" style="margin-top: 10px;"></div>
-    <button onclick="closeInteractionPopup()">Đóng</button>
-</div>
-
 <main>
   <img id="beanstalk-bg" src="1000000105.png" alt="Khu vườn bên hồ" />
-  <img id="light-bulb" src="1000000110.png" alt="Bóng đèn sợi đốt" />
+  
+  <img id="light-bulb" src="1000000123.gif" alt="Bóng đèn" />
+  
   <div id="pot-container">
-    <div class="pot-slot" id="slot-1" data-slot="1">
-        <img id="ice-egg-img" src="" alt="Trứng Băng Tuyết" style="display:none;" />
+        <div class="pot-slot" id="slot-1" data-slot="1">
+        <img id="ice-egg-img" src="" alt="Trứng Ngũ Sắc" style="display:none;" />
+        
+        <div id="incubator-icon" style="display:none;">🦢</div>
     </div>
     
     <div class="pot-slot" id="slot-2" data-slot="2">
@@ -391,7 +615,7 @@ Tên bạn là gì?
     </div>
     
     <div class="pot-slot" id="slot-6" data-slot="6">
-        <img src="1000000116.png" alt="Em bé câu cá" />
+        <img src="1000000116.gif" alt="Em bé câu cá" />
     </div>
     
     <div class="pot-slot" id="slot-4" data-slot="4">
@@ -408,66 +632,305 @@ Tên bạn là gì?
         <img id="seed-img-7" class="seed-image" src="" alt="Vật phẩm trồng" style="display:none;" />
     </div>
     
-    </div>
+  </div>
   
   <img id="kinto-cloud" src="1000000103.png" alt="Cân Đẩu Vân" data-slot="0" />
   <img id="pet-house" src="1000000100.png" alt="Nhà Pet" />
+  
+  <img id="chaos-blacksmith" src="1000000107.png" alt="Thợ Rèn Chaos" />
+  <img id="chaos-blacksmith-working" src="1000000101.gif" alt="Thợ Rèn Đang Làm" style="display:none;" />
+  
   <img id="pug-pet" src="" alt="Chú chó Pug" style="display:none;" />
   <img id="bone-bowl" src="1000000115.png" alt="Bát đựng xương" />
-  <div></div>
 </main>
 
 </div> 
 
+<div id="name-box" style="display:none;">
+    <h3>Xin chào nông dân!</h3>
+    <p style="color:var(--text-muted);">Hãy đặt một cái tên thật ngầu nhé:</p>
+    <input type="text" id="player-name" placeholder="Ví dụ: Alice" maxlength="12"/>
+    <button id="btn-next">Bắt đầu ngay &rarr;</button>
+</div>
+
+<div id="shop-box">
+  <h3>☁️ Shop Mây</h3> 
+  <div style="font-size:0.9em; margin-bottom:12px; color:var(--text-muted); background:rgba(0,0,0,0.05); padding:5px; border-radius:8px;">
+    <span style="font-size:1.1em; color:#795548;">🫘</span> <b id="coin-dau-shop">0</b> &nbsp;|&nbsp; 
+    <span style="font-size:1.1em; color:#E65100;">🍂</span> <b id="coin-la-shop">0</b>
+  </div>
+  
+  <div id="shop-tab-container-wrapper"></div>
+  
+  <button onclick="hidePopup('shop-box')" class="btn-close">Đóng</button>
+</div>
+
+<div id="seed-box">
+<h3>🌱 Shop Hạt Giống</h3> 
+<div style="font-size:0.9em; margin-bottom:12px; color:var(--text-muted); background:rgba(0,0,0,0.05); padding:5px; border-radius:8px;">
+  <span style="font-size:1.1em; color:#795548;">🫘</span> <b id="coin-dau-seed">0</b> &nbsp;|&nbsp; 
+  <span style="font-size:1.1em; color:#E65100;">🍂</span> <b id="coin-la-seed">0</b>
+</div>
+
+<div id="seed-items" style="display:grid; grid-template-columns: 1fr; gap:10px; max-height: 400px; overflow-y: auto;"></div>
+<button onclick="hidePopup('seed-box')" class="btn-close">Đóng</button>
+</div>
+
+<div id="online-box">
+<h3>🌐 Online</h3>
+<div style="margin:20px 0; color: #777;">Chức năng đang được phát triển...<br>Quay lại sau nhé!</div>
+<button onclick="hidePopup('online-box')" class="btn-close">Đóng</button>
+</div>
+
+<div id="pet-house-box">
+  <h3 id="pet-house-title">🐾 Nhà Pet</h3> 
+  <div style="font-size:0.9em; margin-bottom:12px; color:var(--text-muted); background:rgba(0,0,0,0.05); padding:5px; border-radius:8px;">
+      <span style="font-size:1.1em; color:#795548;">🫘</span> <b id="coin-dau-pet">0</b> &nbsp;|&nbsp; 
+      <span style="font-size:1.1em; color:#E65100;">🍂</span> <b id="coin-la-pet">0</b>
+  </div>
+  <div id="pet-shop-items"></div>
+  <button onclick="hidePopup('pet-house-box')" class="btn-close">Đóng</button>
+</div>
+
+<div id="interaction-popup">
+    <h3 id="interaction-title"></h3> 
+    <div id="interaction-text" style="min-height: 50px; font-size: 0.95em; line-height: 1.5;"></div>
+    <div id="interaction-controls" style="margin-top: 15px;"></div>
+    <button onclick="closeInteractionPopup()" class="btn-close" style="margin-top: 20px;">Đóng</button>
+</div>
+
 <script>
+// --- LOGIC SCALING (GIỮ NGUYÊN) ---
+function adjustAppWrapperScale() {
+    const appWrapper = document.querySelector(".app-wrapper");
+    if (!appWrapper) return;
+    const designWidth = 400; const designHeight = 750; 
+    const viewportWidth = window.innerWidth; const viewportHeight = window.innerHeight;
+    
+    const scaleX = viewportWidth / designWidth; 
+    const scaleY = viewportHeight / designHeight;
+    let scale = Math.min(scaleX, scaleY);
+    const MAX_SCALE = 1.1; 
+    scale = Math.min(scale, MAX_SCALE);
+    
+    appWrapper.style.transform = `scale(${scale})`;
+    
+    if (viewportHeight > designHeight * scale) { 
+        const scaledHeight = designHeight * scale;
+        const marginTop = (viewportHeight - scaledHeight) / 2;
+        appWrapper.style.marginTop = `${marginTop}px`; appWrapper.style.marginBottom = `${marginTop}px`;
+    } else { appWrapper.style.marginTop = '0'; appWrapper.style.marginBottom = '0'; }
+}
+window.addEventListener('resize', adjustAppWrapperScale);
+
+function toggleHeader() {
+    const header = document.getElementById('main-header');
+    const btn = document.getElementById('menu-btn');
+    header.classList.toggle('collapsed');
+    if (header.classList.contains('collapsed')) { btn.innerHTML = '⚙️'; } else { btn.innerHTML = '◀'; }
+}
+
 let playerName = "Nông dân";
 let farmIcon = "🌾";
 let level = 0;
 let exp = 0;
-let xu = 0;
-let usd = 0;
+let dau = 0; 
+let la = 0;  
 let tool = { name: "Xẻng Gỗ", power: 1, maxHP: 100, currentHP: 100 };
 let hasIceEgg = false; 
 let isIceDragonHatched = false; 
 let isIceDragonEvolved = false; 
+let hatchedPetType = "thien_than"; // BIẾN MỚI: LƯU LOẠI PET ĐÃ ẤP (thien_than HOẶC than_chet)
 let activePet = null;
+let incubationFinishTime = 0; // Thời gian kết thúc ấp trứng
 let ownedPets = []; 
-let ownedSeeds = { 'tinh_hat_suong': 0, 'hat_kim_loai': 0 }; // Đã thêm hạt kim loại vào túi
+let ownedSeeds = { 'hat_nguyen_to': 0, 'hat_kim_loai': 0 }; 
 let globalPetAge = 0; 
 let lastFedTime = 0; 
 let activePopupInterval = null;
 
+// --- 1. CẬP NHẬT DANH SÁCH CHẬU ---
+let ownedPots = { 
+    'so_dua': 0, 'chau_dong': 0, 
+    'chau_bac': 0, 'chau_vang': 0, 
+    'chau_bach_kim': 0, 'chau_kim_cuong': 0, 'chau_kim_cuong_do': 0 
+}; 
+let craftingQueue = []; 
+
+const POT_DEFINITIONS = {
+    'so_dua': { name: "Sọ Dừa", img: "1000000112.png", expBonus: 0 },
+    'chau_dong': { name: "Chậu Đồng", img: "1000000117.png", expBonus: 1 },
+    'chau_bac': { name: "Chậu Bạc", img: "1000000118.png", expBonus: 2 },
+    'chau_vang': { name: "Chậu Vàng", img: "1000000119.png", expBonus: 3 },
+    'chau_bach_kim': { name: "Chậu Bạch Kim", img: "1000000120.png", expBonus: 4 },
+    'chau_kim_cuong': { name: "Chậu Kim Cương", img: "1000000121.png", expBonus: 5 },
+    'chau_kim_cuong_do': { name: "Chậu K.Cương Đỏ", img: "1000000122.png", expBonus: 6 }
+};
+
+// --- 2. CẬP NHẬT CÔNG THỨC RÈN (ĐÃ CHỈNH SỬA) ---
+const CRAFTING_RECIPES = [
+    {
+        id: 'craft_so_dua',
+        output: 'so_dua',
+        name: 'Sọ Dừa',
+        icon: '1000000112.png',
+        duration: 0,
+        cost: { dau: 1000 }, // Giá mới: 1000 Đậu
+        materials: {} 
+    },
+    {
+        id: 'craft_chau_dong',
+        output: 'chau_dong',
+        name: 'Chậu Đồng',
+        icon: '1000000117.png',
+        duration: 2 * 60 * 60 * 1000, // 2 giờ
+        cost: { dau: 2000 },
+        materials: { 'so_dua': 1, 'hat_kim_loai': 20 }
+    },
+    {
+        id: 'craft_chau_bac',
+        output: 'chau_bac',
+        name: 'Chậu Bạc',
+        icon: '1000000118.png',
+        duration: 3 * 60 * 60 * 1000, // 3 giờ
+        cost: { dau: 3000 },
+        materials: { 'chau_dong': 1, 'hat_kim_loai': 30 }
+    },
+    {
+        id: 'craft_chau_vang',
+        output: 'chau_vang',
+        name: 'Chậu Vàng',
+        icon: '1000000119.png',
+        duration: 4 * 60 * 60 * 1000, // 4 giờ
+        cost: { dau: 4000 },
+        materials: { 'chau_bac': 1, 'hat_kim_loai': 40 }
+    },
+    {
+        id: 'craft_chau_bach_kim',
+        output: 'chau_bach_kim',
+        name: 'Chậu Bạch Kim',
+        icon: '1000000120.png',
+        duration: 5 * 60 * 60 * 1000, // 5 giờ
+        cost: { dau: 5000 },
+        materials: { 'chau_vang': 1, 'hat_kim_loai': 50 }
+    },
+    {
+        id: 'craft_chau_kim_cuong',
+        output: 'chau_kim_cuong',
+        name: 'Chậu Kim Cương',
+        icon: '1000000121.png',
+        duration: 6 * 60 * 60 * 1000, // 6 giờ
+        cost: { dau: 6000 },
+        materials: { 'chau_bach_kim': 1, 'hat_kim_loai': 60 }
+    },
+    {
+        id: 'craft_chau_kim_cuong_do',
+        output: 'chau_kim_cuong_do',
+        name: 'Chậu K.Cương Đỏ',
+        icon: '1000000122.png',
+        duration: 7 * 60 * 60 * 1000, // 7 giờ
+        cost: { dau: 7000 },
+        materials: { 'chau_kim_cuong': 1, 'hat_kim_loai': 70 }
+    }
+];
+
 const FARM_IDS = [2, 3, 4, 5, 7]; 
 let farmSlots = Array(5).fill(null); 
+let equippedPots = ['so_dua', 'so_dua', 'so_dua', 'so_dua', 'so_dua']; 
 
+// --- ĐÃ CHỈNH SỬA VỊ TRÍ PET ---
 let petShopItems = [
+    // --- SỬA LẠI CHOCO: THÊM SIZE VÀ CĂN LẠI VỊ TRÍ ---
     { 
-        id: 101, name: "Pug Péo", price: 100, currency: "usd", type: "pet", 
-        icon: "1000000106.png", value: "1000000106.png", position: { bottom: '50px', left: 'calc(50% - 50px)' }, 
+        id: 100, 
+        name: "Choco", 
+        price: 0, 
+        currency: "dau", 
+        type: "pet", 
+        icon: "1000000128.gif", 
+        value: "1000000128.gif", 
+        // Giảm chiều rộng còn 60px (mặc định là 120px)
+        // Chỉnh left thành -30px (một nửa của 60px) để căn giữa chuẩn
+        customWidth: "60px", 
+        position: { bottom: '70px', left: 'calc(50% - 30px)' }, 
     },
+    // --------------------------------------------------
     { 
-        id: 102, name: "Mr. Gold", price: 100, currency: "usd", type: "pet", 
-        icon: "1000000104.png", value: "1000000104.png", position: { bottom: '50px', left: 'calc(50% - 50px)' }, 
+        id: 101, name: "Pug Péo", price: 100, currency: "la", type: "pet", 
+        icon: "1000000106.png", value: "1000000106.png", position: { bottom: '70px', left: 'calc(50% - 50px)' }, 
+    },
+        { 
+        id: 102, name: "Mr. Gold", price: 100, currency: "la", type: "pet", 
+        icon: "1000000108.gif", value: "1000000108.gif", 
+        // --- SỬA SIZE Ở ĐÂY ---
+        customWidth: "150px", // Chỉnh to lên 150px (Mặc định là 120px)
+        position: { bottom: '50px', left: 'calc(50% - 75px)' }, // Chỉnh lại tâm (-75px vì width là 150)
     },
 ];
 
-// --- CẬP NHẬT DANH SÁCH SHOP ---
 let shopItems = [
-    { id: 201, name: "Trứng Băng Tuyết", price: 100, currency: "usd", type: "item", icon: "1000000102.png", value: "trung_bang_tuyet", category: "pet_may" },
-    { id: 202, name: "Rồng Băng Tuyết", price: 0, currency: "xu", type: "pet", icon: "1000000108.png", value: "1000000108.png" },
-    { id: 203, name: "Rồng Băng Tuyết Big", price: 0, currency: "xu", type: "pet", icon: "1000000109.png", value: "1000000109.png" },
-    { id: 204, name: "Hạt Nguyên Tố", price: 100, currency: "xu", type: "seed", icon: "1000000126.png", value: "tinh_hat_suong", category: "hat_may" }, 
-    // --- THÊM HẠT KIM LOẠI VÀO ĐÂY ---
-    { id: 205, name: "Hạt Kim Loại", price: 100, currency: "xu", type: "seed", icon: "1000000123.png", value: "hat_kim_loai", category: "hat_may" },
+    { id: 201, name: "Trứng Ngũ Sắc", price: 100, currency: "la", type: "item", icon: "1000000102.png", value: "trung_bang_tuyet", category: "pet_may" },
+    { id: 202, name: "Thiên Thần", price: 0, currency: "dau", type: "pet", icon: "1000000127.gif", value: "1000000127.gif" },
+    // --- THÊM THẦN CHẾT VÀO DANH SÁCH ---
+    { id: 203, name: "Thần Chết", price: 0, currency: "dau", type: "pet", icon: "1000000104.gif", value: "1000000104.gif" },
+    // ------------------------------------
+    { id: 204, name: "Hạt Nguyên Tố", price: 100, currency: "dau", type: "seed", icon: "1000000125.png", value: "hat_nguyen_to", category: "hat_may" }, 
+    { id: 205, name: "Hạt Kim Loại", price: 100, currency: "dau", type: "seed", icon: "1000000126.png", value: "hat_kim_loai", category: "hat_may" },
 ];
-
-let seedShopItems = [];
 
 const PLANT_STAGES = [
-    { name: "Mầm Nhỏ", icon: "1000000114.png", duration: 0, next: 60 * 1000 }, 
-    { name: "Cây Trưởng Thành", icon: "1000000125.png", duration: 60 * 1000, next: 60 * 1000 }, 
-    { name: "Sẵn Sàng Thu Hoạch", icon: "1000000125.png", duration: 120 * 1000, next: 0 }, 
+    { 
+        name: "Mầm Nhỏ", 
+        icon: "1000000110.gif", 
+        duration: 0, // Bắt đầu ngay lập tức
+        next: 6 * 60 * 60 * 1000 // (Không ảnh hưởng logic chính nhưng giữ để tham khảo)
+    }, 
+    { 
+        name: "Cây Trưởng Thành", 
+        icon: "1000000130.gif", 
+        // 6 giờ = 6 * 60 * 60 * 1000 ms
+        duration: 6 * 60 * 60 * 1000, 
+        next: 6 * 60 * 60 * 1000 
+    }, 
+    { 
+        name: "Sẵn Sàng Thu Hoạch", 
+        icon: "1000000130.gif", 
+        // 12 giờ (tổng thời gian từ lúc gieo hạt) = 12 * 60 * 60 * 1000 ms
+        duration: 12 * 60 * 60 * 1000, 
+        next: 0 
+    }, 
 ];
+
+function showPopup(id) {
+    document.getElementById('global-overlay').style.display = 'block';
+    const el = document.getElementById(id);
+    if(el) el.classList.add('popup-active');
+}
+function hidePopup(id) {
+    const el = document.getElementById(id);
+    if(el) el.classList.remove('popup-active');
+    setTimeout(() => {
+        if(!document.querySelector('.popup-active')) {
+            document.getElementById('global-overlay').style.display = 'none';
+        }
+    }, 100); 
+}
+
+// --- HÀM CẬP NHẬT HÌNH ẢNH THỢ RÈN (MỚI) ---
+function updateBlacksmithVisuals() {
+    const idleImg = document.getElementById('chaos-blacksmith');
+    const workingImg = document.getElementById('chaos-blacksmith-working');
+    
+    // Nếu hàng chờ có đồ (đang rèn) -> Hiện GIF, Ẩn PNG
+    if (craftingQueue.length > 0) {
+        if(idleImg) idleImg.style.display = 'none';
+        if(workingImg) workingImg.style.display = 'block';
+    } else {
+        // Nếu rảnh -> Hiện PNG, Ẩn GIF
+        if(idleImg) idleImg.style.display = 'block';
+        if(workingImg) workingImg.style.display = 'none';
+    }
+}
 
 const body = document.body; 
 const btnNew = document.getElementById("btn-new");
@@ -478,25 +941,18 @@ const nameBox = document.getElementById("name-box");
 const btnNext = document.getElementById("btn-next");
 const nameInput = document.getElementById("player-name");
 const shopBox = document.getElementById("shop-box");
-
 const playerLevelDisplay = document.getElementById("player-level-display");
 const expBarContainer = document.getElementById("exp-bar-container");
 const expFill = document.getElementById("exp-fill");
-
-const coinXuShop = document.getElementById("coin-xu-shop");
-const coinUSDShop = document.getElementById("coin-usd-shop");
-const coinXuPet = document.getElementById("coin-xu-pet");
-const coinUSDPet = document.getElementById("coin-usd-pet");
+const coinDauShop = document.getElementById("coin-dau-shop"); 
+const coinLaShop = document.getElementById("coin-la-shop");   
+const coinDauPet = document.getElementById("coin-dau-pet");   
+const coinLaPet = document.getElementById("coin-la-pet");     
 const seedBox = document.getElementById("seed-box"); 
-const coinXuSeed = document.getElementById("coin-xu-seed"); 
-const coinUSDSeed = document.getElementById("coin-usd-seed"); 
+const coinDauSeed = document.getElementById("coin-dau-seed"); 
+const coinLaSeed = document.getElementById("coin-la-seed");   
 const seedItemsContainer = document.getElementById("seed-items"); 
 const onlineBox = document.getElementById("online-box");
-const shopItemsContainer = document.getElementById("shop-items"); 
-const headerPetMay = document.getElementById("header-pet-may"); 
-const headerHatMay = document.getElementById("header-hat-may");
-const petMayItemsContainer = document.getElementById("pet-may-items"); 
-const hatMayItemsContainer = document.getElementById("hat-may-items"); 
 const petHouseBox = document.getElementById("pet-house-box");
 const petHouseTitle = document.getElementById("pet-house-title"); 
 const petShopItemsContainer = document.getElementById("pet-shop-items"); 
@@ -506,6 +962,8 @@ const interactionText = document.getElementById("interaction-text");
 const interactionControls = document.getElementById("interaction-controls"); 
 const pugPetImg = document.getElementById("pug-pet"); 
 const iceEggImg = document.getElementById("ice-egg-img"); 
+
+let currentShopTab = 'pet_may';
 
 function expNeeded(lv){ return lv * 100; }
 
@@ -525,17 +983,18 @@ function updateControlButtons(){
     btnDelete.disabled = !gameCreated;
     btnSave.disabled = !gameCreated;
     
-    if (playerLevelDisplay) playerLevelDisplay.innerHTML = gameCreated ? `${playerName} | Lv.${level}` : `🌾 Farm LOL 🌾`;
-    if (expBarContainer) expBarContainer.style.display = gameCreated ? 'block' : 'none';
+    if (playerLevelDisplay) playerLevelDisplay.innerHTML = gameCreated ? `${playerName} <span style="font-size:0.8em; color:#888;">|</span> Lv.${level}` : `🌾 Farm LOL 🌾`;
+    if (expBarContainer) expBarContainer.style.visibility = gameCreated ? 'visible' : 'hidden';
 }
 
 function isPetOwned(petValue) { return ownedPets.includes(petValue); }
 
 function activatePet(petValue) {
-    const iceDragonData = shopItems.find(i => i.name === "Rồng Băng Tuyết");
-    const iceDragonBigData = shopItems.find(i => i.name === "Rồng Băng Tuyết Big");
-    if((iceDragonData && petValue === iceDragonData.value) || (iceDragonBigData && petValue === iceDragonBigData.value)) {
-        alert("Rồng Băng Tuyết không thể làm Pet chính. Nó sẽ ở lại Ô số 1 để bảo vệ nông trại!");
+    const angelData = shopItems.find(i => i.name === "Thiên Thần");
+    const reaperData = shopItems.find(i => i.name === "Thần Chết");
+
+    if((angelData && petValue === angelData.value) || (reaperData && petValue === reaperData.value)) {
+        alert("Pet này không thể làm Pet chính. Nó sẽ ở lại Ô số 1 để bảo vệ nông trại!");
         return;
     }
     activePet = petValue; updateDisplay(); alert(`Đã kích hoạt Pet mới!`);
@@ -547,78 +1006,141 @@ function updateDisplay(){
       const percent = Math.min(100, (exp / needed) * 100);
       expFill.style.width = percent + "%";
   }
-
-  const xuStr = xu.toLocaleString('vi-VN');
-  const usdStr = usd.toLocaleString('vi-VN');
-
-  if (coinXuShop) coinXuShop.textContent = xuStr;
-  if (coinUSDShop) coinUSDShop.textContent = usdStr;
-  if (coinXuPet) coinXuPet.textContent = xuStr;
-  if (coinUSDPet) coinUSDPet.textContent = usdStr;
-  if (coinXuSeed) coinXuSeed.textContent = xuStr;
-  if (coinUSDSeed) coinUSDSeed.textContent = usdStr;
-  
-  const iceDragonData = shopItems.find(i => i.name === "Rồng Băng Tuyết");
-  const iceDragonBigData = shopItems.find(i => i.name === "Rồng Băng Tuyết Big"); 
-  
-  if (iceEggImg) {
-      if (isIceDragonEvolved && iceDragonBigData) { 
-          iceEggImg.src = iceDragonBigData.icon; iceEggImg.alt = iceDragonBigData.name; iceEggImg.style.display = 'block'; 
-      } else if (isIceDragonHatched && iceDragonData) {
-          iceEggImg.src = iceDragonData.icon; iceEggImg.alt = iceDragonData.name; iceEggImg.style.display = 'block'; 
-      } else if (hasIceEgg) {
-          iceEggImg.src = "1000000102.png"; iceEggImg.alt = "Trứng Băng Tuyết"; iceEggImg.style.display = 'block'; 
+// --- THÊM ĐOẠN NÀY ĐỂ HIỆN/ẨN THIÊN NGA ---
+  const incubatorIcon = document.getElementById("incubator-icon");
+  if (incubatorIcon) {
+      // Chỉ hiện khi thời gian kết thúc ấp > 0 (tức là đang ấp)
+      if (incubationFinishTime > 0) {
+          incubatorIcon.style.display = 'block';
       } else {
-          iceEggImg.src = ""; iceEggImg.alt = ""; iceEggImg.style.display = 'none'; 
+          incubatorIcon.style.display = 'none';
+      }
+  }
+  const dauStr = dau.toLocaleString('vi-VN');
+  const laStr = la.toLocaleString('vi-VN');
+
+  if (coinDauShop) coinDauShop.textContent = dauStr;
+  if (coinLaShop) coinLaShop.textContent = laStr;
+  if (coinDauPet) coinDauPet.textContent = dauStr;
+  if (coinLaPet) coinLaPet.textContent = laStr;
+  if (coinDauSeed) coinDauSeed.textContent = dauStr;
+  if (coinLaSeed) coinLaSeed.textContent = laStr;
+  
+  const angelData = shopItems.find(i => i.name === "Thiên Thần");
+  const reaperData = shopItems.find(i => i.name === "Thần Chết");
+  
+  // LOGIC HIỂN THỊ HÌNH ẢNH Ở SLOT 1
+  if (iceEggImg) {
+      if (isIceDragonHatched) {
+          // Đã nở -> Kiểm tra xem là Thiên Thần hay Thần Chết
+          if (hatchedPetType === 'than_chet' && reaperData) {
+              iceEggImg.src = reaperData.icon;
+              iceEggImg.alt = reaperData.name;
+              
+              // --- SỬA: PHÓNG TO THẦN CHẾT ---
+              iceEggImg.style.width = "220%";
+              iceEggImg.style.height = "220%";
+              iceEggImg.style.top = "-35px";
+              iceEggImg.style.left = "-35px";
+
+          } else if (angelData) {
+              iceEggImg.src = angelData.icon; 
+              iceEggImg.alt = angelData.name;
+
+              // --- RESET SIZE CHO THIÊN THẦN ---
+              iceEggImg.style.width = "120%"; 
+              iceEggImg.style.height = "120%";
+              iceEggImg.style.top = "-10px";
+              iceEggImg.style.left = "-10px";
+          }
+          iceEggImg.style.display = 'block'; 
+      } else if (hasIceEgg) {
+          // Chưa nở -> Trứng
+          iceEggImg.src = "1000000102.png"; 
+          iceEggImg.alt = "Trứng Ngũ Sắc"; 
+          iceEggImg.style.display = 'block'; 
+
+          // --- RESET SIZE CHO TRỨNG ---
+          iceEggImg.style.width = "120%"; 
+          iceEggImg.style.height = "120%";
+          iceEggImg.style.top = "-10px";
+          iceEggImg.style.left = "-10px";
+
+      } else {
+          iceEggImg.src = ""; 
+          iceEggImg.alt = ""; 
+          iceEggImg.style.display = 'none'; 
       }
   }
   
-  if (pugPetImg) {
-      if (activePet && !(iceDragonData && activePet === iceDragonData.value) && !(iceDragonBigData && activePet === iceDragonBigData.value)) { 
+    if (pugPetImg) {
+      if (activePet && !(angelData && activePet === angelData.value) && !(reaperData && activePet === reaperData.value)) { 
           pugPetImg.src = activePet;
           pugPetImg.style.display = 'block'; 
+          
+          // --- LOGIC ADD CLASS ANIMATION ---
+          if (activePet.includes("1000000106.png")) {
+              pugPetImg.classList.add("pet-breathing-effect");
+          } else {
+              pugPetImg.classList.remove("pet-breathing-effect");
+          }
+
           let petData = petShopItems.find(p => p.value === activePet);
           if (!petData) petData = shopItems.find(p => p.value === activePet);
           
+          // --- SỬA: LOGIC ÁP DỤNG KÍCH THƯỚC TÙY CHỈNH ---
+          if (petData && petData.customWidth) {
+              pugPetImg.style.width = petData.customWidth; // Áp dụng size nhỏ cho Choco
+          } else {
+              pugPetImg.style.width = "120px"; // Size mặc định cho các pet khác
+          }
+          // -----------------------------------------------
+
           if (petData && petData.position) {
               pugPetImg.style.bottom = petData.position.bottom;
               pugPetImg.style.left = petData.position.left;
               pugPetImg.style.transform = 'none'; 
           } else {
-              pugPetImg.style.bottom = '50px';
+              pugPetImg.style.bottom = '35px'; 
               pugPetImg.style.left = '50%';
               pugPetImg.style.transform = 'translateX(calc(-50% - 50px))';
           }
       } else {
           pugPetImg.src = "";
           pugPetImg.style.display = 'none';
+          pugPetImg.classList.remove("pet-breathing-effect"); 
       }
   }
 
-  // --- LOGIC HIỂN THỊ MỚI CHO 5 Ô ĐẤT (CẬP NHẬT ẢNH THEO TỪNG LOẠI CÂY) ---
   FARM_IDS.forEach((slotId, index) => {
       const seedImg = document.getElementById(`seed-img-${slotId}`);
       const baseImg = document.querySelector(`#slot-${slotId} .pot-base-img`);
+      const slotData = farmSlots[index];
+
+      let potType = equippedPots[index] || 'so_dua';
+      let potImgSrc = POT_DEFINITIONS[potType] ? POT_DEFINITIONS[potType].img : "1000000112.png";
       
+      if (baseImg) baseImg.src = potImgSrc;
+
       if(seedImg && baseImg) {
-          const slotData = farmSlots[index];
           if(slotData) {
-              // Mặc định lấy icon theo giai đoạn (Mầm -> Cây Xanh -> Cây Xanh)
               let currentStage = PLANT_STAGES[slotData.stage];
               let useIcon = currentStage.icon; 
-
-              // --- LOGIC TÙY CHỈNH ẢNH CHO TỪNG LOẠI HẠT ---
-              // Nếu giai đoạn là 1 (Trưởng thành) hoặc 2 (Thu hoạch) thì hiển thị ảnh riêng của cây đó
-              if (slotData.stage >= 1) {
-                  if (slotData.value === 'hat_kim_loai') {
-                      useIcon = "1000000124.png"; // Ảnh Cây Kim Loại
-                  } 
-                  // Ví dụ: Nếu sau này bạn có ảnh riêng cho Tinh Hạt Sương
-                  else if (slotData.value === 'tinh_hat_suong') {
-                      useIcon = "1000000125.png"; // Hiện tại vẫn dùng cây xanh mặc định
-                  }
+              
+              if (slotData.stage === 1) { 
+                  if (slotData.value === 'hat_kim_loai') useIcon = "1000000111.gif"; 
+                  else if (slotData.value === 'hat_nguyen_to') useIcon = "1000000113.gif"; 
               }
-              // -------------------------------------
+              else if (slotData.stage === 2) {
+                   if (slotData.value === 'hat_kim_loai') useIcon = "1000000124.gif"; 
+                   else if (slotData.value === 'hat_nguyen_to') useIcon = "1000000114.gif"; 
+              }
+
+              if (slotData.stage >= 1) {
+                  seedImg.classList.add('big-plant'); 
+              } else {
+                  seedImg.classList.remove('big-plant');
+              }
 
               seedImg.src = useIcon;
               seedImg.alt = slotData.name;
@@ -627,78 +1149,113 @@ function updateDisplay(){
           } else {
               seedImg.style.display = 'none';
               seedImg.src = "";
+              seedImg.classList.remove('big-plant');
               baseImg.style.opacity = '1';
           }
       }
   });
 }
 
-function updateShop(){
-  if(!petMayItemsContainer || !hatMayItemsContainer) return;
-  petMayItemsContainer.style.gridTemplateColumns = "1fr 1fr 1fr";
-  hatMayItemsContainer.style.gridTemplateColumns = "1fr 1fr 1fr";
-  petMayItemsContainer.innerHTML = "";
-  hatMayItemsContainer.innerHTML = "";
-  const petMayItems = shopItems.filter(item => item.category === "pet_may");
-  const hatMayItems = shopItems.filter(item => item.category === "hat_may");
-  
-  function createShopItemHTML(item) {
-    if (item.type === "pet" && (item.name === "Rồng Băng Tuyết" || item.name === "Rồng Băng Tuyết Big")) return ''; 
-    if (item.type === "seed" && item.price === 0) return '';
-    let buttonHTML = `<button class="btn-buy" data-id="${item.id}" data-type="general" style="padding:3px 8px; font-size:0.75em; border:none; border-radius:4px; background:var(--accent); color:white; cursor:pointer;">Mua</button>`;
+function showShopPopup() {
+    const wrapper = document.getElementById('shop-tab-container-wrapper');
+    if (!wrapper) return;
+    wrapper.innerHTML = '';
     
-    if (item.value === "trung_bang_tuyet" && (hasIceEgg || isIceDragonHatched || isIceDragonEvolved)) { 
-        buttonHTML = `<button disabled style="padding:3px 6px; font-size:0.7em; border:none; border-radius:4px; background:#4CAF50; color:white; cursor:default;">Đã Có</button>`;
+    const tabs = document.createElement('div');
+    tabs.className = 'tab-container';
+    tabs.innerHTML = `
+        <button class="tab-btn ${currentShopTab==='pet_may'?'active':''}" onclick="switchShopTab('pet_may')">🐾 Pet Mây</button>
+        <button class="tab-btn ${currentShopTab==='hat_may'?'active':''}" onclick="switchShopTab('hat_may')">🫘 Hạt Mây</button>
+    `;
+    wrapper.appendChild(tabs);
+
+    const contentContainer = document.createElement('div');
+    contentContainer.id = 'shop-content-grid';
+    contentContainer.style.cssText = 'max-height: 300px; overflow-y: auto; padding-right:5px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;';
+    wrapper.appendChild(contentContainer);
+
+    renderShopItems(contentContainer);
+    showPopup('shop-box');
+}
+
+function switchShopTab(tabName) {
+    currentShopTab = tabName;
+    showShopPopup();
+}
+
+function renderShopItems(container) {
+  container.innerHTML = "";
+  const itemsToRender = shopItems.filter(item => item.category === currentShopTab);
+
+  function createShopItemHTML(item) {
+    if (item.type === "pet" && (item.name === "Thiên Thần" || item.name === "Thần Chết")) return ''; 
+    
+    const isOwned = (item.value === "trung_bang_tuyet" && (hasIceEgg || isIceDragonHatched));
+    
+    let buttonHTML = `<button class="btn-buy" data-id="${item.id}" data-type="general">Mua</button>`;
+    
+    if (isOwned) { 
+        buttonHTML = `<button disabled class="btn-buy" style="background:#bdbdbd; box-shadow:none;">Đã Có</button>`;
     }
 
-    const currencyIcon = item.currency === "xu" ? '🪙' : '💸';
-    const currencyColor = item.currency === "xu" ? 'gold' : 'green';
+    const currencyIcon = item.currency === "dau" ? '🫘' : '🍂';
+    const currencyColor = item.currency === "dau" ? '#795548' : '#E65100'; 
+    
     return `
-      <div class="shop-item" style="border:1px solid var(--muted); border-radius:6px; padding:6px; text-align:center; background: rgba(255,255,255,0.5);">
-        <img src="${item.icon}" alt="${item.name}" style="width:40px; height:40px; object-fit:contain; margin-bottom:2px;" />
-        <div style="font-weight:600; font-size:0.75em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</div>
-        <div style="font-size:0.75em; margin:2px 0 5px 0;">
-          <span style="color:${currencyColor};">${currencyIcon}</span> ${item.price.toLocaleString('vi-VN')}
+      <div class="shop-item">
+        <img src="${item.icon}" alt="${item.name}" style="width:50px; height:50px; object-fit:contain; margin-bottom:5px;" />
+        <div style="font-weight:700; font-size:0.9em; color: var(--text-main); margin-bottom: 2px;">${item.name}</div>
+        <div style="font-size:0.8em; color:var(--text-muted); margin-bottom: 5px;">
+          <span style="color:${currencyColor};">${currencyIcon}</span> <b>${item.price.toLocaleString('vi-VN')}</b>
         </div>
         ${buttonHTML}
       </div>
     `;
   }
   
-  petMayItems.forEach(item => { petMayItemsContainer.insertAdjacentHTML('beforeend', createShopItemHTML(item)); });
-  hatMayItems.forEach(item => { hatMayItemsContainer.insertAdjacentHTML('beforeend', createShopItemHTML(item)); });
+  itemsToRender.forEach(item => { container.insertAdjacentHTML('beforeend', createShopItemHTML(item)); });
   
   document.querySelectorAll(".btn-buy[data-type='general']").forEach(btn => { btn.addEventListener("click", handleBuy); });
   updateDisplay();
 }
 
+function updateShop(){
+    if(document.getElementById('shop-box').classList.contains('popup-active')) {
+        const container = document.getElementById('shop-content-grid');
+        if(container) renderShopItems(container);
+    }
+}
+
 function updatePetShop() {
     if (!petShopItemsContainer) return;
     petShopItemsContainer.innerHTML = "";
+    petShopItemsContainer.style.cssText = "display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;";
+
     const allPets = petShopItems;
     allPets.forEach(item => {
         const owned = isPetOwned(item.value); 
         const isActive = item.value === activePet; 
         const itemDiv = document.createElement("div");
         itemDiv.className = "pet-shop-item";
-        itemDiv.setAttribute("data-id", item.id);
-        const currencyIcon = item.currency === "usd" ? '💸' : '🪙';
-        const currencyColor = item.currency === "usd" ? 'green' : 'gold';
-        const currencyDisplay = `<span style="font-size:0.75em; color:${currencyColor};">${currencyIcon}</span> ${item.price.toLocaleString('vi-VN')}`; 
+        
+        const currencyIcon = item.currency === "la" ? '🍂' : '🫘';
+        const currencyColor = item.currency === "la" ? '#E65100' : '#795548';
+        const currencyDisplay = `<span style="font-size:0.8em; color:${currencyColor};">${currencyIcon}</span> ${item.price.toLocaleString('vi-VN')}`; 
         
         let buttonHTML = '';
-        if (!owned) buttonHTML = `<button class="btn-buy-pet" data-id="${item.id}" data-type="pet-shop-internal" style="padding:3px 8px; font-size:0.75em; border:none; border-radius:4px; background:var(--accent); color:white; cursor:pointer; margin-top: 3px;">Mua</button>`;
-        else if (isActive) buttonHTML = `<button disabled style="padding:3px 6px; font-size:0.7em; border:none; border-radius:4px; background:#4CAF50; color:white; cursor:default; margin-top: 3px;">Đang Dùng</button>`;
-        else buttonHTML = `<button class="btn-activate-pet" data-value="${item.value}" style="padding:3px 8px; font-size:0.75em; border:none; border-radius:4px; background:#2196F3; color:pointer; color:white; cursor:pointer; margin-top: 3px;">Kích Hoạt</button>`;
+        if (!owned) buttonHTML = `<button class="btn-buy-pet" data-id="${item.id}" data-type="pet-shop-internal" style="background:var(--primary);">Mua</button>`;
+        else if (isActive) buttonHTML = `<button disabled style="background:#4CAF50; color:white; border:none; border-radius:8px; padding:5px; font-size:11px; width:100%;">Đang Dùng</button>`;
+        else buttonHTML = `<button class="btn-activate-pet" data-value="${item.value}" style="background:#2196F3; color:white; border:none; border-radius:8px; padding:5px; font-size:11px; width:100%; cursor:pointer;">Chọn</button>`;
 
         itemDiv.innerHTML = `
-            <img src="${item.icon}" alt="${item.name} icon" />
-            <div style="font-weight:600; font-size:0.8em; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</div>
-            <div style="font-size:0.8em; color:var(--muted);">${currencyDisplay}</div>
-            ${buttonHTML}
+            <img src="${item.icon}" alt="${item.name}" style="width:40px;height:40px;object-fit:contain;" />
+            <div style="font-weight:600; font-size:0.85em; margin: 4px 0;">${item.name}</div>
+            <div style="font-size:0.8em;">${currencyDisplay}</div>
+            <div style="width:100%; margin-top:5px;">${buttonHTML}</div>
         `;
         petShopItemsContainer.appendChild(itemDiv);
     });
+    
     document.querySelectorAll(".btn-buy-pet[data-type='pet-shop-internal']").forEach(btn => { btn.addEventListener("click", handleBuy); });
     document.querySelectorAll(".btn-activate-pet").forEach(btn => {
         btn.addEventListener("click", (e) => { activatePet(e.target.getAttribute("data-value")); updatePetShop(); });
@@ -710,34 +1267,35 @@ function updateSeedShop() {
     if (!seedItemsContainer) return;
     seedItemsContainer.innerHTML = "";
     const seedShopMap = new Map();
-    // Đã sửa để lấy tất cả item loại 'seed' (Hạt Nguyên Tố + Hạt Kim Loại)
     shopItems.filter(item => item.type === 'seed').forEach(item => seedShopMap.set(item.value, item));
     const ownedSeedValues = Object.keys(ownedSeeds).filter(key => seedShopMap.has(key));
 
     if(ownedSeedValues.length === 0 || Object.values(ownedSeeds).every(v => v === 0)) {
-        seedItemsContainer.innerHTML = `<div style="text-align: center; color: var(--muted); margin: 20px 0;">Kho hạt giống trống.</div>`;
+        seedItemsContainer.innerHTML = `<div style="text-align: center; color: var(--text-muted); margin: 20px 0;">Kho hạt giống trống.</div>`;
     }
     ownedSeedValues.forEach(seedValue => {
         const item = seedShopMap.get(seedValue);
         const ownedAmount = ownedSeeds[seedValue] || 0;
         if(ownedAmount === 0) return;
+        
         const itemDiv = document.createElement("div");
         itemDiv.className = "shop-item";
-        const ownedDisplay = `<div style="font-size:0.8em; color:var(--muted);">Đã có: **${ownedAmount.toLocaleString('vi-VN')}**</div>`;
+        itemDiv.style.flexDirection = "row"; 
         
-        let buttonHTML = '';
-        if (item.price > 0) {
-            const currencyIcon = item.currency === "xu" ? '🪙' : '💸';
-            const currencyColor = item.currency === "xu" ? 'gold' : 'green';
-            const priceDisplay = `<span style="font-size:1.1em; color:${currencyColor};">${currencyIcon}</span>: ${item.price.toLocaleString('vi-VN')} ${item.currency === "xu" ? 'Xu' : 'Đô'}`;
-            buttonHTML = `
-                <div style="text-align: right;">
-                    <div style="font-size:0.9em; margin-bottom: 5px;">${priceDisplay}</div>
-                    <button class="btn-buy" data-id="${item.id}" data-type="seed-shop-internal" style="padding:5px 10px; border:none; border-radius:5px; background:var(--accent); color:white; cursor:pointer;">Mua</button>
+        const priceDisplay = `<span style="font-size:1em; color:#795548;">🫘</span> ${item.price}`;
+        
+        itemDiv.innerHTML = `
+            <div style="display:flex; align-items:center;">
+                <img src="${item.icon}" style="width:50px; height:50px; margin-right:10px;" />
+                <div style="text-align:left;">
+                    <div style="font-weight:700;">${item.name}</div>
+                    <div style="font-size:0.85em; color:var(--text-muted);">Đang có: <b>${ownedAmount}</b></div>
                 </div>
-            `;
-        }
-        itemDiv.innerHTML = `<img src="${item.icon}" alt="${item.name}" /><div><div style="font-weight:600; text-align: left;">${item.name}</div>${ownedDisplay}</div>${buttonHTML}`;
+            </div>
+            <div style="text-align:right;">
+                <button class="btn-buy" data-id="${item.id}" data-type="seed-shop-internal" style="width:auto; padding:6px 15px;">Mua thêm</button>
+            </div>
+        `;
         seedItemsContainer.appendChild(itemDiv);
     });
     document.querySelectorAll(".btn-buy[data-type='seed-shop-internal']").forEach(btn => { btn.addEventListener("click", handleBuy); });
@@ -748,17 +1306,42 @@ function handleBuy(event) {
   const itemId = parseInt(event.target.getAttribute("data-id"));
   const itemType = event.target.getAttribute("data-type");
   let item = null;
-  // Tìm item từ shopItems (dành cho Cloud Shop)
+  
   if (itemType === "general") item = shopItems.find(i => i.id === itemId);
-  // Tìm item từ petShopItems (dành cho Pet House)
   if (!item && itemType === "pet-shop-internal") item = petShopItems.find(i => i.id === itemId);
-  // Tìm item từ shopItems (dành cho Seed Shop nội bộ)
   if (!item && itemType === "seed-shop-internal") {
       item = shopItems.find(i => i.id === itemId && i.type === 'seed');
   }
+  
   if (!item) return;
   
-  if (item.type === "item" && item.value === "trung_bang_tuyet" && (hasIceEgg || isIceDragonHatched || isIceDragonEvolved)) {
+  if (item.value === 'hat_nguyen_to' || item.value === 'hat_kim_loai') {
+      let quantityStr = prompt(`Bạn muốn mua bao nhiêu ${item.name}?\n(Giá: ${item.price} Đậu/hạt)`, "1");
+      if (quantityStr === null) return;
+      let quantity = parseInt(quantityStr);
+      
+      if (isNaN(quantity) || quantity <= 0) {
+          alert("Số lượng không hợp lệ!");
+          return;
+      }
+      
+      let totalCost = item.price * quantity;
+      
+      if (dau >= totalCost) {
+          if (confirm(`Tổng tiền là ${totalCost.toLocaleString('vi-VN')} Đậu. Bạn chắc chắn muốn mua ${quantity} hạt chứ?`)) {
+              dau -= totalCost;
+              if (ownedSeeds[item.value] !== undefined) ownedSeeds[item.value] += quantity;
+              else ownedSeeds[item.value] = quantity;
+              alert(`Đã mua thành công ${quantity}x ${item.name}!`);
+              updateDisplay(); updateShop(); updatePetShop(); updateSeedShop(); updateControlButtons();
+          }
+      } else {
+          alert(`Bạn không đủ Đậu! Cần ${totalCost.toLocaleString('vi-VN')} Đậu.`);
+      }
+      return; 
+  }
+  
+  if (item.type === "item" && item.value === "trung_bang_tuyet" && (hasIceEgg || isIceDragonHatched)) {
       alert(`${item.name} đã được sở hữu!`); 
       return; 
   }
@@ -766,58 +1349,69 @@ function handleBuy(event) {
   if (item.type === "pet" && isPetOwned(item.value)) { alert(`${item.name} đã được sở hữu!`); return; }
 
   let canBuy = false;
-  if (item.currency === "xu" && xu >= item.price) { xu -= item.price; canBuy = true; } 
-  else if (item.currency === "usd" && usd >= item.price) { usd -= item.price; canBuy = true; }
+  if (item.currency === "dau" && dau >= item.price) { dau -= item.price; canBuy = true; } 
+  else if (item.currency === "la" && la >= item.price) { la -= item.price; canBuy = true; }
 
   if (canBuy) {
     if (item.type === "tool") { tool = item.value; alert(`Bạn đã trang bị ${item.name}!`); } 
     else if (item.type === "pet") { 
         ownedPets.push(item.value); activePet = item.value;
         alert(`Bạn đã mua Pet ${item.name}! Pet đã được kích hoạt!`);
-        if(itemType === "general") shopBox.style.display = 'none';
+        if(itemType === "general") hidePopup('shop-box');
     } else if (item.type === "item") { 
         if (item.value === "trung_bang_tuyet") { hasIceEgg = true; alert(`Bạn đã mua thành công ${item.name}!.`); } 
         else { alert(`Bạn đã mua thành công ${item.name}!`); }
     } else if (item.type === "seed") { 
         if (ownedSeeds[item.value] !== undefined) ownedSeeds[item.value] += 1;
         else ownedSeeds[item.value] = 1;
-        alert(`Bạn đã mua 1x ${item.name}! Đã có ${ownedSeeds[item.value].toLocaleString('vi-VN')} hạt.`);
+        alert(`Bạn đã mua 1x ${item.name}!`);
+    } 
+    else if (item.type === "pot_base") {
+        if (ownedPots[item.value] !== undefined) ownedPots[item.value] += 1;
+        else ownedPots[item.value] = 1;
+        alert(`Bạn đã mua 1x ${item.name}!`);
     }
+
     updateDisplay(); updateShop(); updatePetShop(); updateSeedShop(); updateControlButtons();
-  } else { alert("Không đủ tiền!"); }
+  } else { alert("Không đủ Đậu hoặc Lá!"); }
 }
 
 function handleNewGame(){
-    nameBox.style.display = 'block';
-    shopBox.style.display = 'none';
-    onlineBox.style.display = 'none';
-    petHouseBox.style.display = 'none'; 
-    interactionPopup.style.display = 'none'; 
-    seedBox.style.display = 'none'; 
+    showPopup('name-box');
+    hidePopup('shop-box');
+    hidePopup('online-box');
+    hidePopup('pet-house-box'); 
+    hidePopup('interaction-popup'); 
+    hidePopup('seed-box'); 
 }
 btnNew.addEventListener('click', handleNewGame);
 
 btnNext.addEventListener('click', () => {
     let inputName = nameInput.value.trim();
-    
     const nameRegex = new RegExp(/^[\p{L}\p{N}]{2,12}$/u); 
     
     if (inputName.length < 2 || inputName.length > 12) {
-        alert("Tên người chơi phải từ 2 đến 12 ký tự!");
-        return;
+        alert("Tên người chơi phải từ 2 đến 12 ký tự!"); return;
     }
-    
     if (!nameRegex.test(inputName)) {
-        alert("Tên chỉ được chứa chữ cái và số. Không được dùng icon hay ký tự đặc biệt!");
-        return;
+        alert("Tên chỉ được chứa chữ cái và số!"); return;
     }
     
-    playerName = inputName;
-    nameBox.style.display = 'none';
+        playerName = inputName;
+    hidePopup('name-box');
     farmIcon = "🏠"; 
-    level = 1; exp = 0; xu = 10000; usd = 1000; activePet = null;
-    ownedPets = []; hasIceEgg = false; isIceDragonHatched = false; isIceDragonEvolved = false; 
-    ownedSeeds = { 'tinh_hat_suong': 5, 'hat_kim_loai': 0 }; // Reset hạt
+    level = 1; exp = 0; 
+    dau = 1000; la = 100; 
+    
+    // --- SỬA: MẶC ĐỊNH LÀ CHOCO ---
+    activePet = "1000000128.gif"; 
+    ownedPets = ["1000000128.gif"]; 
+    // ------------------------------
+
+    hasIceEgg = false; isIceDragonHatched = false; isIceDragonEvolved = false; hatchedPetType = "thien_than";
+    ownedSeeds = { 'hat_nguyen_to': 1, 'hat_kim_loai': 1 }; 
+    ownedPots = { 'so_dua': 0, 'chau_dong': 0, 'chau_bac': 0, 'chau_vang': 0, 'chau_bach_kim': 0, 'chau_kim_cuong': 0, 'chau_kim_cuong_do': 0 }; 
+    equippedPots = ['so_dua', 'so_dua', 'so_dua', 'so_dua', 'so_dua']; 
     lastFedTime = 0; 
     farmSlots = Array(5).fill(null); 
     globalPetAge = 0; 
@@ -830,25 +1424,41 @@ function loadGame(){
     if(savedGame){
         const gameData = JSON.parse(savedGame);
         playerName = gameData.playerName; farmIcon = gameData.farmIcon; level = gameData.level; exp = gameData.exp;
-        xu = gameData.xu; usd = gameData.usd; tool = gameData.tool;
+        dau = gameData.dau !== undefined ? gameData.dau : (gameData.xu !== undefined ? gameData.xu : 0);
+        la = gameData.la !== undefined ? gameData.la : (gameData.usd !== undefined ? gameData.usd : 0);
+        tool = gameData.tool;
         farmSlots = gameData.farmSlots ? (Array.isArray(gameData.farmSlots) ? gameData.farmSlots : Array(5).fill(null)) : Array(5).fill(null);
         if (farmSlots.length < 5) { while(farmSlots.length < 5) farmSlots.push(null); }
-
         activePet = gameData.activePet || null; ownedPets = gameData.ownedPets || []; 
         hasIceEgg = gameData.hasIceEgg || false; isIceDragonHatched = gameData.isIceDragonHatched || false; isIceDragonEvolved = gameData.isIceDragonEvolved || false;
+        hatchedPetType = gameData.hatchedPetType || "thien_than"; // LOAD LOẠI PET ĐÃ ẤP
         const savedSeeds = gameData.ownedSeeds || {};
-        // Nạp hạt đã lưu, nếu không có thì gán 0
-        ownedSeeds = { 
-            'tinh_hat_suong': savedSeeds['tinh_hat_suong'] || 0,
-            'hat_kim_loai': savedSeeds['hat_kim_loai'] || 0 
-        };
+        ownedSeeds = { 'hat_nguyen_to': savedSeeds['hat_nguyen_to'] || 0, 'hat_kim_loai': savedSeeds['hat_kim_loai'] || 0 };
+        ownedPots = Object.assign({ 'so_dua': 5, 'chau_dong': 0, 'chau_bac': 0, 'chau_vang': 0, 'chau_bach_kim': 0, 'chau_kim_cuong': 0, 'chau_kim_cuong_do': 0 }, gameData.ownedPots || {});
+        craftingQueue = gameData.craftingQueue || [];
+        equippedPots = gameData.equippedPots || ['so_dua', 'so_dua', 'so_dua', 'so_dua', 'so_dua'];
+        farmSlots.forEach((slot, idx) => { if(slot && slot.potType) { equippedPots[idx] = slot.potType; } });
         lastFedTime = gameData.lastFedTime || 0;
         globalPetAge = gameData.globalPetAge || 0;
+
+        // --- DÒNG MỚI ĐƯỢC THÊM VÀO ĐÂY ---
+        incubationFinishTime = gameData.incubationFinishTime || 0;
+        // ----------------------------------
     }
 }
 
 function _saveGame(showAlert = false){
-    const gameData = { playerName, farmIcon, level, exp, xu, usd, tool, farmSlots, activePet, ownedPets, hasIceEgg, isIceDragonHatched, isIceDragonEvolved, ownedSeeds, lastFedTime, globalPetAge }; 
+    const gameData = { 
+        playerName, farmIcon, level, exp, dau, la, tool, farmSlots, 
+        activePet, ownedPets, hasIceEgg, isIceDragonHatched, isIceDragonEvolved, 
+        hatchedPetType, // LƯU LOẠI PET ĐÃ ẤP
+        ownedSeeds, lastFedTime, globalPetAge,
+        ownedPots, craftingQueue, equippedPots,
+
+        // --- THÊM DÒNG NÀY ---
+        incubationFinishTime 
+        // ---------------------
+    }; 
     localStorage.setItem('farmLolGame', JSON.stringify(gameData));
     if(showAlert) alert("Đã lưu trò chơi!");
 }
@@ -859,132 +1469,336 @@ function autoSave() { if (level > 0) { _saveGame(false); } }
 function deleteGame(){
     if(confirm("Bạn có chắc chắn muốn xóa nông trại hiện tại?")){
         localStorage.removeItem('farmLolGame');
-        playerName = "Nông dân"; farmIcon = "🌾"; level = 0; exp = 0; usd = 0;
-        tool = { name: "Xẻng Gỗ", power: 1, maxHP: 100, currentHP: 100 };
+        playerName = "Nông dân"; farmIcon = "🌾"; level = 0; exp = 0; 
+        
+        // Reset tiền về 0 (cục vàng biến mất)
+        dau = 0; 
+        la = 0; 
+        
         farmSlots = Array(5).fill(null); 
         activePet = null; ownedPets = []; 
-        hasIceEgg = false; isIceDragonHatched = false; isIceDragonEvolved = false; 
-        ownedSeeds = { 'tinh_hat_suong': 0, 'hat_kim_loai': 0 };
+        hasIceEgg = false; isIceDragonHatched = false; isIceDragonEvolved = false; hatchedPetType = "thien_than";
+        ownedSeeds = { 'hat_nguyen_to': 0, 'hat_kim_loai': 0 };
+        ownedPots = { 'so_dua': 0, 'chau_dong': 0, 'chau_bac': 0, 'chau_vang': 0, 'chau_bach_kim': 0, 'chau_kim_cuong': 0, 'chau_kim_cuong_do': 0 };
+        equippedPots = ['so_dua', 'so_dua', 'so_dua', 'so_dua', 'so_dua'];
+        craftingQueue = [];
         lastFedTime = 0; globalPetAge = 0; 
+
+        // Xóa luôn quả đào nếu nó đang hiện
+        const rewardIcon = document.getElementById('daily-reward-icon');
+        if(rewardIcon) rewardIcon.remove();
+
         alert("Đã xóa nông trại!");
         updateDisplay(); updateControlButtons();
     }
 }
 btnDelete.addEventListener('click', deleteGame);
 
-function initializeShopLogic() {
-    const collapsibleHeaders = document.querySelectorAll(".shop-collapsible-header");
-    collapsibleHeaders.forEach(header => {
-        header.addEventListener("click", function() {
-            const targetId = this.getAttribute("data-target");
-            const targetContainer = document.getElementById(targetId);
-            if (targetContainer) targetContainer.classList.toggle('shop-items-visible');
-        });
-    });
-}
-
 const kintoCloud = document.getElementById("kinto-cloud");
 if (kintoCloud) {
     kintoCloud.addEventListener("click", () => {
-        if (level === 0) { alert("Bạn cần tạo nông trại trước! Vui lòng nhấn nút '🆕 Tạo' ở trên."); return; }
-        updateShop(); shopBox.style.display = 'block';
+        if (level === 0) { alert("Bạn cần tạo nông trại trước!"); return; }
+        showShopPopup();
     });
 }
 if (lightBulb) {
     lightBulb.addEventListener("click", () => {
-        if (level === 0) { alert("Bạn cần tạo nông trại trước! Vui lòng nhấn nút '🆕 Tạo' ở trên."); return; }
         body.classList.toggle('dark-mode');
         localStorage.setItem('darkMode', body.classList.contains('dark-mode'));
     });
 }
 
 function closeInteractionPopup() {
-    if (activePopupInterval) { 
-        clearInterval(activePopupInterval); 
-        activePopupInterval = null; 
-    }
-    if (window.feedInterval) {
-        clearInterval(window.feedInterval);
-        window.feedInterval = null;
-    }
-    document.getElementById('interaction-popup').style.display = 'none';
+    if (activePopupInterval) { clearInterval(activePopupInterval); activePopupInterval = null; }
+    if (window.feedInterval) { clearInterval(window.feedInterval); window.feedInterval = null; }
+    hidePopup('interaction-popup');
     const iText = document.getElementById('interaction-text');
     const iControls = document.getElementById('interaction-controls');
     if(iText) { iText.style.display = 'block'; iText.innerHTML = ''; }
-    if(iControls) { iControls.style.marginTop = '10px'; iControls.innerHTML = ''; }
+    if(iControls) { iControls.innerHTML = ''; }
 }
 
-function handleIceDragonInteraction(action) {
-    const requiredXu = action === 'hatch' ? 1000 : 5000;
-    const actionText = action === 'hatch' ? 'ấp nở' : 'tiến hóa';
-    if (xu >= requiredXu) {
-        if(confirm(`Bạn có chắc muốn ${actionText} với giá ${requiredXu.toLocaleString('vi-VN')} Xu?`)) {
-            xu -= requiredXu;
-            if (action === 'hatch') {
-                hasIceEgg = false; isIceDragonHatched = true;
-                const iceDragonData = shopItems.find(i => i.name === "Rồng Băng Tuyết");
-                if(!isPetOwned(iceDragonData.value)) ownedPets.push(iceDragonData.value);
-                interactionTitle.innerHTML = `🎉 Chúc Mừng!`;
-                interactionText.innerHTML = `Trứng Băng Tuyết đã nở ra một chú Rồng Băng Tuyết Mini!`;
-            } else if (action === 'evolve') {
-                isIceDragonEvolved = true;
-                const iceDragonBigData = shopItems.find(i => i.name === "Rồng Băng Tuyết Big");
-                if(!isPetOwned(iceDragonBigData.value)) ownedPets.push(iceDragonBigData.value);
-                const iceDragonData = shopItems.find(i => i.name === "Rồng Băng Tuyết");
-                ownedPets = ownedPets.filter(v => v !== iceDragonData.value);
-                if(activePet === iceDragonData.value) activePet = iceDragonBigData.value;
-                interactionTitle.innerHTML = `✨ TIẾN HÓA THÀNH CÔNG!`;
-                interactionText.innerHTML = `Rồng Băng Tuyết đã tiến hóa thành Rồng Băng Tuyết Big mạnh mẽ hơn!`;
-            }
-            updateDisplay(); interactionControls.innerHTML = ''; 
+// --- HÀM XỬ LÝ ẤP TRỨNG MỚI (CÓ HẸN GIỜ 24H) ---
+function handleIceDragonInteraction(action, selectedType = 'thien_than') {
+        // 24 giờ = 24 * 60 phút * 60 giây * 1000 mili giây
+    const HATCH_DURATION = 24 * 60 * 60 * 1000; 
+    
+    // MẸO: Muốn test nhanh 10 giây thì đổi dòng trên thành:
+    // const HATCH_DURATION = 10 * 1000;
+
+    const petName = selectedType === 'than_chet' ? "Thần Chết" : "Thiên Thần";
+
+    if (action === 'hatch') {
+        if(confirm(`Quá trình ấp ${petName} sẽ mất 24 giờ.\nBạn chắc chắn chứ?`)) {
+            // 1. Lưu loại pet người chơi chọn
+            hatchedPetType = selectedType; 
+            
+            // 2. Tính thời gian kết thúc (Hiện tại + 24h)
+            incubationFinishTime = Date.now() + HATCH_DURATION;
+            
+            // 3. Đóng popup và thông báo
+            interactionControls.innerHTML = ''; 
+            closeInteractionPopup();
+            alert(`Đã bắt đầu ấp trứng! Quay lại sau 24 giờ nhé.`);
+            
+            updateDisplay();
+            saveGame(); // Lưu game ngay để không bị mất giờ nếu reload
         }
+    } 
+}
+
+let currentSeedTab = 'seeds';
+function showSeedSelectionPopup(slotNum, slotIndex) {
+    interactionTitle.innerHTML = `📦 Kho Đồ`; 
+    interactionText.style.display = 'none'; 
+    interactionControls.innerHTML = '';
+
+    const tabs = document.createElement('div');
+    tabs.className = 'tab-container';
+    tabs.innerHTML = `
+        <button class="tab-btn ${currentSeedTab==='seeds'?'active':''}" onclick="switchTab('seeds', ${slotNum}, ${slotIndex})">🌱 Hạt Giống</button>
+        <button class="tab-btn ${currentSeedTab==='pots'?'active':''}" onclick="switchTab('pots', ${slotNum}, ${slotIndex})">🏺 Chậu</button>
+    `;
+    interactionControls.appendChild(tabs);
+
+    const contentContainer = document.createElement('div');
+    contentContainer.style.cssText = 'display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-height: 250px; overflow-y: auto; padding: 5px;';
+    interactionControls.appendChild(contentContainer);
+
+    if (currentSeedTab === 'seeds') {
+        renderSeedList(contentContainer, slotNum, slotIndex);
     } else {
-        interactionTitle.innerHTML = action === 'hatch' ? `Trứng Băng Tuyết` : `Tiến Hóa Rồng`;
-        interactionText.innerHTML = `Bạn không đủ Xu để ${actionText}! Cần **${requiredXu.toLocaleString('vi-VN')} Xu** để tiếp tục.`;
-        interactionControls.innerHTML = '';
+        renderPotList(contentContainer, slotNum, slotIndex);
+    }
+
+    showPopup('interaction-popup');
+}
+
+function switchTab(tabName, slotNum, slotIndex) {
+    currentSeedTab = tabName;
+    showSeedSelectionPopup(slotNum, slotIndex);
+}
+
+// --- 3. CẬP NHẬT RENDER POT LIST (CÓ BÁN SỌ DỪA) ---
+function renderPotList(container, slotNum, slotIndex) {
+    let hasItem = false;
+    const currentSlotPot = equippedPots[slotIndex] || 'so_dua';
+
+    Object.keys(ownedPots).forEach(potKey => {
+        const amount = ownedPots[potKey] || 0;
+        const potDef = POT_DEFINITIONS[potKey];
+        
+        // Chỉ hiện nếu có số lượng > 0
+        if (amount > 0 && potDef) {
+            hasItem = true;
+            const card = document.createElement('div');
+            card.className = "shop-item";
+            
+            const isEquipped = (currentSlotPot === potKey); 
+            
+            // --- HIỂN THỊ EXP BONUS ---
+            let bonusText = "";
+            if (potDef.expBonus > 0) {
+                bonusText = `<div style="color:#4CAF50; font-size:0.8em; font-weight:bold;">+${potDef.expBonus} Exp/lần</div>`;
+            }
+
+            // HTML cơ bản cho phần thông tin
+            let htmlContent = `
+                <img src="${potDef.img}" style="width: 40px; height: 40px; object-fit: contain;">
+                <div style="font-weight: bold; font-size: 0.9em; margin-top:5px;">${potDef.name}</div>
+                ${bonusText}
+                <div style="color: var(--text-muted); font-size: 0.8em; margin:3px 0 5px 0;">Có: ${amount}</div>
+            `;
+
+            // --- XỬ LÝ NÚT BẤM ---
+            // Nút "Thay Chậu/Đang Dùng" mặc định
+            const btnEquipHTML = `
+                <button class="btn-equip-pot" style="background:${isEquipped ? 'grey' : '#2196F3'}; border-radius:6px; cursor:${isEquipped ? 'default' : 'pointer'}; width: 100%;">
+                    ${isEquipped ? 'Đang dùng' : 'Thay Chậu'}
+                </button>
+            `;
+
+            // NẾU LÀ SỌ DỪA -> HIỆN THÊM NÚT BÁN
+            if (potKey === 'so_dua') {
+                htmlContent += `
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; width:100%; margin-top:5px;">
+                        ${btnEquipHTML}
+                        <button class="btn-sell-pot" style="
+                            width:100%; border:none; border-radius:6px; 
+                            padding:6px; font-weight:700; font-size:11px; 
+                            color:white; cursor:pointer; 
+                            background:#FF5722; box-shadow: 0 2px 0 #E64A19;
+                        ">💰 Bán</button>
+                    </div>
+                `;
+            } else {
+                // Các chậu khác chỉ hiện nút Thay Chậu
+                htmlContent += `<div style="width:100%; margin-top:5px;">${btnEquipHTML}</div>`;
+            }
+
+            card.innerHTML = htmlContent;
+            
+            // --- SỰ KIỆN NÚT THAY CHẬU ---
+            const btnEquip = card.querySelector('.btn-equip-pot');
+            if(btnEquip) {
+                btnEquip.onclick = () => {
+                    if (isEquipped) return;
+                    if (farmSlots[slotIndex]) { alert("Hãy thu hoạch cây trước!"); return; }
+                    const oldPot = currentSlotPot;
+                    const newPot = potKey;
+                    ownedPots[newPot]--;
+                    ownedPots[oldPot] = (ownedPots[oldPot] || 0) + 1;
+                    equippedPots[slotIndex] = newPot;
+                    alert(`Đã thay sang ${potDef.name} (Bonus +${potDef.expBonus} Exp)!`);
+                    updateDisplay();
+                    closeInteractionPopup();
+                };
+            }
+
+            // --- SỰ KIỆN NÚT BÁN (CHỈ SỌ DỪA) ---
+            const btnSell = card.querySelector('.btn-sell-pot');
+            if (btnSell && potKey === 'so_dua') {
+                btnSell.onclick = () => {
+                    // Tính số lượng Sọ Dừa đang được dùng ở các ô đất
+                    const currentlyUsedCount = equippedPots.filter(p => p === 'so_dua').length;
+                    
+                    // Số lượng có thể bán = Tổng có - Số đang dùng
+                    const sellableAmount = amount - currentlyUsedCount;
+
+                    if (sellableAmount <= 0) {
+                        alert(`Bạn có ${amount} Sọ Dừa nhưng tất cả đang được dùng để trồng cây!\nHãy thay chậu khác trước khi bán.`);
+                        return;
+                    }
+
+                    const sellPrice = 1000; // Giá mua 1000 -> Bán 1000
+                    let sellQtyStr = prompt(`Giá bán lại: ${sellPrice.toLocaleString()} Đậu/chậu.\nBạn có thể bán tối đa: ${sellableAmount} cái.\nNhập số lượng muốn bán:`, "1");
+                    
+                    if (sellQtyStr === null) return;
+                    let sellQty = parseInt(sellQtyStr);
+
+                    if (isNaN(sellQty) || sellQty <= 0) {
+                        alert("Số lượng không hợp lệ!");
+                        return;
+                    }
+                    if (sellQty > sellableAmount) {
+                        alert(`Bạn chỉ có thể bán tối đa ${sellableAmount} cái (những cái khác đang được dùng)!`);
+                        return;
+                    }
+
+                    const totalValue = sellQty * sellPrice;
+                    if(confirm(`Bán ${sellQty}x Sọ Dừa để nhận ${totalValue.toLocaleString()} Đậu?`)) {
+                        ownedPots['so_dua'] -= sellQty;
+                        dau += totalValue;
+                        alert(`Đã bán thành công! Nhận được ${totalValue.toLocaleString()} Đậu.`);
+                        
+                        updateDisplay();
+                        // Render lại danh sách để cập nhật số lượng ngay lập tức
+                        container.innerHTML = "";
+                        renderPotList(container, slotNum, slotIndex);
+                    }
+                };
+            }
+
+            container.appendChild(card);
+        }
+    });
+    
+    // Phần thông báo cuối danh sách
+    if (farmSlots[slotIndex]) {
+        container.innerHTML = `<div style="grid-column: span 2; text-align:center; padding:10px; color:#ef5350; font-weight:bold;">⚠️ Thu hoạch cây trước khi thay chậu!</div>` + container.innerHTML;
+    } else if (!hasItem) {
+        container.innerHTML = `<div style="grid-column: span 2; text-align:center; padding:10px; color:var(--text-muted);">Không có chậu nào khác!</div>`;
     }
 }
 
-function showSeedSelectionPopup(slotNum, slotIndex) {
+function renderSeedList(container, slotNum, slotIndex) {
     const seedMap = new Map();
-    // Lọc tất cả các loại hạt (type = seed)
+    // Lấy thông tin hạt giống từ shopItems để biết giá
     shopItems.filter(item => item.type === 'seed').forEach(item => seedMap.set(item.value, item));
-    interactionTitle.innerHTML = `🌱 Chọn hạt giống`; 
-    interactionText.innerHTML = ``; interactionText.style.display = 'none'; interactionControls.style.marginTop = '0px';
-    interactionControls.innerHTML = '';
-
     let seedFound = false;
-    const seedContainer = document.createElement('div');
-    seedContainer.style.cssText = 'display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 0px;'; 
-    interactionControls.appendChild(seedContainer); 
-
+    
     seedMap.forEach((seedData, seedValue) => {
         const amount = ownedSeeds[seedValue] || 0;
+        
+        // Chỉ hiện nếu có số lượng > 0 và dữ liệu hợp lệ
         if (amount > 0 && seedData) {
             seedFound = true;
-            const btnPlant = document.createElement('button');
-            btnPlant.innerHTML = `
-                <img src="${seedData.icon}" alt="${seedData.name}" title="${seedData.name}" style="width: 30px; height: 30px; display: block; margin: 0 auto 3px;" />
-                <div style="font-size: 0.75em; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">${seedData.name}</div>
-                <div style="font-size: 0.7em; color: var(--muted); margin-top: 2px;">x${amount.toLocaleString('vi-VN')}</div>
-            `; 
-            btnPlant.style.cssText = 'padding: 8px 5px; border: 1px solid #ccc; border-radius: 6px; background: #fff; color: black; cursor: pointer; text-align: center; font-size: 0.9em;';
-            btnPlant.onclick = () => {
+            const card = document.createElement('div');
+            card.className = "shop-item";
+            
+            // Cập nhật HTML: Thêm nút Bán bên cạnh nút Trồng
+            card.innerHTML = `
+                <img src="${seedData.icon}" style="width: 40px; height: 40px; object-fit: contain;" />
+                <div style="font-size: 0.85em; font-weight: 700; margin:5px 0;">${seedData.name}</div>
+                <div style="font-size: 0.75em; color: var(--text-muted);">SL: <b>${amount}</b></div>
+                
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; width:100%; margin-top:5px;">
+                    <button class="btn-plant-now" style="width:100%; margin-top:0;">🌱 Trồng</button>
+                    <button class="btn-sell-seed" style="
+                        width:100%; border:none; border-radius:8px; 
+                        padding:6px; font-weight:700; font-size:11px; 
+                        color:white; cursor:pointer; 
+                        background:#FF5722; box-shadow: 0 2px 0 #E64A19;
+                        transition: all 0.1s;
+                    ">💰 Bán</button>
+                </div>
+            `;
+            
+            // --- Logic Nút Trồng ---
+            card.querySelector('.btn-plant-now').onclick = () => {
                 ownedSeeds[seedValue] -= 1;
-                // Nếu trồng hạt kim loại, value sẽ là 'hat_kim_loai', dùng icon chung của Stage 0
-                farmSlots[slotIndex] = { name: seedData.name, icon: PLANT_STAGES[0].icon, value: seedValue, stage: 0, plantedAt: Date.now() };
+                const currentPot = equippedPots[slotIndex] || 'so_dua';
+                farmSlots[slotIndex] = { 
+                    name: seedData.name, icon: PLANT_STAGES[0].icon, value: seedValue, 
+                    stage: 0, plantedAt: Date.now(), potType: currentPot 
+                };
                 updateDisplay(); updateSeedShop(); closeInteractionPopup();
             };
-            seedContainer.appendChild(btnPlant);
+
+            // --- Logic Nút Bán (MỚI) ---
+            card.querySelector('.btn-sell-seed').onclick = () => {
+                // Hỏi người chơi số lượng muốn bán
+                let sellQtyStr = prompt(`Giá bán lại: ${seedData.price} Đậu/hạt.\nBạn muốn bán bao nhiêu ${seedData.name}?`, "1");
+                if (sellQtyStr === null) return; // Người chơi ấn Hủy
+
+                let sellQty = parseInt(sellQtyStr);
+                
+                // Kiểm tra tính hợp lệ
+                if (isNaN(sellQty) || sellQty <= 0) {
+                    alert("Số lượng không hợp lệ!");
+                    return;
+                }
+                if (sellQty > amount) {
+                    alert(`Bạn chỉ có ${amount} hạt, không thể bán ${sellQty}!`);
+                    return;
+                }
+
+                // Thực hiện giao dịch
+                const totalValue = sellQty * seedData.price;
+                
+                if(confirm(`Bán ${sellQty}x ${seedData.name} để nhận ${totalValue.toLocaleString()} Đậu?`)) {
+                    ownedSeeds[seedValue] -= sellQty;
+                    dau += totalValue;
+                    
+                    alert(`Đã bán thành công! Nhận được ${totalValue.toLocaleString()} Đậu.`);
+                    
+                    // Cập nhật lại giao diện
+                    updateDisplay();
+                    updateSeedShop();
+                    
+                    // Render lại danh sách này để cập nhật số lượng hiển thị ngay lập tức
+                    container.innerHTML = ""; 
+                    renderSeedList(container, slotNum, slotIndex);
+                }
+            };
+
+            container.appendChild(card);
         }
     });
 
     if (!seedFound) {
-         interactionText.style.display = 'block'; 
-         interactionText.innerHTML = `<div style="text-align: center; margin: 15px 0;">Bạn không có hạt giống nào để trồng! Vui lòng mua thêm hạt giống.</div>`;
-         interactionControls.removeChild(seedContainer); 
+         container.innerHTML = `<div style="grid-column: span 2; text-align: center; margin: 15px 0; color: #666;">Hết hạt giống.</div>`;
     }
-    interactionPopup.style.display = 'block';
 }
 
 function updateFarmState() {
@@ -1000,19 +1814,26 @@ function updateFarmState() {
 }
 
 function getCountdownTimePlant(timeToNext) {
-    if (timeToNext <= 0) return "00:00";
-    const secondsToNext = Math.max(0, Math.ceil(timeToNext / 1000));
-    const m = Math.floor(secondsToNext / 60).toString().padStart(2, '0');
-    const s = (secondsToNext % 60).toString().padStart(2, '0');
-    return `${m}:${s}`;
+    if (timeToNext <= 0) return "0s";
+    
+    // Logic tính toán giống hệt Thợ Rèn (renderCraftingQueue)
+    let seconds = Math.floor((timeToNext / 1000) % 60);
+    let minutes = Math.floor((timeToNext / (1000 * 60)) % 60);
+    let hours = Math.floor((timeToNext / (1000 * 60 * 60)));
+    
+    let timeString = "";
+    if(hours > 0) timeString += `${hours}h `;
+    if(minutes > 0 || hours > 0) timeString += `${minutes}m `;
+    timeString += `${seconds}s`;
+    
+    return timeString;
 }
 
 const potSlots = document.querySelectorAll(".pot-slot");
 potSlots.forEach(slot => {
     slot.addEventListener("click", () => {
-        if (level === 0) { alert("Bạn cần tạo nông trại trước! Vui lòng nhấn nút '🆕 Tạo' ở trên."); return; }
+        if (level === 0) { alert("Bạn cần tạo nông trại trước!"); return; }
         interactionText.style.display = 'block';
-        interactionControls.style.marginTop = '10px';
         if (activePopupInterval) clearInterval(activePopupInterval);
 
         const slotNum = slot.getAttribute('data-slot');
@@ -1020,80 +1841,180 @@ potSlots.forEach(slot => {
 
         const renderSlotStatus = () => {
             interactionControls.innerHTML = '';
-            let popupTitle = `🌱 Trồng trọt`; 
             
-            if (slotNum === "1") {
-                let petTitle = `🐾 Ô Pet Mây`;
-                let petRarityClass = '';
-                let petStars = '';
-                let description = '';
-
-                if (isIceDragonEvolved) {
-                    petTitle = `Rồng Băng Tuyết Big`;
-                    petRarityClass = 'pet-rarity-blue';
-                    petStars = '⭐⭐⭐';
-                    description = `
-                        <span style="color: #FF9800; font-weight: bold;">⚡ HIỆU ỨNG KÍCH HOẠT:</span><br>
-                        1. x2 Exp khi thu hoạch.<br>
-                        2. Auto thu hoạch.
-                    `;
-                } else if (isIceDragonHatched) {
-                    petTitle = `Rồng Băng Tuyết Mini`;
-                    petRarityClass = 'pet-rarity-green';
-                    petStars = '⭐⭐';
-                    const requiredXu = 5000; const canEvolve = xu >= requiredXu;
-                    description = `<span style="color: #FF9800; font-weight: bold;">⚡ HIỆU ỨNG KÍCH HOẠT:</span><br>
-                        1. x2 Exp khi thu hoạch.
-                    `;
-                    const btnEvolve = document.createElement('button');
-                    btnEvolve.textContent = `🆙 Tiến hóa (${requiredXu.toLocaleString('vi-VN')} Xu)`;
-                    btnEvolve.style.cssText = `padding: 8px 15px; border: none; border-radius: 5px; margin-top: 10px; color: white; cursor: ${canEvolve ? 'pointer' : 'default'}; background: ${canEvolve ? '#8B008B' : 'grey'};`;
-                    btnEvolve.disabled = !canEvolve;
-                    btnEvolve.onclick = () => handleIceDragonInteraction('evolve'); 
-                    interactionControls.appendChild(btnEvolve);
-                } else if (hasIceEgg) {
-                    petTitle = `Trứng Băng Tuyết`;
-                    petRarityClass = 'pet-rarity-white';
-                    petStars = '⭐';
-                    const requiredXu = 1000; const canHatch = xu >= requiredXu;
-                    description = `Thuê 🦢 ấp trứng ngay để nhận Rồng con!`;
+                        if (slotNum === "1") {
+                // TRƯỜNG HỢP 1: ĐANG TRONG QUÁ TRÌNH ẤP (CÓ ĐỒNG HỒ)
+                if (incubationFinishTime > 0) {
+                    interactionTitle.innerHTML = `⏳ Đang Ấp Trứng`;
                     
-                    const btnHatch = document.createElement('button');
-                    btnHatch.textContent = `Ấp nở (${requiredXu.toLocaleString('vi-VN')} Xu)`;
-                    btnHatch.style.cssText = `padding: 8px 15px; border: none; border-radius: 5px; margin-top: 10px; color: white; cursor: ${canHatch ? 'pointer' : 'default'}; background: ${canHatch ? 'orange' : 'grey'};`;
-                    btnHatch.disabled = !canHatch;
-                    btnHatch.onclick = () => handleIceDragonInteraction('hatch'); 
-                    interactionControls.appendChild(btnHatch);
-                } else { 
-                    petTitle = `🐾 Ô Pet Mây`;
-                    description = `Bạn đã kiểm tra.<br>Chưa có pet nào ở đây!.`; 
-                }
+                    // Hàm con để vẽ đồng hồ
+                    const updateTimer = () => {
+                        const now = Date.now();
+                        const timeLeft = incubationFinishTime - now;
+                        
+                        if (timeLeft <= 0) {
+                            interactionText.innerHTML = "Đang hoàn tất quá trình nở...";
+                            return;
+                        }
 
-                if (petRarityClass) {
-                    interactionTitle.innerHTML = `<span class="${petRarityClass}" style="display:block; text-align:center;">${petTitle}</span>`;
-                    interactionTitle.innerHTML += `<span class="pet-rarity-stars">${petStars}</span>`;
-                } else {
-                    interactionTitle.innerHTML = petTitle;
-                }
+                        // Tính toán Giờ : Phút : Giây
+                        let seconds = Math.floor((timeLeft / 1000) % 60);
+                        let minutes = Math.floor((timeLeft / (1000 * 60)) % 60);
+                        let hours = Math.floor((timeLeft / (1000 * 60 * 60)));
+                        
+                        let timeString = "";
+                        if(hours > 0) timeString += `${hours}h `;
+                        if(minutes > 0 || hours > 0) timeString += `${minutes}m `;
+                        timeString += `${seconds}s`;
+
+                        interactionText.innerHTML = `
+    <div style="text-align:center;">
+        <img src="1000000102.png" style="width:80px; display:block; margin: 0 auto 15px auto;">
+        
+        <div style="font-size:0.95em; color: #555;">Đang hấp thụ linh khí...</div>
+        
+        <div style="margin-top:10px; font-size:1.2em; color:#E65100; font-weight:bold; background:rgba(0,0,0,0.05); padding:10px; border-radius:10px;">
+            🐣 Nở sau: ${timeString}
+        </div>
+    </div>
+`;
+                    };
+
+                    updateTimer(); // Chạy ngay lập tức 1 lần
+                    
+                    // Cài đặt chạy mỗi giây để số nhảy
+                    if(activePopupInterval) clearInterval(activePopupInterval);
+                    activePopupInterval = setInterval(updateTimer, 1000);
+                    
+                    interactionControls.innerHTML = ''; // Ẩn nút bấm
+                } 
                 
-                interactionText.innerHTML = description;
-            } 
+                // TRƯỜNG HỢP 2: CHƯA ẤP HOẶC ĐÃ NỞ XONG
+                else {
+                    let petTitle = `🐾 Pet Mây`;
+                    let description = '';
+
+                                        // Nếu đã nở rồi
+                    if (isIceDragonHatched) {
+                        petTitle = (hatchedPetType === 'than_chet') ? `💀 Thần Chết` : `👼 Thiên Thần`;
+                        description = `<span style="color:#2196F3;">⭐⭐⭐⭐⭐</span><br>⚡ Hiệu ứng: Auto Thu hoạch (Pet sẽ tự bay đi thu hoạch khi cây chín)`;
+                        
+                        // --- TÍNH NĂNG ĐỔI PET MỚI ---
+                        interactionControls.innerHTML = ''; 
+                        
+                        // Xác định Pet muốn đổi sang
+                        const targetType = (hatchedPetType === 'thien_than') ? 'than_chet' : 'thien_than';
+                        const targetName = (targetType === 'thien_than') ? '👼 Thiên Thần' : '💀 Thần Chết';
+                        
+                        const btnSwitch = document.createElement('button');
+                        btnSwitch.className = "btn-buy";
+                        btnSwitch.style.background = "#673AB7"; // Màu tím huyền bí
+                        btnSwitch.style.marginTop = "15px";
+                        btnSwitch.style.padding = "10px";
+                        btnSwitch.style.height = "auto";
+                        
+                        btnSwitch.innerHTML = `
+                            Đổi sang ${targetName}
+                            <div style="font-size:0.8em; font-weight:normal; margin-top:4px; color:#E1BEE7;">
+                                Yêu cầu: 10.000 🫘 + 100 Hạt Nguyên Tố
+                            </div>
+                        `;
+                        
+                        btnSwitch.onclick = () => {
+                            const costDau = 10000;
+                            const costSeed = 100;
+                            const currentSeeds = ownedSeeds['hat_nguyen_to'] || 0;
+                            
+                            if (dau >= costDau && currentSeeds >= costSeed) {
+                                if (confirm(`Bạn có chắc muốn đổi sang ${targetName}?\nChi phí: ${costDau.toLocaleString()} Đậu và ${costSeed} Hạt Nguyên Tố.`)) {
+                                    // Trừ tài nguyên
+                                    dau -= costDau;
+                                    ownedSeeds['hat_nguyen_to'] -= costSeed;
+                                    
+                                    // Đổi loại Pet
+                                    hatchedPetType = targetType;
+                                    
+                                    // Lưu và cập nhật
+                                    saveGame();
+                                    updateDisplay();
+                                    
+                                    // Thông báo và đóng popup để refresh hình ảnh
+                                    alert(`Chuyển đổi thành công sang ${targetName}!`);
+                                    closeInteractionPopup();
+                                }
+                            } else {
+                                alert(`Bạn không đủ tài nguyên!\n\nCần: ${costDau.toLocaleString()} Đậu & ${costSeed} Hạt Nguyên Tố.\nHiện có: ${dau.toLocaleString()} Đậu & ${currentSeeds} Hạt Nguyên Tố.`);
+                            }
+                        };
+                        
+                        interactionControls.appendChild(btnSwitch);
+                        // -----------------------------
+                    }
+                    // Nếu chưa nở (đang là trứng)
+                    else if (hasIceEgg) {
+                        petTitle = `Trứng Ngũ Sắc`;
+                        description = `Kiu 🦢 ấp trứng (Thời gian: 24 giờ)!`;
+                        
+                        // Tạo Menu chọn Pet
+                        const selectionDiv = document.createElement('div');
+                        selectionDiv.style.margin = "15px 0";
+                        selectionDiv.style.textAlign = "left";
+                        selectionDiv.style.background = "rgba(0,0,0,0.05)";
+                        selectionDiv.style.padding = "10px";
+                        selectionDiv.style.borderRadius = "8px";
+
+                        selectionDiv.innerHTML = `
+                            <div style="font-size:0.9em; margin-bottom:8px; font-weight:bold;">Bạn muốn ấp ra Pet nào?</div>
+                            <label style="display:flex; align-items:center; margin-bottom:8px; cursor:pointer;">
+                                <input type="radio" name="hatch_choice" value="thien_than" checked style="margin-right:8px; transform:scale(1.2);"> 
+                                <span>👼 Thiên Thần (Cute)</span>
+                            </label>
+                            <label style="display:flex; align-items:center; cursor:pointer;">
+                                <input type="radio" name="hatch_choice" value="than_chet" style="margin-right:8px; transform:scale(1.2);"> 
+                                <span>💀 Thần Chết (Ngầu)</span>
+                            </label>
+                        `;
+                        interactionControls.innerHTML = ''; 
+                        interactionControls.appendChild(selectionDiv);
+                        
+                        const btnHatch = document.createElement('button');
+                        btnHatch.textContent = `Bắt đầu Ấp (24h)`;
+                        btnHatch.className = "btn-buy";
+                        btnHatch.style.background = 'orange';
+                        
+                        btnHatch.onclick = () => {
+                            const choices = document.getElementsByName('hatch_choice');
+                            let selected = 'thien_than';
+                            for(const c of choices) { if(c.checked) selected = c.value; }
+                            handleIceDragonInteraction('hatch', selected); 
+                        };
+                        
+                        interactionControls.appendChild(btnHatch);
+                    } 
+                    // Nếu chưa có gì
+                    else { 
+                        description = `Chưa có pet nào ở đây! Hãy vào Shop mua Trứng Ngũ Sắc.`; 
+                        interactionControls.innerHTML = '';
+                    }
+                    
+                    interactionTitle.innerHTML = petTitle;
+                    interactionText.innerHTML = description;
+                }
+            }
             else if (FARM_IDS.includes(slotNumInt)) {
-                 if (interactionTitle) interactionTitle.innerHTML = popupTitle; 
+                 if (interactionTitle) interactionTitle.innerHTML = "🌱 Trồng Trọt"; 
                  const slotIndex = FARM_IDS.indexOf(slotNumInt); 
                  const slotData = farmSlots[slotIndex];
-                 const isFree = slotData === null; 
                  
-                 if (isFree) {
+                 if (slotData === null) {
                      if(activePopupInterval) clearInterval(activePopupInterval);
-                     const totalOwnedSeeds = Object.values(ownedSeeds).reduce((sum, current) => sum + current, 0);
-                     if (totalOwnedSeeds > 0) { showSeedSelectionPopup(slotNum, slotIndex); return; } 
-                     else { interactionText.innerHTML = `Ô đang trống.<br>Bạn không có hạt giống nào để trồng! Vui lòng mua thêm hạt giống.`; }
+                     showSeedSelectionPopup(slotNum, slotIndex); 
+                     return; 
                  } else {
                      updateFarmState(); 
                      const currentStage = PLANT_STAGES[slotData.stage];
                      const isReadyForHarvest = slotData.stage === PLANT_STAGES.length - 1;
-                     let statusMessage = `Bạn đã trồng <b>${slotData.name}</b>.<br>`;
+                     let statusMessage = `Bạn đang trồng <b>${slotData.name}</b>.<br>`;
                      
                      if (isReadyForHarvest) { 
                          if(activePopupInterval) clearInterval(activePopupInterval);
@@ -1101,76 +2022,91 @@ potSlots.forEach(slot => {
                      } else {
                          const nextStageInfo = PLANT_STAGES[slotData.stage + 1];
                          const timeToNext = (slotData.plantedAt + nextStageInfo.duration) - Date.now();
+                         statusMessage += `Giai đoạn: ${currentStage.name}.<br>`;
+                         statusMessage += `<div style="margin-top:8px;">⏳ Lớn sau: <b id="plant-timer" style="color:#d32f2f;">${getCountdownTimePlant(timeToNext)}</b></div>`;
                          
-                         statusMessage += `Trạng thái: ${currentStage.name}.<br>`;
-                         statusMessage += `<div style="margin-top:8px; font-size:1.1em;">⏳ Còn lại: <b id="plant-timer" style="color:#d32f2f; font-family:monospace;">${getCountdownTimePlant(timeToNext)}</b></div>`;
-                         statusMessage += `<div style="font-size:0.8em; color:#666;">(Tự động lớn khi hết giờ)</div>`;
-                         
-                         if(interactionPopup.style.display === 'block') { 
+                         if(document.getElementById('interaction-popup').classList.contains('popup-active')) { 
                              if (activePopupInterval) clearInterval(activePopupInterval);
                              activePopupInterval = setInterval(() => {
                                  const timerEl = document.getElementById("plant-timer");
                                  if (timerEl) {
                                      const newTimeToNext = (slotData.plantedAt + nextStageInfo.duration) - Date.now();
                                      if (newTimeToNext <= 0) {
-                                         clearInterval(activePopupInterval);
-                                         activePopupInterval = null;
-                                         renderSlotStatus(); 
-                                     } else {
-                                         timerEl.textContent = getCountdownTimePlant(newTimeToNext);
-                                     }
-                                 } else {
-                                      clearInterval(activePopupInterval); 
-                                      activePopupInterval = null;
-                                 }
+                                         clearInterval(activePopupInterval); activePopupInterval = null; renderSlotStatus(); 
+                                     } else { timerEl.textContent = getCountdownTimePlant(newTimeToNext); }
+                                 } else { clearInterval(activePopupInterval); activePopupInterval = null; }
                              }, 1000);
                          }
                      }
                      interactionText.innerHTML = statusMessage;
                      
+                     // --- 4. CẬP NHẬT LOGIC THU HOẠCH VỚI EXP BONUS ---
                      if (isReadyForHarvest) {
                          const btnHarvest = document.createElement('button');
                          
+                         const currentPotType = slotData.potType || 'so_dua';
+                         const potDef = POT_DEFINITIONS[currentPotType];
+                         const potBonus = potDef ? (potDef.expBonus || 0) : 0;
+
+                         // Nếu đã nở Thiên Thần (được tính là Evolved = true khi nở)
                          if (isIceDragonEvolved) {
-                             btnHarvest.innerHTML = `🌬️ Thu Hoạch Tất Cả (Auto)`;
-                             btnHarvest.style.cssText = 'padding: 10px 20px; border: none; border-radius: 5px; background: linear-gradient(45deg, #2196F3, #00BCD4); color: white; cursor: pointer; font-weight:bold; font-size:1em; box-shadow: 0 0 10px #00BCD4; animation: pulse 1s infinite;';
+                             const harvesterName = (hatchedPetType === 'than_chet') ? "💀 Thần Chết" : "👼 Thiên Thần";
+                             btnHarvest.innerHTML = `${harvesterName} Thu Hoạch (Auto)`;
+                             btnHarvest.className = "btn-buy";
+                             btnHarvest.style.background = 'linear-gradient(45deg, #2196F3, #00BCD4)';
                              
+                             // --- LOGIC MỚI: THIÊN THẦN BAY THU HOẠCH ---
                              btnHarvest.onclick = () => {
-                                 let totalExpReceived = 0;
-                                 let hasHarvested = false;
+                                 closeInteractionPopup(); 
+                                 const angelImg = document.getElementById('ice-egg-img');
+                                 if (angelImg) { angelImg.classList.add('angel-harvesting'); }
 
-                                 farmSlots.forEach((sData, sIdx) => {
-                                     if (sData && sData.stage === PLANT_STAGES.length - 1) {
-                                         const hSeedValue = sData.value;
-                                         const hReturnAmount = 2;
-                                         const hExp = 20; 
-                                         
-                                         exp += hExp;
-                                         totalExpReceived += hExp;
-                                         
-                                         if (ownedSeeds[hSeedValue] !== undefined) ownedSeeds[hSeedValue] += hReturnAmount;
-                                         else ownedSeeds[hSeedValue] = hReturnAmount;
+                                 setTimeout(() => {
+                                     let totalExpReceived = 0; let hasHarvested = false;
+                                     farmSlots.forEach((sData, sIdx) => {
+                                         if (sData && sData.stage === PLANT_STAGES.length - 1) {
+                                             const hSeedValue = sData.value;
+                                             const hReturnAmount = 2; 
+                                             
+                                             const sPotType = sData.potType || 'so_dua';
+                                             const sPotDef = POT_DEFINITIONS[sPotType];
+                                             const sBonus = sPotDef ? (sPotDef.expBonus || 0) : 0;
+                                             
+                                             // --- THAY ĐỔI: EXP THIÊN THẦN VỀ 10 (XOÁ X2) ---
+                                             const hExp = 10 + sBonus; 
 
-                                         farmSlots[sIdx] = null;
-                                         hasHarvested = true;
+                                             exp += hExp; totalExpReceived += hExp;
+                                             if (ownedSeeds[hSeedValue] !== undefined) ownedSeeds[hSeedValue] += hReturnAmount;
+                                             else ownedSeeds[hSeedValue] = hReturnAmount;
+                                             farmSlots[sIdx] = null; hasHarvested = true;
+                                         }
+                                     });
+
+                                     if (angelImg) { angelImg.classList.remove('angel-harvesting'); }
+
+                                     if (hasHarvested) {
+                                         alert(`${harvesterName} đã bay một vòng và thu hoạch xong!\n\nTổng nhận: ${totalExpReceived} EXP!`);
+                                         updateDisplay(); checkLevelUp(); updateSeedShop();
+                                     } else {
+                                         alert(`${harvesterName} bay về tay trắng: Không có cây nào chín cả!`);
                                      }
-                                 });
-
-                                 if (hasHarvested) {
-                                     alert(`🐲 Rồng Băng đã giúp bạn thu hoạch cả vườn!\n\nTổng nhận: ${totalExpReceived} EXP!`);
-                                     closeInteractionPopup(); 
-                                     updateDisplay(); 
-                                     checkLevelUp(); 
-                                     updateSeedShop();
-                                 }
+                                 }, 2000); 
                              };
                          } else {
+                             // Thu hoạch thủ công
                              const harvestedSeedValue = slotData.value; const returnAmount = 2; 
-                             let finalExp = 10; 
-                             if (isIceDragonHatched) finalExp = 20; 
                              
-                             btnHarvest.textContent = `🌾 Thu hoạch (${returnAmount} Hạt + ${finalExp} Exp)`;
-                             btnHarvest.style.cssText = 'padding: 10px 20px; border: none; border-radius: 5px; background: #FF9800; color: white; cursor: pointer; font-weight:bold; font-size:1em; animation: pulse 1s infinite;';
+                             // --- XÁC NHẬN EXP CƠ BẢN LÀ 10 (KHÔNG X2) ---
+                             let baseExp = 10;
+                             
+                             let finalExp = baseExp + potBonus;
+                             
+                             let msgButton = `🌾 Thu hoạch (Nhận ${returnAmount} Hạt + ${finalExp} Exp)`;
+                             if(potBonus > 0) msgButton = `🌾 Thu hoạch (+${finalExp} Exp <span style='font-size:0.8em'>gồm +${potBonus} chậu</span>)`;
+
+                             btnHarvest.innerHTML = msgButton;
+                             btnHarvest.className = "btn-buy";
+                             btnHarvest.style.background = '#FF9800';
                              
                              btnHarvest.onclick = () => {
                                  exp += finalExp; 
@@ -1178,103 +2114,384 @@ potSlots.forEach(slot => {
                                  else ownedSeeds[harvestedSeedValue] = returnAmount;
                                  farmSlots[slotIndex] = null; 
                                  
-                                 const seedDataForHarvest = shopItems.find(i => i.value === harvestedSeedValue || (seedShopItems.find(j => j.value === harvestedSeedValue) ? i.value === harvestedSeedValue : false));
-                                 const seedName = seedDataForHarvest ? seedDataForHarvest.name : slotData.name;
+                                 let alertMsg = `Thu hoạch thành công!\nBạn nhận được ${finalExp} EXP.`;
+                                 if(potBonus > 0) alertMsg += `\n(Đã bao gồm +${potBonus} EXP từ ${potDef.name})`;
                                  
-                                 alert(`Đã thu hoạch ${slotData.name}! Nhận ${returnAmount}x ${seedName} và ${finalExp} Exp.`);
+                                 alert(alertMsg);
                                  closeInteractionPopup(); updateDisplay(); checkLevelUp(); updateSeedShop(); 
                              };
                          }
-
                          interactionControls.appendChild(btnHarvest);
                      }
                  }
             } else { 
-                if (interactionTitle) interactionTitle.innerHTML = popupTitle; 
-                interactionText.innerHTML = `Bạn đã kiểm tra Ô ${slotNum}.<br>Chức năng này sẽ có ở phiên bản tiếp theo!`; 
+                if (interactionTitle) interactionTitle.innerHTML = "Thông Báo"; 
+                interactionText.innerHTML = `Ô đất này chưa mở khóa!`; 
             }
         };
         renderSlotStatus();
-        interactionPopup.style.display = 'block';
+        showPopup('interaction-popup');
     });
 });
 
 const petHouse = document.getElementById("pet-house");
 if (petHouse) {
     petHouse.addEventListener("click", () => {
-        if (level === 0) { alert("Bạn cần tạo nông trại trước! Vui lòng nhấn nút '🆕 Tạo' ở trên."); return; }
-        if (petHouseTitle) petHouseTitle.innerHTML = `🐾 Nhà Pet`; 
-        updatePetShop(); petHouseBox.style.display = 'block'; 
+        if (level === 0) { alert("Bạn cần tạo nông trại trước!"); return; }
+        updatePetShop(); showPopup('pet-house-box'); 
     });
 }
 
 const pugPet = document.getElementById("pug-pet");
 if (pugPet) {
     pugPet.addEventListener("click", () => {
-        if (level === 0) { alert("Bạn cần tạo nông trại trước! Vui lòng nhấn nút '🆕 Tạo' ở trên."); return; }
+        if (level === 0) return;
         interactionControls.innerHTML = '';
-        if (!activePet) { interactionTitle.innerHTML = `🐾 Pet của bạn`; interactionText.innerHTML = `Bạn chưa sở hữu Pet nào!`; interactionPopup.style.display = 'block'; return; }
+        if (!activePet) return;
+        
         const allPets = petShopItems.concat(shopItems.filter(i => i.type === "pet")); 
         const petData = allPets.find(p => p.value === activePet);
-        const petName = petData ? petData.name : "Pet của bạn";
-        if (interactionTitle) interactionTitle.innerHTML = `🐾 ${petName}`; 
-        let message = `${petName} đang nằm sấp/đứng bằng chân sau.<br>Đây là Pet hiện tại của bạn!`;
-        if (petName === "Pug Péo") message = `Pug có phải là 1 con Heo không? hay là 1 con Chó! Thật khó nhận ra khi đứng từ xa...`;
-        else if (petName === "Mr. Gold") message = `Cậu vàng của: Quán Fở Anh Hight`;
-        message += `<br>🎂: <b>${globalPetAge} Ngày tuổi</b>`;
-        interactionText.innerHTML = message; interactionPopup.style.display = 'block';
+        const petName = petData ? petData.name : "Pet";
+        
+        interactionTitle.innerHTML = `🐾 ${petName}`; 
+        interactionText.innerHTML = `
+            ${petName} đang rất vui vẻ.<br>
+            🎂 Tuổi: <b>${globalPetAge} ngày</b>
+        `;
+        showPopup('interaction-popup');
     });
 }
 
+// --- TÌM ĐOẠN NÀY VÀ THAY THẾ TOÀN BỘ (ĐÃ SỬA ĐỂ TẠO HIỆU ỨNG QUÀ) ---
 const boneBowl = document.getElementById("bone-bowl");
 if (boneBowl) {
     boneBowl.addEventListener("click", () => {
-        if (level === 0) { alert("Bạn cần tạo nông trại trước! Vui lòng nhấn nút '🆕 Tạo' ở trên."); return; }
+        if (level === 0) return;
+        
         const allPets = petShopItems.concat(shopItems.filter(i => i.type === "pet"));
         const petData = allPets.find(p => p.value === activePet);
-        const petName = petData ? petData.name : "Pet của bạn";
+        const petName = petData ? petData.name : "Pet";
+        
         interactionControls.innerHTML = ''; 
-        if (interactionTitle) interactionTitle.innerHTML = `🦴 Cho ${petName} ăn`; 
-        if (!activePet) { interactionText.innerHTML = `Bạn chưa sở hữu Pet nào để cho ăn!`; } 
-        else if(petData && (petData.name === "Rồng Băng Tuyết" || petData.name === "Rồng Băng Tuyết Big")) {
-            interactionText.innerHTML = `${petName} chỉ ăn các loại thức ăn đặc biệt của rồng! Nó không ăn xương thường.`;
+        interactionTitle.innerHTML = `🦴 Cho ăn`; 
+        
+        if (!activePet) { interactionText.innerHTML = `Chưa có Pet nào!`; } 
+        else if(petData && (petData.name.includes("Thần Chết") || petData.name.includes("Thiên Thần"))) {
+            interactionText.innerHTML = `${petName} tự kiếm ăn, không ăn xương!`;
         } else {
             const now = new Date(); const last = new Date(lastFedTime);
             const isSameDay = now.getDate() === last.getDate() && now.getMonth() === last.getMonth() && now.getFullYear() === last.getFullYear();
+            
             if (!isSameDay) {
-                interactionText.innerHTML = `Pet đang đói bụng. Bạn có muốn cho ăn không?<br>(Miễn phí mỗi ngày 1 lần)`;
+                interactionText.innerHTML = `Pet đang đói bụng...`;
                 const btnFeed = document.createElement('button');
-                btnFeed.textContent = "🦴 Cho ăn ngay";
-                btnFeed.style.cssText = 'padding: 8px 20px; border: none; border-radius: 5px; background: var(--accent); color: white; cursor: pointer; font-weight: bold; margin-top: 10px;';
+                btnFeed.innerHTML = "🦴 Cho ăn ngay (Miễn phí)"; // Đã sửa text cho khớp yêu cầu
+                btnFeed.className = "btn-buy";
+                
+                // --- SỰ KIỆN CLICK CHO ĂN ---
                 btnFeed.onclick = () => {
-                    lastFedTime = Date.now(); globalPetAge += 1; 
-                    alert(`Bạn đã cho ${petName} ăn no nê! Pet đã lớn thêm 1 ngày tuổi! (Tuổi hiện tại: ${globalPetAge})`);
-                    saveGame(); interactionPopup.style.display = 'none';
+                    lastFedTime = Date.now(); 
+                    globalPetAge += 1; 
+                    
+                    // 1. Lưu game
+                    saveGame(); 
+                    
+                    // 2. Đóng popup ngay để thấy quà bay ra
+                    hidePopup('interaction-popup');
+                    
+                    // 3. Gọi hàm hiển thị quà
+                    spawnDailyReward();
                 };
                 interactionControls.appendChild(btnFeed);
             } else {
-                if (activePopupInterval) clearInterval(activePopupInterval); activePopupInterval = null; 
-                
-                const getCountdownTime = () => {
-                    const now = new Date(); const midnight = new Date(now); midnight.setHours(24, 0, 0, 0); 
-                    const diff = midnight - now; if (diff <= 0) return "00:00:00";
-                    const h = Math.floor(diff / (1000 * 60 * 60));
-                    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                    const s = Math.floor((diff % (1000 * 60)) / 1000);
-                    return `${h < 10 ? "0" + h : h}:${m < 10 ? "0" + m : m}:${s < 10 ? "0" + s : s}`;
-                };
-                interactionText.innerHTML = `${petName} đã ăn no hôm nay rồi! 🐶<br>Reset sau: <b id="feed-timer" style="color:#d32f2f; font-family:monospace; font-size:1.2em;">${getCountdownTime()}</b>`;
-                if (window.feedInterval) clearInterval(window.feedInterval);
-                window.feedInterval = setInterval(() => {
-                    const timerEl = document.getElementById("feed-timer");
-                    const popup = document.getElementById('interaction-popup');
-                    if (timerEl && popup.style.display === 'block') timerEl.textContent = getCountdownTime();
-                    else clearInterval(window.feedInterval);
-                }, 1000);
+                interactionText.innerHTML = `${petName} đã no rồi! 🐶`;
             }
         }
-        interactionPopup.style.display = 'block';
+        showPopup('interaction-popup');
     });
+}
+
+// --- HÀM MỚI: HIỂN THỊ QUÀ (ĐÃ SỬA LẤY ĐÚNG TÊN PET) ---
+function spawnDailyReward() {
+    // Xóa quà cũ nếu chưa nhận (tránh trùng lặp)
+    const existingReward = document.getElementById('daily-reward-icon');
+    if(existingReward) existingReward.remove();
+
+    const petImg = document.getElementById('pug-pet');
+    if(!petImg || petImg.style.display === 'none') return;
+
+    // Tạo container quà
+    const wrapper = document.createElement('div');
+    wrapper.id = 'daily-reward-icon';
+    wrapper.className = 'daily-reward-bubble';
+
+    // Lấy vị trí hiện tại của Pet để đặt quà ngay trên đầu
+    wrapper.style.left = petImg.style.left;
+    wrapper.style.transform = petImg.style.transform; 
+    
+    // Tính toán vị trí bottom: Lấy bottom của pet + chiều cao pet
+    let currentBottom = parseInt(petImg.style.bottom || '35'); 
+    wrapper.style.bottom = (currentBottom + 90) + 'px'; // Bay cao hơn pet 90px
+
+    // 1. Chỉ tạo Ảnh Quả Đào (1000000109.png)
+    const img = document.createElement('img');
+    img.src = '1000000109.png';
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.objectFit = 'contain';
+
+    wrapper.appendChild(img);
+
+    // --- SỰ KIỆN NHẬN QUÀ ---
+    wrapper.onclick = () => {
+        la += 5; // Cộng 5 lá
+        
+        // --- ĐOẠN CODE MỚI: TÌM TÊN PET HIỆN TẠI ---
+        let petName = "Pet";
+        // Gộp danh sách pet shop và shop thường để tìm tên
+        const allPets = petShopItems.concat(shopItems.filter(i => i.type === "pet"));
+        const currentPetData = allPets.find(p => p.value === activePet);
+        
+        if (currentPetData) {
+            petName = currentPetData.name; // Lấy tên thật (Ví dụ: Choco, Pug Péo...)
+        }
+        // -------------------------------------------
+
+        alert(`Bạn nhận được 5 Lá từ ${petName}! 🍂`);
+        
+        // Hiệu ứng bay lên biến mất
+        wrapper.style.animation = 'flyUpReward 0.5s ease-out forwards';
+        
+        updateDisplay();
+        saveGame();
+
+        // Xóa element sau khi animation xong
+        setTimeout(() => {
+            wrapper.remove();
+        }, 500);
+    };
+
+    // Thêm vào vùng Main để hiển thị
+    document.querySelector('main').appendChild(wrapper);
+}
+
+const chaosBlacksmith = document.getElementById("chaos-blacksmith");
+if (chaosBlacksmith) {
+    chaosBlacksmith.addEventListener("click", () => {
+        if (level === 0) { alert("Bạn cần tạo nông trại trước!"); return; }
+        showBlacksmithPopup();
+    });
+}
+// --- SỰ KIỆN CLICK CHO ẢNH ĐỘNG (MỚI) ---
+const chaosBlacksmithWorking = document.getElementById("chaos-blacksmith-working");
+if (chaosBlacksmithWorking) {
+    chaosBlacksmithWorking.addEventListener("click", () => {
+        if (level === 0) { alert("Bạn cần tạo nông trại trước!"); return; }
+        showBlacksmithPopup();
+    });
+}
+
+
+function showBlacksmithPopup() {
+    interactionTitle.innerHTML = "🔨 Thợ Rèn Chaos";
+    interactionText.style.display = 'none';
+    interactionControls.innerHTML = "";
+    
+    const container = document.createElement("div");
+    container.style.cssText = 'max-height: 400px; overflow-y: auto; padding: 2px;';
+    
+    const queueContainer = document.createElement("div");
+    queueContainer.id = "crafting-queue-list";
+    container.appendChild(queueContainer);
+    
+    const table = document.createElement('table');
+    table.className = 'blacksmith-table';
+    table.innerHTML = `<tbody id="blacksmith-recipes-body"></tbody>`;
+    container.appendChild(table);
+    
+    const tbody = table.querySelector('#blacksmith-recipes-body');
+
+    const isSmithBusy = craftingQueue.length > 0;
+
+    CRAFTING_RECIPES.forEach(recipe => {
+        const hasDau = dau >= (recipe.cost.dau || 0);
+        
+        let materialsHtml = '';
+        let canCraftMaterials = true;
+
+        Object.keys(recipe.materials).forEach(matKey => {
+            const reqQty = recipe.materials[matKey];
+            let hasItem = false;
+            let currentAmt = 0;
+            let matName = matKey;
+
+            if (matKey === 'hat_kim_loai') {
+                 currentAmt = ownedSeeds['hat_kim_loai'] || 0;
+                 matName = "Kim Loại";
+            } else if (POT_DEFINITIONS[matKey]) {
+                 currentAmt = ownedPots[matKey] || 0;
+                 matName = POT_DEFINITIONS[matKey].name;
+            }
+
+            hasItem = currentAmt >= reqQty;
+            if (!hasItem) canCraftMaterials = false;
+            
+            materialsHtml += `<div class="${hasItem?'req-status-ok':'req-status-fail'}">${hasItem?'✓':'✗'} ${matName}: ${reqQty}</div>`;
+        });
+        
+        materialsHtml += `<div class="${hasDau?'req-status-ok':'req-status-fail'}">${hasDau?'✓':'✗'} Đậu: ${recipe.cost.dau}</div>`;
+
+        let isBlockedByBusy = (recipe.duration > 0 && isSmithBusy);
+
+        const canCraft = hasDau && canCraftMaterials && !isBlockedByBusy;
+        const btnText = recipe.duration === 0 ? "Mua" : (isBlockedByBusy ? "Đang Bận" : "Rèn");
+        
+        const newRow = tbody.insertRow();
+        newRow.innerHTML = `
+            <td>
+                <div class="blacksmith-recipe">
+                    <img src="${recipe.icon}" style="width:40px;height:40px;object-fit:contain;">
+                    <div style="font-weight:bold;">${recipe.name}</div>
+                </div>
+            </td>
+            <td>
+                ${materialsHtml}
+            </td>
+            <td>
+                <button id="btn-craft-${recipe.id}" class="btn-crafting" style="width:auto; padding:8px 15px; background:${canCraft?'var(--accent)':'#999'};" ${canCraft?'':'disabled'}>
+                    ${btnText}
+                </button>
+            </td>
+        `;
+        
+        setTimeout(() => {
+            const btn = document.getElementById(`btn-craft-${recipe.id}`);
+            if(btn) btn.onclick = () => startCrafting(recipe);
+        }, 0);
+    });
+
+    interactionControls.appendChild(container); 
+    renderCraftingQueue();
+    showPopup('interaction-popup');
+    
+    if (activePopupInterval) clearInterval(activePopupInterval);
+    activePopupInterval = setInterval(renderCraftingQueue, 1000);
+}
+
+function startCrafting(recipe) {
+    if (craftingQueue.length > 0 && recipe.duration > 0) {
+        alert("Thợ rèn đang bận! Vui lòng đợi rèn xong món hiện tại.");
+        return;
+    }
+
+    if (dau < (recipe.cost.dau || 0)) return;
+    
+    for (const [matKey, matQty] of Object.entries(recipe.materials)) {
+        let currentAmt = 0;
+        if (matKey === 'hat_kim_loai') currentAmt = ownedSeeds['hat_kim_loai'] || 0;
+        else if (ownedPots[matKey] !== undefined) currentAmt = ownedPots[matKey] || 0;
+        
+        if (currentAmt < matQty) {
+            alert("Không đủ nguyên liệu!");
+            return;
+        }
+    }
+
+    const actionName = recipe.duration === 0 ? "Mua" : "Rèn";
+
+    if(confirm(`Bạn muốn ${actionName} ${recipe.name}?`)) {
+        dau -= (recipe.cost.dau || 0);
+        
+        for (const [matKey, matQty] of Object.entries(recipe.materials)) {
+            if (matKey === 'hat_kim_loai') {
+                 ownedSeeds['hat_kim_loai'] -= matQty;
+            } else if (ownedPots[matKey] !== undefined) {
+                 ownedPots[matKey] -= matQty;
+            }
+        }
+
+        if (recipe.duration === 0) {
+             if (!ownedPots[recipe.output]) ownedPots[recipe.output] = 0;
+             ownedPots[recipe.output]++;
+             alert(`Đã mua thành công ${recipe.name}!`);
+             updateDisplay();
+             showBlacksmithPopup(); 
+        } else {
+            craftingQueue.push({ output: recipe.output, name: recipe.name, startTime: Date.now(), finishTime: Date.now() + recipe.duration });
+            alert("Đã bắt đầu rèn!");
+            updateDisplay();
+            showBlacksmithPopup();
+            updateBlacksmithVisuals(); // CẬP NHẬT HÌNH ẢNH 
+        }
+    }
+}
+
+function renderCraftingQueue() {
+    const container = document.getElementById("crafting-queue-list");
+    if (!container) return;
+    
+    container.innerHTML = "";
+    if (craftingQueue.length === 0) return;
+    
+    const queueList = document.createElement('div');
+    queueList.style.cssText = 'border: 2px dashed #FF9800; padding: 10px; border-radius: 8px; margin-bottom: 15px; background: rgba(255, 236, 179, 0.5);';
+    container.appendChild(queueList);
+
+    const now = Date.now();
+    let updated = false;
+
+    for (let i = craftingQueue.length - 1; i >= 0; i--) {
+        const item = craftingQueue[i];
+        const timeLeft = item.finishTime - now;
+        
+        if (timeLeft <= 0) {
+            craftingQueue.splice(i, 1);
+            if (!ownedPots[item.output]) ownedPots[item.output] = 0;
+            ownedPots[item.output]++;
+            alert(`✅ Rèn thành công: ${item.name}!`);
+            updated = true;
+        } else {
+            const div = document.createElement("div");
+            
+            // --- CẬP NHẬT HIỂN THỊ THỜI GIAN ĐẸP HƠN ---
+            let seconds = Math.floor((timeLeft / 1000) % 60);
+            let minutes = Math.floor((timeLeft / (1000 * 60)) % 60);
+            let hours = Math.floor((timeLeft / (1000 * 60 * 60)));
+            
+            let timeString = "";
+            if(hours > 0) timeString += `${hours}h `;
+            if(minutes > 0 || hours > 0) timeString += `${minutes}m `;
+            timeString += `${seconds}s`;
+
+            div.style.fontWeight = "bold";
+            div.innerHTML = `🔥 ${item.name}: <span style="color:#E65100">${timeString}</span>`;
+            queueList.appendChild(div);
+        }
+    }
+    
+    if (updated) {
+        updateDisplay();
+        if (document.getElementById('interaction-popup').classList.contains('popup-active')) showBlacksmithPopup();
+    }
+}
+
+function checkGlobalCrafting() {
+    if(craftingQueue.length > 0) {
+        const now = Date.now();
+        let updated = false;
+        for (let i = craftingQueue.length - 1; i >= 0; i--) {
+            if (now >= craftingQueue[i].finishTime) {
+                const item = craftingQueue[i];
+                craftingQueue.splice(i, 1);
+                if (!ownedPots[item.output]) ownedPots[item.output] = 0;
+                ownedPots[item.output]++;
+                alert(`✅ Rèn thành công: ${item.name}!`);
+                updated = true;
+            }
+        }
+        if (updated) updateDisplay();
+        updateBlacksmithVisuals(); // CẬP NHẬT LẠI NẾU HÀNG CHỜ RỖNG
+    }
 }
 
 const brandContainer = document.querySelector(".brand");
@@ -1283,50 +2500,70 @@ if (brandContainer) {
         if (level === 0) return;
         const maxExp = expNeeded(level);
         const percent = ((exp / maxExp) * 100).toFixed(1);
-        if (interactionTitle) interactionTitle.innerHTML = `📊 Thông tin Cấp độ ${level}`;
-        if (interactionText) {
-            interactionText.innerHTML = `
-                <div style="text-align:left; margin-top:10px; font-size:1.1em;">
-                    🌱 <b>Kinh nghiệm:</b> <span style="color:var(--accent);">${exp.toLocaleString('vi-VN')}</span> / ${maxExp.toLocaleString('vi-VN')}<br>
-                    📈 <b>Tiến độ:</b> ${percent}%<br>
-                    <div style="width:100%; background:#eee; height:10px; border-radius:5px; margin-top:5px; overflow:hidden;">
-                        <div style="width:${percent}%; background:var(--accent); height:100%;"></div>
-                    </div>
-                </div>
-            `;
-        }
-        if (interactionControls) interactionControls.innerHTML = '';
-        if (interactionPopup) interactionPopup.style.display = 'block';
+        
+        interactionTitle.innerHTML = `📊 Cấp độ ${level}`;
+        interactionText.style.display = 'block';
+        interactionText.innerHTML = `
+            <div style="text-align:left; background:#f5f5f5; padding:15px; border-radius:10px;">
+                🌱 <b>Kinh nghiệm:</b> ${exp.toLocaleString()} / ${maxExp.toLocaleString()}<br>
+                📈 <b>Tiến độ:</b> ${percent}%
+            </div>
+        `;
+        interactionControls.innerHTML = '';
+        showPopup('interaction-popup');
     });
-}
-
-function adjustAppWrapperScale() {
-    const appWrapper = document.querySelector(".app-wrapper");
-    if (!appWrapper) return;
-    const designWidth = 400; const designHeight = 750; 
-    const viewportWidth = window.innerWidth; const viewportHeight = window.innerHeight;
-    const scaleX = viewportWidth / designWidth; const scaleY = viewportHeight / designHeight;
-    let scale = Math.min(scaleX, scaleY);
-    const MAX_SCALE = 1.0; scale = Math.min(scale, MAX_SCALE);
-    appWrapper.style.transform = `scale(${scale})`;
-    if (viewportHeight > designHeight * scale) { 
-        const scaledHeight = designHeight * scale;
-        const marginTop = (viewportHeight - scaledHeight) / 2;
-        appWrapper.style.marginTop = `${marginTop}px`; appWrapper.style.marginBottom = `${marginTop}px`;
-    } else { appWrapper.style.marginTop = '0'; appWrapper.style.marginBottom = '0'; }
 }
 
 function initializeGame(){
     loadGame(); 
     const isDarkMode = localStorage.getItem('darkMode') === 'true';
     if(isDarkMode) document.body.classList.add('dark-mode');
-    updateDisplay(); updateControlButtons(); adjustAppWrapperScale(); updateShop(); initializeShopLogic();
+    
+    adjustAppWrapperScale(); 
+    
+    updateDisplay(); updateControlButtons(); updateShop(); 
+    updateBlacksmithVisuals(); // CẬP NHẬT TRẠNG THÁI HÌNH ẢNH KHI LOAD GAME
 }
 
 setInterval(updateFarmState, 1000); 
-setInterval(autoSave, 60000); 
+setInterval(checkGlobalCrafting, 1000); 
+setInterval(autoSave, 60000);
+setInterval(checkIncubationState, 1000);
+// --- HÀM KIỂM TRA TRỨNG NỞ (CHẠY TỰ ĐỘNG) ---
+function checkIncubationState() {
+    // Chỉ chạy khi đang có thời gian ấp (lớn hơn 0)
+    if (incubationFinishTime > 0) {
+        const now = Date.now();
+        
+        // Nếu thời gian hiện tại đã vượt qua thời gian nở
+        if (now >= incubationFinishTime) {
+            incubationFinishTime = 0; // Reset về 0
+            hasIceEgg = false; 
+            isIceDragonHatched = true;
+            isIceDragonEvolved = true; 
+
+            // Thêm pet vào kho
+            const petValue = (hatchedPetType === 'than_chet' ? "1000000104.gif" : "1000000127.gif");
+            const petData = shopItems.find(i => i.value === petValue);
+            const petNameDisplay = petData ? petData.name : (hatchedPetType === 'than_chet' ? "Thần Chết" : "Thiên Thần");
+            
+            if(petData && !isPetOwned(petData.value)) ownedPets.push(petData.value);
+            
+            // Hiện thông báo
+            alert(`🎉 CHÚC MỪNG! Trứng đã nở thành: ${petNameDisplay}!\nĐã mở khóa tính năng Auto Thu Hoạch.`);
+            
+            // Cập nhật giao diện
+            updateDisplay();
+            
+            // Nếu người chơi đang mở popup xem trứng thì đóng lại cho nó cập nhật
+            if(document.getElementById('interaction-popup').classList.contains('popup-active')) {
+                hidePopup('interaction-popup');
+            }
+        }
+    }
+}
 window.onload = initializeGame;
-window.addEventListener('resize', adjustAppWrapperScale);
+
 </script>
 </body>
 </html>
