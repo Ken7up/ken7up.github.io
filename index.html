@@ -1171,6 +1171,9 @@ let exp = 0;
 let dau = 0; 
 let la = 0;
 let usedGiftcodes = []; // Lưu danh sách mã đã dùng
+// --- DANH SÁCH MÃ GIFTCODE ĐANG HOẠT ĐỘNG ---
+// Bạn thêm code mới vào trong ngoặc này, ví dụ: ["FARMLOL", "NAMMOI", "TET2026"]
+const ACTIVE_GIFTCODES = ["FARMLOL"];
 // --- THÊM BIẾN QUẢN LÝ TRANG TRÍ ---
 let vineDecorations = [null, null, null, null, null]; // 5 vị trí dây leo, null = trống
 let tool = { name: "Xẻng Gỗ", power: 1, maxHP: 100, currentHP: 100 };
@@ -3825,7 +3828,34 @@ function openInventory() {
     showPopup('inventory-box');
 }
 // --- CHỨC NĂNG GIFTCODE (ĐÃ TỐI ƯU) ---
+// --- HÀM MỚI: Dừng khói và xóa sạch khói ---
+function stopSmokeEffect() {
+    if (window.smokeInterval) {
+        clearInterval(window.smokeInterval);
+        window.smokeInterval = null;
+    }
+    // Xóa ngay các hạt khói còn sót lại trên màn hình
+    document.querySelectorAll('.smoke-particle').forEach(el => el.remove());
+}
 
+// --- HÀM MỚI: Kiểm tra xem có nên hiện Hòm Thính không ---
+function updateGiftcodeBoxState() {
+    const box = document.getElementById('giftcode-supply-drop');
+    if (!box) return;
+
+    // Kiểm tra: Có mã nào trong danh sách ACTIVE mà user chưa dùng không?
+    const hasUnusedCode = ACTIVE_GIFTCODES.some(code => !usedGiftcodes.includes(code));
+
+    if (hasUnusedCode) {
+        // Nếu còn mã chưa dùng -> Hiện hòm và Bật khói
+        box.style.display = 'block';
+        startSmokeEffect(); 
+    } else {
+        // Nếu đã dùng hết sạch mã -> Ẩn hòm và Tắt khói ngay lập tức
+        box.style.display = 'none';
+        stopSmokeEffect();
+    }
+}
 function showGiftcodePopup() {
     if (level === 0) { alert("Bạn cần tạo nông trại trước!"); return; }
     const inputEl = document.getElementById('giftcode-input');
@@ -3839,18 +3869,26 @@ function handleGiftcode() {
 
     if (!code) { alert("Vui lòng nhập mã!"); return; }
 
-    const VALID_CODE = "FARMLOL"; 
-    
-    if (code === VALID_CODE) {
+    // Kiểm tra xem mã nhập vào có nằm trong danh sách code active không
+    if (ACTIVE_GIFTCODES.includes(code)) {
         if (usedGiftcodes.includes(code)) {
             alert("❌ Bạn đã sử dụng mã này rồi!");
         } else {
-            const bonusDau = 10000;
-            const bonusLa = 1000;
-            
+            // --- CẤU HÌNH PHẦN THƯỞNG ---
+            let bonusDau = 0;
+            let bonusLa = 0;
+
+            // Logic phần thưởng cho từng mã
+            if (code === "FARMLOL") {
+                bonusDau = 10000;
+                bonusLa = 1000;
+            }
+            // Nếu có code khác thì thêm: else if (code === "CODEKHAC") { ... }
+
+            // Cộng quà
             dau += bonusDau;
             la += bonusLa;
-            usedGiftcodes.push(code);
+            usedGiftcodes.push(code); // Lưu mã đã dùng vào danh sách
             
             saveGame();
             updateDisplay();
@@ -3861,6 +3899,10 @@ function handleGiftcode() {
                 openInventory();
             }
 
+            // --- QUAN TRỌNG: Cập nhật lại trạng thái hòm ngay lập tức ---
+            updateGiftcodeBoxState();
+
+            // Thông báo
             if(typeof showToast === "function") {
                 showToast(`Nhận: ${bonusDau.toLocaleString()} Đậu + ${bonusLa.toLocaleString()} Lá`, "🎁", "Giftcode Thành Công");
             } else {
@@ -3896,12 +3938,13 @@ function spawnRedSmoke() {
 }
 
 function startSmokeEffect() {
-    // Xóa interval cũ trước khi tạo mới để tránh bị chồng lặp (memory leak)
-    if(window.smokeInterval) clearInterval(window.smokeInterval);
+    // Nếu đang chạy rồi thì thôi, không tạo thêm vòng lặp mới
+    if (window.smokeInterval) return;
     
     window.smokeInterval = setInterval(() => {
-        // Chỉ tạo khói khi tab đang hiển thị và Hòm thính có trên màn hình
-        if(!document.hidden && document.getElementById('giftcode-supply-drop')) {
+        const box = document.getElementById('giftcode-supply-drop');
+        // Chỉ tạo khói khi tab đang hiển thị VÀ Hòm thính đang hiện (display != none)
+        if(!document.hidden && box && box.style.display !== 'none') {
             spawnRedSmoke();
         }
     }, 150);
@@ -3929,7 +3972,7 @@ function initializeGame(){
     // 5. Khởi tạo sự kiện
     initVineEvents();        
     initGrasshopperEvents(); 
-    startSmokeEffect(); 
+    updateGiftcodeBoxState(); 
 }
 
 // --- GAME LOOP ---
