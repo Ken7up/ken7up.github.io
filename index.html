@@ -156,12 +156,35 @@
 
   /* EXP BAR */
   #exp-bar-container {
-      width: 120px; 
-      height: 6px; 
-      background: rgba(0,0,0,0.1); 
-      border-radius: 10px; margin-top: 4px; overflow: hidden;
-      box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
-  }
+    width: 120px; 
+    height: 14px; /* Tăng chiều cao lên 1 chút để chữ dễ đọc hơn (cũ là 6px) */
+    background: rgba(0,0,0,0.2); 
+    border-radius: 10px; 
+    margin-top: 4px; 
+    overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+
+    /* QUAN TRỌNG: Để định vị dòng chữ nằm đè lên trên */
+    position: relative; 
+}
+
+/* CSS cho dòng chữ hiển thị số EXP */
+#exp-text-overlay {
+    position: absolute;
+    top: 0; left: 0; 
+    width: 100%; height: 100%;
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+
+    /* Chỉnh font chữ cho đẹp và rõ */
+    font-size: 9px; 
+    font-weight: 800; 
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0,0,0,1); /* Viền đen quanh chữ để nổi bật */
+    z-index: 2; /* Đảm bảo chữ nằm trên thanh màu xanh */
+    pointer-events: none;
+}
   #exp-fill {
       height: 100%; width: 0%;
       background: linear-gradient(90deg, #66bb6a, #43a047);
@@ -258,9 +281,36 @@
 
   #kinto-cloud {
       position: absolute; top: 30px; left: calc(60% + 15px); transform: translateX(-50%); 
-      width: 30px; height: 30px; z-index: 10; cursor: pointer; 
+      width: 45px;   /* Tăng từ 30px lên 45px cho dài ra */
+      height: auto;  /* Đổi thành auto để ảnh không bị méo */
+      /* ---------------- */
+      
+      z-index: 10; cursor: pointer; 
       animation: float 3s ease-in-out infinite;
       filter: drop-shadow(0 5px 5px rgba(0,0,0,0.1));
+  }
+    /* --- CSS CHO MÂY SỰ KIỆN (MỚI) --- */
+  #event-cloud {
+      position: absolute; 
+      top: 30px;               /* Đặt cùng độ cao với Cân Đẩu Vân */
+      left: calc(60% + 75px);  /* Đẩy sang phải một chút để không bị che */
+      transform: translateX(-50%); 
+      
+      width: 45px;             /* Kích thước ảnh */
+      height: auto; 
+      z-index: 10;             /* Lớp hiển thị cao để bấm được */
+      cursor: pointer; 
+      
+      /* Hiệu ứng bay (float) giống hệt mây shop */
+      animation: float 3s ease-in-out infinite; 
+      animation-delay: 1.5s;   /* Trễ 1.5s để 2 đám mây bay lệch nhịp cho đẹp */
+      
+      filter: drop-shadow(0 5px 5px rgba(0,0,0,0.1)); /* Tạo bóng đổ nhẹ */
+  }
+  
+  /* Hiệu ứng khi bấm vào mây (nhún nhẹ) */
+  #event-cloud:active {
+      transform: translateX(-50%) scale(0.9);
   }
   
   #light-bulb {
@@ -380,7 +430,7 @@
       z-index: 990; display: none;
   }
 
-  #shop-box, #online-box, #pet-house-box, #interaction-popup, #seed-box, #name-box { 
+  #shop-box, #online-box, #pet-house-box, #interaction-popup, #seed-box, #name-box, #inventory-box {
     position: fixed; top: 50%; left: 50%; 
     transform: translate(-50%, -50%) scale(0.9); 
     background: var(--card-bg);
@@ -423,6 +473,23 @@
       font-size: 0.9em;
   }
   .btn-close:active, button[onclick*="none"]:active { transform: translateY(4px); box-shadow: none; }
+  .btn-remove-vines {
+    width: 100%;
+    margin-top: 10px;
+    padding: 8px;
+    background: #ff5252; /* Màu đỏ */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 3px 0 #d32f2f;
+    transition: all 0.1s;
+}
+.btn-remove-vines:active {
+    transform: translateY(3px);
+    box-shadow: none;
+}
 
   /* --- SHOP ITEMS (GRID) --- */
   .shop-item, .pet-shop-item {
@@ -524,6 +591,60 @@
       filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3)); 
       z-index: 10;                   
   }
+    /* --- CSS FIX RIÊNG CHO CÂY TÌNH YÊU --- */
+  .seed-image.big-plant.love-fix {
+      width: 120% !important;        
+      max-height: 160px !important;  
+      bottom: 26px !important;       
+      /* ĐÃ SỬA: Đổi sang màu hồng đậm (DeepPink) và tăng độ rõ nét */
+      filter: drop-shadow(0 5px 10px rgba(255, 20, 147, 0.85)); 
+      z-index: 10;
+  }
+    /* --- CSS MỚI: Cây Tình Yêu giai đoạn vừa (Stage 1) --- */
+  /* Class này sẽ giúp cây nhỏ hơn và bóng gọn hơn so với giai đoạn thu hoạch */
+  .seed-image.medium-plant.love-fix {
+      width: 100% !important;        /* Nhỏ hơn mức 120% của giai đoạn lớn */
+      max-height: 130px !important;  /* Giới hạn chiều cao thấp hơn (gốc là 160px) */
+      bottom: 27px !important;
+      /* Bóng màu hồng nhưng nhỏ hơn, gần gốc hơn */
+      filter: drop-shadow(0 3px 7px rgba(255, 20, 147, 0.8)) !important;
+      z-index: 9;
+  }
+    /* --- CSS CHO CÂY GIAI ĐOẠN TRƯỞNG THÀNH (STAGE 1 - SIZE VỪA) --- */
+  .seed-image.medium-plant {
+      width: 160% !important;        /* Nhỏ hơn 220% của big-plant */
+      max-height: 180px !important;  
+      bottom: 27px !important;       
+      z-index: 9;                   
+      transition: all 0.3s ease;
+  }
+
+  /* Chỉnh bóng riêng cho Cây Kim Loại giai đoạn vừa (nhạt hơn và nhỏ hơn) */
+  .seed-image.medium-plant.shadow-metal {
+      filter: drop-shadow(0 3px 5px rgba(60, 60, 60, 0.8)) !important;
+  }
+
+  /* Chỉnh bóng riêng cho Cây Nguyên Tố giai đoạn vừa (nhạt hơn và nhỏ hơn) */
+  .seed-image.medium-plant.shadow-element {
+      filter: drop-shadow(0 3px 5px rgba(171, 71, 188, 0.7)) !important;
+  }
+    /* --- CSS BÓNG CHO CÂY (MỚI THÊM) --- */
+  
+  /* 1. Bóng xanh lá cho Mầm Nhỏ (Giai đoạn 0) */
+  .seed-image.shadow-green {
+      filter: drop-shadow(0 0 8px rgba(76, 175, 80, 0.8)) !important;
+  }
+
+  /* 2. Bóng xám cho Cây Kim Loại (Giai đoạn lớn) */
+  .seed-image.big-plant.shadow-metal {
+      /* ĐÃ SỬA: Đổi sang màu xám đen đậm đặc hơn */
+      filter: drop-shadow(0 5px 10px rgba(60, 60, 60, 1.0)) !important;
+  }
+
+  /* 3. Bóng tím cho Cây Nguyên Tố (Giai đoạn lớn) */
+  .seed-image.big-plant.shadow-element {
+      filter: drop-shadow(0 5px 10px rgba(171, 71, 188, 0.8)) !important;
+  }
 
   /* --- CSS CHO QUÀ TẶNG HÀNG NGÀY (Daily Reward) --- */
   .daily-reward-bubble {
@@ -570,6 +691,203 @@
       filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
       pointer-events: none;
   }
+/* --- CODE MỚI CHO 3 LÔ (BALO) --- */
+#backpack-slot {
+    position: absolute;
+    width: 20px;       /* Kích thước túi */
+    height: 60px;
+    top: 320px;        /* Độ cao (ngang tầm với em bé câu cá) */
+    left: 175px;        /* Nằm bên trái màn hình (hoặc chỉnh số này để dời vị trí) */
+    z-index: 10;
+    cursor: pointer;
+    filter: drop-shadow(0 4px 4px rgba(0,0,0,0.3)); /* Đổ bóng cho đẹp */
+    transition: transform 0.2s;
+}
+#backpack-slot:hover { transform: scale(1.1); } /* Phóng to khi di chuột vào */
+#backpack-slot img { width: 100%; height: 100%; object-fit: contain; }
+
+/* Tùy chỉnh danh sách vật phẩm trong kho */
+.inventory-item {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border: 1px solid #eee;
+    margin-bottom: 8px;
+    padding: 8px;
+    border-radius: 8px;
+    box-shadow: 0 2px 2px rgba(0,0,0,0.05);
+}
+/* --- CSS CHO TOAST NOTIFICATION (PHIÊN BẢN PRO) --- */
+#toast-notification {
+    position: fixed;
+    bottom: 140px;           /* Cao hơn một chút để dễ nhìn */
+    left: 50%;
+    transform: translateX(-50%) scale(0.8);
+    
+/* SỬA PHẦN NÀY: Làm nền kính mờ hiện đại hơn */
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(76, 175, 80, 0.3); /* Viền mỏng tinh tế */
+    border-left: 6px solid #4CAF50; /* Điểm nhấn bên trái */
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15); /* Bóng đổ mềm mại hơn */
+    backdrop-filter: blur(5px); /* Hiệu ứng mờ nền phía sau */
+    
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    z-index: 2000;
+    
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    white-space: nowrap;
+}
+
+#toast-notification .toast-icon {
+    font-size: 24px;
+    background: #e8f5e9;
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+}
+
+#toast-notification .toast-content {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+#toast-notification .toast-title {
+    font-weight: 800;
+    font-size: 0.9em;
+    text-transform: uppercase;
+    color: #4CAF50;
+    letter-spacing: 1px;
+}
+
+#toast-notification .toast-message {
+    font-size: 1em;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Class kích hoạt hiệu ứng */
+#toast-notification.show {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+    animation: toastBounce 3s forwards;
+}
+
+@keyframes toastBounce {
+    0%   { transform: translate(-50%, 20px) scale(0.8); opacity: 0; }
+    10%  { transform: translate(-50%, 0px) scale(1); opacity: 1; }
+    90%  { transform: translate(-50%, 0px) scale(1); opacity: 1; }
+    100% { transform: translate(-50%, -50px) scale(0.9); opacity: 0; }
+}
+/* --- HIỆU ỨNG VẬT PHẨM BAY LÊN (FLOATING REWARDS) --- */
+.floating-reward {
+    position: absolute;
+    z-index: 9999; /* Luôn nổi lên trên cùng */
+    font-weight: 900;
+    font-size: 15px;
+    pointer-events: none; /* Không chặn click chuột */
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    
+    /* Tạo viền trắng cho chữ dễ đọc trên nền game */
+    text-shadow: 
+        -1px -1px 0 #fff,  
+         1px -1px 0 #fff,
+        -1px  1px 0 #fff,
+         1px  1px 0 #fff;
+
+    animation: floatUpFade 1.2s ease-out forwards;
+}
+
+/* Animation: Phóng to nhẹ -> Bay lên -> Mờ dần */
+@keyframes floatUpFade {
+    0% { transform: translateY(0) scale(0.8); opacity: 0; }
+    20% { transform: translateY(-15px) scale(1.2); opacity: 1; }
+    80% { opacity: 1; }
+    100% { transform: translateY(-80px) scale(1); opacity: 0; }
+}
+
+/* Màu sắc riêng cho từng loại */
+.float-exp { color: #2E7D32; } /* Xanh lá đậm */
+.float-item { color: #E65100; } /* Cam đậm */
+/* --- CSS CHO HÒM THÍNH GIFTCODE (ĐÃ SỬA TO HƠN) --- */
+#giftcode-supply-drop {
+    position: absolute;
+    width: 40px; /* Đã tăng từ 40px lên 50px cho hoành tráng */
+    height: auto;
+    
+    /* Căn chỉnh lại vị trí một chút cho cân đối với kích thước mới */
+    top: 400px; 
+    left: 340px; 
+    
+    z-index: 12; /* Nổi lên trên mặt nước */
+    cursor: pointer;
+    filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
+}
+
+/* Giao diện ô nhập Giftcode */
+#giftcode-input {
+    width: 100%;
+    padding: 12px;
+    margin: 15px 0;
+    border: 2px dashed #FF9800;
+    border-radius: 10px;
+    font-size: 16px;
+    text-align: center;
+    color: #E65100;
+    font-weight: bold;
+    text-transform: uppercase; /* Tự động viết hoa */
+    outline: none;
+    background: #FFF3E0;
+}
+#giftcode-input:focus {
+    border-color: #E65100;
+    background: #fff;
+}
+/* --- HIỆU ỨNG KHÓI ĐỎ SIGNAL (REALISTIC & RÕ NÉT) --- */
+.smoke-particle {
+    position: absolute;
+    width: 16px;  /* Kích thước cơ bản to hơn xíu */
+    height: 16px;
+    
+    /* Gradient 3 lớp: Tâm cam sáng -> Đỏ đậm -> Viền trong suốt */
+    background: radial-gradient(circle, #ff5722 10%, #d50000 45%, rgba(255,0,0,0) 70%);
+    
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 11;
+    opacity: 0;
+    
+    /* Bắt đầu ít blur để rõ nét, sau đó sẽ blur dần trong keyframes */
+    filter: blur(2px); 
+    
+    /* Thời gian bay lâu hơn (2.5s) để cột khói cao hơn */
+    animation: smokeRise 2.5s ease-out forwards; 
+}
+
+@keyframes smokeRise {
+    0% {
+        transform: translate(0, 0) scale(0.5);
+        opacity: 0;
+    }
+    10% {
+        /* Hiện ra nhanh và rõ */
+        opacity: 1; 
+        transform: translate(0, -20px) scale(1);
+    }
+    100% {
+        /* Bay lên rất cao (-220px), phình to gấp 6 lần, và tản ra theo gió (var --dx) */
+        transform: translate(var(--dx), -220px) scale(6); 
+        opacity: 0;
+        filter: blur(12px); /* Lên cao thì nhòe đi như khói thật */
+    }
+}
 </style>
 </head>
 <body>
@@ -583,8 +901,9 @@
   <div class="brand">
     <div id="player-level-display">🌾 Farm LOL 🌾</div>
     <div id="exp-bar-container">
-        <div id="exp-fill"></div>
-    </div>
+    <div id="exp-fill"></div>
+    <div id="exp-text-overlay">0 / 0</div>
+</div>
   </div>
   <div class="controls">
     <button id="btn-new">🆕 Tạo</button>
@@ -631,16 +950,88 @@
         <img class="pot-base-img" src="1000000112.png" alt="Chậu đất" />
         <img id="seed-img-7" class="seed-image" src="" alt="Vật phẩm trồng" style="display:none;" />
     </div>
-    
+    <style>
+  /* --- CẬP NHẬT CSS DÂY LEO VÀ CHÂU CHẤU --- */
+  .vine-deco {
+      position: absolute;
+      width: 10px;       /* Tăng vùng click lên một chút cho dễ bấm */
+      height: auto;
+      top: 195px;
+      z-index: 4;
+      cursor: pointer;   /* Hiển thị bàn tay khi trỏ vào */
+      pointer-events: auto; /* QUAN TRỌNG: Cho phép click */
+      opacity: 0.9;
+      filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2));
+      transition: transform 0.1s;
+  }
+  .vine-deco:active { transform: scale(0.9); }
+    /* --- CODE MỚI: Hiệu ứng Combo dây leo --- */
+  @keyframes gold-glow-blink {
+      0% { filter: drop-shadow(0 0 2px rgba(255, 215, 0, 0.5)); }
+      50% { filter: drop-shadow(0 0 10px rgba(255, 215, 0, 1)) brightness(1.2); }
+      100% { filter: drop-shadow(0 0 2px rgba(255, 215, 0, 0.5)); }
+  }
+
+  .vine-glowing {
+      animation: gold-glow-blink 1.5s infinite ease-in-out !important;
+      z-index: 5 !important; 
+  }
+  /* ---------------------------------------- */
+
+  /* Class cho Châu Chấu */
+  .hanging-grasshopper {
+      position: absolute;
+      width: 70px;       /* Kích thước châu chấu */
+      height: auto;
+      top: 205px;        /* Nằm ngay dưới dây leo */
+      z-index: 5;        /* Nằm sau dây leo một xíu cho tự nhiên */
+      pointer-events: auto; /* Cho phép click vào con châu chấu */
+      cursor: pointer;      /* Hiện bàn tay khi trỏ vào */
+      /* ----------------------------------- */
+      transform-origin: top center;
+      animation: swing-grasshopper 3s ease-in-out infinite;
+      filter: drop-shadow(0 5px 5px rgba(0,0,0,0.2));
+      display: none;
+  }
+
+  @keyframes swing-grasshopper {
+      0% { transform: rotate(3deg); }
+      50% { transform: rotate(-3deg); }
+      100% { transform: rotate(3deg); }
+  }
+    </style>
+
+                <img src="1000000129.png" class="vine-deco" style="left: calc(50% - 87.5px);" data-index="0" />
+    <img id="grasshopper-0" src="1000000130.gif" class="hanging-grasshopper" style="left: calc(50% - 115px);" /> 
+
+    <img src="1000000129.png" class="vine-deco" style="left: calc(50% - 27.5px);" data-index="1" />
+    <img id="grasshopper-1" src="1000000130.gif" class="hanging-grasshopper" style="left: calc(50% - 55px);" />
+
+    <img src="1000000129.png" class="vine-deco" style="left: calc(50% + 32.5px);" data-index="2" />
+    <img id="grasshopper-2" src="1000000130.gif" class="hanging-grasshopper" style="left: calc(50% + 5px);" />
+
+    <img src="1000000129.png" class="vine-deco" style="left: calc(50% + 92.5px);" data-index="3" />
+    <img id="grasshopper-3" src="1000000130.gif" class="hanging-grasshopper" style="left: calc(50% + 65px);" />
+
+    <img src="1000000129.png" class="vine-deco" style="left: calc(50% + 152.5px);" data-index="4" />
+    <img id="grasshopper-4" src="1000000130.gif" class="hanging-grasshopper" style="left: calc(50% + 125px);" />
   </div>
   
+    <div id="backpack-slot" onclick="openInventory()">
+      <img src="1000000138.png" alt="3 Lô" />
+  </div>
+
+  <img id="giftcode-supply-drop" src="1000000143.png" alt="Hòm Thính" onclick="showGiftcodePopup()" />
   <img id="kinto-cloud" src="1000000103.png" alt="Cân Đẩu Vân" data-slot="0" />
+  <img id="event-cloud" src="1000000131.png" alt="Sự Kiện" />
   <img id="pet-house" src="1000000100.png" alt="Nhà Pet" />
   
   <img id="chaos-blacksmith" src="1000000107.png" alt="Thợ Rèn Chaos" />
   <img id="chaos-blacksmith-working" src="1000000101.gif" alt="Thợ Rèn Đang Làm" style="display:none;" />
   
-  <img id="pug-pet" src="" alt="Chú chó Pug" style="display:none;" />
+<div id="pet-container" style="position: absolute; bottom: 35px; left: 50%; transform: translateX(-50%); z-index: 7; pointer-events: none; width: 120px; height: 120px; display: flex; align-items: flex-end; justify-content: center;">
+    <img id="pug-pet" src="" alt="Chú chó Pug" style="display:none; width: 100%; height: auto; cursor: pointer; transform-origin: bottom center; pointer-events: auto;" />
+</div>
   <img id="bone-bowl" src="1000000115.png" alt="Bát đựng xương" />
 </main>
 
@@ -677,9 +1068,23 @@
 </div>
 
 <div id="online-box">
-<h3>🌐 Online</h3>
-<div style="margin:20px 0; color: #777;">Chức năng đang được phát triển...<br>Quay lại sau nhé!</div>
-<button onclick="hidePopup('online-box')" class="btn-close">Đóng</button>
+  <h3 style="color:#E64A19;">🎁 Hòm Thính</h3>
+  <p style="color:#795548; font-size:0.9em; margin-bottom:5px;">
+      Nhập mã <b>Giftcode</b> để nhận quà bí mật:
+  </p>
+  
+  <input type="text" id="giftcode-input" placeholder="NHẬP MÃ TẠI ĐÂY" maxlength="15">
+  
+  <button onclick="handleGiftcode()" class="btn-buy" style="
+      background: linear-gradient(45deg, #FF5722, #F4511E); 
+      font-size: 1.1em; 
+      padding: 10px; 
+      margin-bottom: 10px;
+      box-shadow: 0 4px 0 #D84315;">
+    Mở Quà Ngay
+  </button>
+
+  <button onclick="hidePopup('online-box')" class="btn-close">Đóng</button>
 </div>
 
 <div id="pet-house-box">
@@ -699,6 +1104,29 @@
     <button onclick="closeInteractionPopup()" class="btn-close" style="margin-top: 20px;">Đóng</button>
 </div>
 
+<div id="inventory-box">
+    <h3 style="text-align:center; color:#5D4037; margin-top:0; border-bottom: 2px dashed #ddd; padding-bottom: 10px;">
+        🎒 3 Lô
+    </h3>
+    
+    <div style="background: #FFF3E0; padding: 10px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-around; align-items: center; border: 1px solid #FFE0B2;">
+        <div style="color:#795548; font-weight:bold;">
+            🫘 Đậu: <span id="inv-dau" style="color:#D84315; font-size:1.1em;">0</span>
+        </div>
+        <div style="border-left: 2px solid #ccc; height: 20px;"></div>
+        <div style="color:#E65100; font-weight:bold;">
+            🍂 Lá: <span id="inv-la" style="color:#D84315; font-size:1.1em;">0</span>
+        </div>
+    </div>
+
+    <div id="inventory-list" style="max-height: 300px; overflow-y: auto; padding-right: 5px;">
+        <div style="text-align:center; color:#999; margin-top:20px;">Đang tải dữ liệu...</div>
+    </div>
+
+    <button onclick="hidePopup('inventory-box')" class="btn-close" style="width:100%; margin-top:15px; background:#f44336; color:white; border:none; padding:10px; border-radius:20px; font-weight:bold; cursor:pointer;">
+        Đóng
+    </button>
+</div>
 <script>
 // --- LOGIC SCALING (GIỮ NGUYÊN) ---
 function adjustAppWrapperScale() {
@@ -735,8 +1163,12 @@ let farmIcon = "🌾";
 let level = 0;
 let exp = 0;
 let dau = 0; 
-let la = 0;  
+let la = 0;
+let usedGiftcodes = []; // Lưu danh sách mã đã dùng
+// --- THÊM BIẾN QUẢN LÝ TRANG TRÍ ---
+let vineDecorations = [null, null, null, null, null]; // 5 vị trí dây leo, null = trống
 let tool = { name: "Xẻng Gỗ", power: 1, maxHP: 100, currentHP: 100 };
+let ownedDecorations = { 'chau_chau': 0 }; // Kho chứa đồ trang trí
 let hasIceEgg = false; 
 let isIceDragonHatched = false; 
 let isIceDragonEvolved = false; 
@@ -744,8 +1176,42 @@ let hatchedPetType = "thien_than"; // BIẾN MỚI: LƯU LOẠI PET ĐÃ ẤP (t
 let activePet = null;
 let incubationFinishTime = 0; // Thời gian kết thúc ấp trứng
 let ownedPets = []; 
-let ownedSeeds = { 'hat_nguyen_to': 0, 'hat_kim_loai': 0 }; 
-let globalPetAge = 0; 
+let ownedSeeds = { 'hat_nguyen_to': 0, 'hat_kim_loai': 0, 'hat_tinh_yeu': 0 };
+let globalPetAge = 0;
+// --- KHAI BÁO KHO VẬT PHẨM ĐẶC BIỆT (MỚI) ---
+let ownedArtifacts = { 'manh_nguyen_to': 0, 'manh_kim_loai': 0, 'vuong_mien': 0 };
+let grasshopperExchanged = 0; // Biến theo dõi số lần đã đổi (Tối đa 5)
+let isHarvesting = false; // Biến chống click đúp khi thu hoạch
+// --- THÊM: CẤU HÌNH DANH SÁCH VẬT PHẨM TREO ---
+// Đây là danh sách định nghĩa tên, ảnh và giá của các món đồ treo
+const HANGING_ITEMS_CONFIG = [
+    { 
+        id: 'chau_chau', name: 'Châu Chấu', img: '1000000130.gif', price: 100,
+        style: { width: '50px', top: '205px', marginLeft: '7px' } 
+    },
+    { 
+        id: 'treo_con_ca', name: 'Con Cá', img: '1000000139.gif', price: 100,
+        style: { width: '50px', top: '205px', marginLeft: '8px' }
+    },
+    { 
+        id: 'treo_long_den', name: 'Lồng Đèn', img: '1000000140.gif', price: 100,
+        style: { width: '45px', top: '202px', marginLeft: '7px' }
+    },
+    { 
+        id: 'treo_trai_chau', name: 'Trái Châu', img: '1000000141.gif', price: 100,
+        style: { width: '45px', top: '210px', marginLeft: '9px' }
+    },
+    { 
+        id: 'treo_chong_chong', name: 'Chong Chóng', img: '1000000142.gif', price: 100,
+        style: { width: '130px', top: '200px', marginLeft: '-32px' }
+    }
+];
+// Cấu hình vật phẩm rớt khi thu hoạch
+const HARVEST_DROPS = {
+    'hat_nguyen_to': { id: 'manh_nguyen_to', name: 'Mãnh Nguyên Tố', img: '1000000135.png' },
+    'hat_kim_loai': { id: 'manh_kim_loai', name: 'Mãnh Kim Loại', img: '1000000136.png' },
+    'hat_tinh_yeu': { id: 'vuong_mien', name: 'Vương Miện', img: '1000000137.png' }
+};
 let lastFedTime = 0; 
 let activePopupInterval = null;
 
@@ -767,7 +1233,7 @@ const POT_DEFINITIONS = {
     'chau_kim_cuong_do': { name: "Chậu K.Cương Đỏ", img: "1000000122.png", expBonus: 6 }
 };
 
-// --- 2. CẬP NHẬT CÔNG THỨC RÈN (ĐÃ CHỈNH SỬA) ---
+// --- 2. CẬP NHẬT CÔNG THỨC RÈN (ĐÃ CHỈNH SỬA: DÙNG MÃNH KIM LOẠI) ---
 const CRAFTING_RECIPES = [
     {
         id: 'craft_so_dua',
@@ -775,7 +1241,7 @@ const CRAFTING_RECIPES = [
         name: 'Sọ Dừa',
         icon: '1000000112.png',
         duration: 0,
-        cost: { dau: 1000 }, // Giá mới: 1000 Đậu
+        cost: { dau: 1000 }, 
         materials: {} 
     },
     {
@@ -783,54 +1249,55 @@ const CRAFTING_RECIPES = [
         output: 'chau_dong',
         name: 'Chậu Đồng',
         icon: '1000000117.png',
-        duration: 2 * 60 * 60 * 1000, // 2 giờ
+        duration: 2 * 60 * 60 * 1000, 
         cost: { dau: 2000 },
-        materials: { 'so_dua': 1, 'hat_kim_loai': 20 }
+        // Sửa: hat_kim_loai -> manh_kim_loai
+        materials: { 'so_dua': 1, 'manh_kim_loai': 20 }
     },
     {
         id: 'craft_chau_bac',
         output: 'chau_bac',
         name: 'Chậu Bạc',
         icon: '1000000118.png',
-        duration: 3 * 60 * 60 * 1000, // 3 giờ
+        duration: 3 * 60 * 60 * 1000, 
         cost: { dau: 3000 },
-        materials: { 'chau_dong': 1, 'hat_kim_loai': 30 }
+        materials: { 'chau_dong': 1, 'manh_kim_loai': 30 }
     },
     {
         id: 'craft_chau_vang',
         output: 'chau_vang',
         name: 'Chậu Vàng',
         icon: '1000000119.png',
-        duration: 4 * 60 * 60 * 1000, // 4 giờ
+        duration: 4 * 60 * 60 * 1000, 
         cost: { dau: 4000 },
-        materials: { 'chau_bac': 1, 'hat_kim_loai': 40 }
+        materials: { 'chau_bac': 1, 'manh_kim_loai': 40 }
     },
     {
         id: 'craft_chau_bach_kim',
         output: 'chau_bach_kim',
         name: 'Chậu Bạch Kim',
         icon: '1000000120.png',
-        duration: 5 * 60 * 60 * 1000, // 5 giờ
+        duration: 5 * 60 * 60 * 1000, 
         cost: { dau: 5000 },
-        materials: { 'chau_vang': 1, 'hat_kim_loai': 50 }
+        materials: { 'chau_vang': 1, 'manh_kim_loai': 50 }
     },
     {
         id: 'craft_chau_kim_cuong',
         output: 'chau_kim_cuong',
         name: 'Chậu Kim Cương',
         icon: '1000000121.png',
-        duration: 6 * 60 * 60 * 1000, // 6 giờ
+        duration: 6 * 60 * 60 * 1000, 
         cost: { dau: 6000 },
-        materials: { 'chau_bach_kim': 1, 'hat_kim_loai': 60 }
+        materials: { 'chau_bach_kim': 1, 'manh_kim_loai': 60 }
     },
     {
         id: 'craft_chau_kim_cuong_do',
         output: 'chau_kim_cuong_do',
         name: 'Chậu K.Cương Đỏ',
         icon: '1000000122.png',
-        duration: 7 * 60 * 60 * 1000, // 7 giờ
+        duration: 7 * 60 * 60 * 1000, 
         cost: { dau: 7000 },
-        materials: { 'chau_kim_cuong': 1, 'hat_kim_loai': 70 }
+        materials: { 'chau_kim_cuong': 1, 'manh_kim_loai': 70 }
     }
 ];
 
@@ -840,7 +1307,7 @@ let equippedPots = ['so_dua', 'so_dua', 'so_dua', 'so_dua', 'so_dua'];
 
 // --- ĐÃ CHỈNH SỬA VỊ TRÍ PET ---
 let petShopItems = [
-    // --- SỬA LẠI CHOCO: THÊM SIZE VÀ CĂN LẠI VỊ TRÍ ---
+    // 1. Choco: Size nhỏ (50px) -> Căn giữa (-25px) -> Đứng cao hơn xíu (50px)
     { 
         id: 100, 
         name: "Choco", 
@@ -849,22 +1316,34 @@ let petShopItems = [
         type: "pet", 
         icon: "1000000128.gif", 
         value: "1000000128.gif", 
-        // Giảm chiều rộng còn 60px (mặc định là 120px)
-        // Chỉnh left thành -30px (một nửa của 60px) để căn giữa chuẩn
-        customWidth: "60px", 
-        position: { bottom: '70px', left: 'calc(50% - 30px)' }, 
+        customWidth: "50px", 
+        position: { bottom: '50px', left: 'calc(50% - 25px)' }, 
     },
-    // --------------------------------------------------
+    
+    // 2. Pug Péo: Size vừa (80px) -> Căn giữa (-40px) -> Đứng chuẩn (40px)
     { 
-        id: 101, name: "Pug Péo", price: 100, currency: "la", type: "pet", 
-        icon: "1000000106.png", value: "1000000106.png", position: { bottom: '70px', left: 'calc(50% - 50px)' }, 
+        id: 101, 
+        name: "Pug Péo", 
+        price: 100, 
+        currency: "la", 
+        type: "pet", 
+        icon: "1000000106.png", 
+        value: "1000000106.png", 
+        customWidth: "80px", 
+        position: { bottom: '40px', left: 'calc(50% - 40px)' }, 
     },
-        { 
-        id: 102, name: "Mr. Gold", price: 100, currency: "la", type: "pet", 
-        icon: "1000000108.gif", value: "1000000108.gif", 
-        // --- SỬA SIZE Ở ĐÂY ---
-        customWidth: "150px", // Chỉnh to lên 150px (Mặc định là 120px)
-        position: { bottom: '50px', left: 'calc(50% - 75px)' }, // Chỉnh lại tâm (-75px vì width là 150)
+
+    // 3. Mr. Gold: Size to (100px) -> Căn giữa (-50px) -> Đứng thấp do chân to (35px)
+    { 
+        id: 102, 
+        name: "Mr. Gold", 
+        price: 100, 
+        currency: "la", 
+        type: "pet", 
+        icon: "1000000108.gif", 
+        value: "1000000108.gif", 
+        customWidth: "100px", 
+        position: { bottom: '35px', left: 'calc(50% - 50px)' }, 
     },
 ];
 
@@ -876,28 +1355,28 @@ let shopItems = [
     // ------------------------------------
     { id: 204, name: "Hạt Nguyên Tố", price: 100, currency: "dau", type: "seed", icon: "1000000125.png", value: "hat_nguyen_to", category: "hat_may" }, 
     { id: 205, name: "Hạt Kim Loại", price: 100, currency: "dau", type: "seed", icon: "1000000126.png", value: "hat_kim_loai", category: "hat_may" },
+    { id: 206, name: "Hạt Tình Yêu", price: 100, currency: "dau", type: "seed", icon: "1000000132.png", value: "hat_tinh_yeu", category: "hat_may" },
 ];
 
+// --- CẬP NHẬT THỜI GIAN TRỒNG CÂY (0h - 6h - 12h) ---
 const PLANT_STAGES = [
     { 
         name: "Mầm Nhỏ", 
         icon: "1000000110.gif", 
-        duration: 0, // Bắt đầu ngay lập tức
-        next: 6 * 60 * 60 * 1000 // (Không ảnh hưởng logic chính nhưng giữ để tham khảo)
+        duration: 0, 
     }, 
     { 
         name: "Cây Trưởng Thành", 
         icon: "1000000130.gif", 
-        // 6 giờ = 6 * 60 * 60 * 1000 ms
+        // Giai đoạn Mầm Nhỏ kéo dài 6 giờ
+        // 6 giờ * 60 phút * 60 giây * 1000 ms
         duration: 6 * 60 * 60 * 1000, 
-        next: 6 * 60 * 60 * 1000 
     }, 
     { 
         name: "Sẵn Sàng Thu Hoạch", 
         icon: "1000000130.gif", 
-        // 12 giờ (tổng thời gian từ lúc gieo hạt) = 12 * 60 * 60 * 1000 ms
-        duration: 12 * 60 * 60 * 1000, 
-        next: 0 
+        // Giai đoạn Cây Trưởng Thành kéo dài 6 giờ (tổng cộng 12 giờ từ lúc trồng để thu hoạch)
+        duration: 6* 60 * 60 * 1000, 
     }, 
 ];
 
@@ -914,6 +1393,34 @@ function hidePopup(id) {
             document.getElementById('global-overlay').style.display = 'none';
         }
     }, 100); 
+}
+// --- HÀM HIỂN THỊ THÔNG BÁO TOAST (BẢN PRO) ---
+function showToast(message, icon = "✅", title = "Thông báo") {
+    let toast = document.getElementById('toast-notification');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast-notification';
+        document.body.appendChild(toast);
+    }
+
+    // Cấu trúc HTML mới: Icon + Tiêu đề + Nội dung
+    toast.innerHTML = `
+        <div class="toast-icon">${icon}</div>
+        <div class="toast-content">
+            <div class="toast-title">${title}</div>
+            <div class="toast-message">${message}</div>
+        </div>
+    `;
+
+    toast.classList.remove('show');
+    void toast.offsetWidth; // Reset animation
+    toast.classList.add('show');
+
+    setTimeout(() => {
+        if (toast.classList.contains('show')) {
+            toast.classList.remove('show');
+        }
+    }, 3500); // Hiện lâu hơn xíu (3.5s) để kịp đọc
 }
 
 // --- HÀM CẬP NHẬT HÌNH ẢNH THỢ RÈN (MỚI) ---
@@ -1002,10 +1509,19 @@ function activatePet(petValue) {
 
 function updateDisplay(){
   if(level > 0 && expFill){
-      const needed = expNeeded(level);
-      const percent = Math.min(100, (exp / needed) * 100);
-      expFill.style.width = percent + "%";
-  }
+    const needed = expNeeded(level);
+    const percent = Math.min(100, (exp / needed) * 100);
+
+    // 1. Cập nhật thanh màu xanh (như cũ)
+    expFill.style.width = percent + "%";
+
+    // 2. Cập nhật con số hiển thị (MỚI THÊM)
+    const expText = document.getElementById('exp-text-overlay');
+    if(expText) {
+        // Hiển thị dạng: EXP Hiện Tại / EXP Cần Thiết
+        expText.innerText = `${Math.floor(exp)} / ${needed}`;
+    }
+}
 // --- THÊM ĐOẠN NÀY ĐỂ HIỆN/ẨN THIÊN NGA ---
   const incubatorIcon = document.getElementById("incubator-icon");
   if (incubatorIcon) {
@@ -1073,12 +1589,15 @@ function updateDisplay(){
       }
   }
   
-    if (pugPetImg) {
+    // --- SỬA LỖI PET: Dùng container để định vị ---
+    const petContainer = document.getElementById("pet-container");
+    
+    if (pugPetImg && petContainer) {
       if (activePet && !(angelData && activePet === angelData.value) && !(reaperData && activePet === reaperData.value)) { 
           pugPetImg.src = activePet;
           pugPetImg.style.display = 'block'; 
           
-          // --- LOGIC ADD CLASS ANIMATION ---
+          // 1. Xử lý hiệu ứng thở
           if (activePet.includes("1000000106.png")) {
               pugPetImg.classList.add("pet-breathing-effect");
           } else {
@@ -1088,22 +1607,22 @@ function updateDisplay(){
           let petData = petShopItems.find(p => p.value === activePet);
           if (!petData) petData = shopItems.find(p => p.value === activePet);
           
-          // --- SỬA: LOGIC ÁP DỤNG KÍCH THƯỚC TÙY CHỈNH ---
+          // 2. Xử lý kích thước (Set vào container)
           if (petData && petData.customWidth) {
-              pugPetImg.style.width = petData.customWidth; // Áp dụng size nhỏ cho Choco
+              petContainer.style.width = petData.customWidth;
           } else {
-              pugPetImg.style.width = "120px"; // Size mặc định cho các pet khác
+              petContainer.style.width = "120px"; // Size mặc định
           }
-          // -----------------------------------------------
 
+          // 3. Xử lý vị trí (Set vào container)
           if (petData && petData.position) {
-              pugPetImg.style.bottom = petData.position.bottom;
-              pugPetImg.style.left = petData.position.left;
-              pugPetImg.style.transform = 'none'; 
+              petContainer.style.bottom = petData.position.bottom;
+              petContainer.style.left = petData.position.left;
+              petContainer.style.transform = 'none'; // Bỏ căn giữa nếu đã có vị trí cụ thể
           } else {
-              pugPetImg.style.bottom = '35px'; 
-              pugPetImg.style.left = '50%';
-              pugPetImg.style.transform = 'translateX(calc(-50% - 50px))';
+              petContainer.style.bottom = '35px';
+              petContainer.style.left = '50%';
+              petContainer.style.transform = 'translateX(-50%)'; // Căn giữa
           }
       } else {
           pugPetImg.src = "";
@@ -1129,17 +1648,54 @@ function updateDisplay(){
               
               if (slotData.stage === 1) { 
                   if (slotData.value === 'hat_kim_loai') useIcon = "1000000111.gif"; 
-                  else if (slotData.value === 'hat_nguyen_to') useIcon = "1000000113.gif"; 
+                  else if (slotData.value === 'hat_nguyen_to') useIcon = "1000000113.gif";
+                  else if (slotData.value === 'hat_tinh_yeu') useIcon = "1000000133.gif";
               }
               else if (slotData.stage === 2) {
                    if (slotData.value === 'hat_kim_loai') useIcon = "1000000124.gif"; 
-                   else if (slotData.value === 'hat_nguyen_to') useIcon = "1000000114.gif"; 
+                   else if (slotData.value === 'hat_nguyen_to') useIcon = "1000000114.gif";
+                   else if (slotData.value === 'hat_tinh_yeu') useIcon = "1000000134.gif";
               }
 
-              if (slotData.stage >= 1) {
-                  seedImg.classList.add('big-plant'); 
-              } else {
-                  seedImg.classList.remove('big-plant');
+              // --- RESET CÁC CLASS CŨ ---
+              // Nhớ xóa cả class 'medium-plant' mới thêm
+              seedImg.classList.remove('big-plant', 'medium-plant', 'love-fix', 'shadow-green', 'shadow-metal', 'shadow-element');
+
+              if (slotData.stage === 0) {
+                  // 1. Mầm nhỏ: Thêm bóng xanh lá
+                  seedImg.classList.add('shadow-green');
+              } 
+              else if (slotData.stage >= 1) {
+                  // --- SỬA LOGIC SIZE: TÁCH RIỆNG STAGE 1 VÀ 2 ---
+                  
+                  // Nếu là Hạt Tình Yêu -> Áp dụng fix màu hồng và chia size theo giai đoạn
+                  if (slotData.value === 'hat_tinh_yeu') {
+                      seedImg.classList.add('love-fix'); // Luôn thêm class để có màu bóng hồng
+
+                      if (slotData.stage === 1) {
+                          // Giai đoạn 1: Dùng class medium-plant để kích hoạt CSS nhỏ bạn vừa thêm
+                          seedImg.classList.add('medium-plant'); 
+                      } else {
+                          // Giai đoạn 2 (Thu hoạch): Dùng class big-plant như cũ
+                          seedImg.classList.add('big-plant');
+                      }
+                  }
+                  else {
+                      // Với các cây khác (Kim Loại, Nguyên Tố...)
+                      if (slotData.stage === 1) {
+                          seedImg.classList.add('medium-plant'); // Giai đoạn 1: Size vừa (160%)
+                      } else {
+                          seedImg.classList.add('big-plant');    // Giai đoạn 2: Size to (220%)
+                      }
+                  }
+
+                  // --- ADD CLASS BÓNG (DÙNG CHUNG LOGIC TÊN, CSS TỰ CHỈNH) ---
+                  if (slotData.value === 'hat_kim_loai') {
+                      seedImg.classList.add('shadow-metal');
+                  }
+                  if (slotData.value === 'hat_nguyen_to') {
+                      seedImg.classList.add('shadow-element');
+                  }
               }
 
               seedImg.src = useIcon;
@@ -1154,6 +1710,44 @@ function updateDisplay(){
           }
       }
   });
+// --- CẬP NHẬT HIỂN THỊ VẬT PHẨM TREO (ĐÃ TỐI ƯU) ---
+vineDecorations.forEach((itemId, index) => {
+  const hangingEl = document.getElementById(`grasshopper-${index}`);
+  if (hangingEl) {
+      if (itemId) {
+          const itemConfig = HANGING_ITEMS_CONFIG.find(i => i.id === itemId);
+          if (itemConfig) {
+              hangingEl.src = itemConfig.img;
+              hangingEl.style.display = 'block';
+              
+              // Áp dụng style từ config (Code gọn hơn rất nhiều)
+              if (itemConfig.style) {
+                  hangingEl.style.width = itemConfig.style.width || '50px';
+                  hangingEl.style.top = itemConfig.style.top || '205px';
+                  hangingEl.style.marginLeft = itemConfig.style.marginLeft || '0px';
+              }
+              
+              // Hiệu ứng lắc lư
+              hangingEl.style.animation = 'swing-grasshopper 3s ease-in-out infinite';
+          }
+      } else {
+          hangingEl.style.display = 'none';
+      }
+  }
+});
+
+  // --- CODE MỚI: Bật sáng dây leo khi đủ 5 món ---
+  const isFullSet = vineDecorations.every(item => item !== null);
+  const vineElements = document.querySelectorAll('.vine-deco');
+  
+  vineElements.forEach(vine => {
+      if (isFullSet) {
+          vine.classList.add('vine-glowing');
+      } else {
+          vine.classList.remove('vine-glowing');
+      }
+  });
+  // ----------------------------------------------
 }
 
 function showShopPopup() {
@@ -1315,8 +1909,11 @@ function handleBuy(event) {
   
   if (!item) return;
   
-  if (item.value === 'hat_nguyen_to' || item.value === 'hat_kim_loai') {
-      let quantityStr = prompt(`Bạn muốn mua bao nhiêu ${item.name}?\n(Giá: ${item.price} Đậu/hạt)`, "1");
+// Sửa: Áp dụng cho TẤT CẢ vật phẩm có type là 'seed'
+if (item.type === 'seed') {
+      const currencyName = item.currency === 'la' ? 'Lá' : 'Đậu';
+      let quantityStr = prompt(`Bạn muốn mua bao nhiêu ${item.name}?\n(Giá: ${item.price} ${currencyName}/hạt)`, "1");
+      
       if (quantityStr === null) return;
       let quantity = parseInt(quantityStr);
       
@@ -1327,19 +1924,31 @@ function handleBuy(event) {
       
       let totalCost = item.price * quantity;
       
-      if (dau >= totalCost) {
-          if (confirm(`Tổng tiền là ${totalCost.toLocaleString('vi-VN')} Đậu. Bạn chắc chắn muốn mua ${quantity} hạt chứ?`)) {
-              dau -= totalCost;
+      // Kiểm tra xem người dùng dùng loại tiền nào
+      let userMoney = (item.currency === 'la') ? la : dau;
+
+      if (userMoney >= totalCost) {
+          if (confirm(`Tổng tiền là ${totalCost.toLocaleString('vi-VN')} ${currencyName}. Bạn chắc chắn muốn mua ${quantity} hạt chứ?`)) {
+              // Trừ đúng loại tiền
+              if (item.currency === 'la') {
+                  la -= totalCost;
+              } else {
+                  dau -= totalCost;
+              }
+
               if (ownedSeeds[item.value] !== undefined) ownedSeeds[item.value] += quantity;
               else ownedSeeds[item.value] = quantity;
+              
               alert(`Đã mua thành công ${quantity}x ${item.name}!`);
-              updateDisplay(); updateShop(); updatePetShop(); updateSeedShop(); updateControlButtons();
+_saveGame(false);
+updateDisplay(); updateShop(); updatePetShop(); updateSeedShop(); updateControlButtons();
           }
       } else {
-          alert(`Bạn không đủ Đậu! Cần ${totalCost.toLocaleString('vi-VN')} Đậu.`);
+          alert(`Bạn không đủ ${currencyName}! Cần ${totalCost.toLocaleString('vi-VN')} ${currencyName}.`);
       }
       return; 
   }
+  // --------------------------------------------------------
   
   if (item.type === "item" && item.value === "trung_bang_tuyet" && (hasIceEgg || isIceDragonHatched)) {
       alert(`${item.name} đã được sở hữu!`); 
@@ -1409,12 +2018,19 @@ btnNext.addEventListener('click', () => {
     // ------------------------------
 
     hasIceEgg = false; isIceDragonHatched = false; isIceDragonEvolved = false; hatchedPetType = "thien_than";
-    ownedSeeds = { 'hat_nguyen_to': 1, 'hat_kim_loai': 1 }; 
+    ownedSeeds = { 'hat_nguyen_to': 1, 'hat_kim_loai': 1, 'hat_tinh_yeu': 1 };
     ownedPots = { 'so_dua': 0, 'chau_dong': 0, 'chau_bac': 0, 'chau_vang': 0, 'chau_bach_kim': 0, 'chau_kim_cuong': 0, 'chau_kim_cuong_do': 0 }; 
     equippedPots = ['so_dua', 'so_dua', 'so_dua', 'so_dua', 'so_dua']; 
     lastFedTime = 0; 
     farmSlots = Array(5).fill(null); 
-    globalPetAge = 0; 
+    globalPetAge = 0;
+
+    vineDecorations = [null, null, null, null, null]; 
+    ownedDecorations = { 'chau_chau': 0 };
+
+    // Reset vật phẩm đặc biệt về 0
+    ownedArtifacts = { 'manh_nguyen_to': 0, 'manh_kim_loai': 0, 'vuong_mien': 0 };
+
     alert(`Chào mừng ${playerName} đến với Farm LOL!`);
     updateDisplay(); updateControlButtons();
 });
@@ -1423,27 +2039,56 @@ function loadGame(){
     const savedGame = localStorage.getItem('farmLolGame');
     if(savedGame){
         const gameData = JSON.parse(savedGame);
-        playerName = gameData.playerName; farmIcon = gameData.farmIcon; level = gameData.level; exp = gameData.exp;
+        
+        // 1. Tải các chỉ số cơ bản
+        playerName = gameData.playerName; 
+        farmIcon = gameData.farmIcon; 
+        level = gameData.level; 
+        exp = gameData.exp;
         dau = gameData.dau !== undefined ? gameData.dau : (gameData.xu !== undefined ? gameData.xu : 0);
         la = gameData.la !== undefined ? gameData.la : (gameData.usd !== undefined ? gameData.usd : 0);
+        
+        // 2. Tải công cụ & Ô đất
         tool = gameData.tool;
         farmSlots = gameData.farmSlots ? (Array.isArray(gameData.farmSlots) ? gameData.farmSlots : Array(5).fill(null)) : Array(5).fill(null);
         if (farmSlots.length < 5) { while(farmSlots.length < 5) farmSlots.push(null); }
-        activePet = gameData.activePet || null; ownedPets = gameData.ownedPets || []; 
-        hasIceEgg = gameData.hasIceEgg || false; isIceDragonHatched = gameData.isIceDragonHatched || false; isIceDragonEvolved = gameData.isIceDragonEvolved || false;
-        hatchedPetType = gameData.hatchedPetType || "thien_than"; // LOAD LOẠI PET ĐÃ ẤP
+        
+        // 3. Tải Pet & Trạng thái Trứng (QUAN TRỌNG CHO VIỆC KHÔNG MẤT TRỨNG)
+        activePet = gameData.activePet || null; 
+        ownedPets = gameData.ownedPets || []; 
+        hasIceEgg = gameData.hasIceEgg || false; 
+        isIceDragonHatched = gameData.isIceDragonHatched || false; 
+        isIceDragonEvolved = gameData.isIceDragonEvolved || false;
+        hatchedPetType = gameData.hatchedPetType || "thien_than"; // Tải loại Pet đã ấp
+        incubationFinishTime = gameData.incubationFinishTime || 0; // Tải thời gian ấp trứng
+        
+        // 4. SỬA LỖI MẤT HẠT GIỐNG TẠI ĐÂY:
+        // Code cũ chỉ lấy 2 hạt, code mới sẽ lấy toàn bộ danh sách đã lưu
         const savedSeeds = gameData.ownedSeeds || {};
-        ownedSeeds = { 'hat_nguyen_to': savedSeeds['hat_nguyen_to'] || 0, 'hat_kim_loai': savedSeeds['hat_kim_loai'] || 0 };
+        ownedSeeds = Object.assign({}, savedSeeds); 
+        
+        // Đảm bảo các hạt cơ bản không bị lỗi nếu file save cũ chưa có
+        if(ownedSeeds['hat_nguyen_to'] === undefined) ownedSeeds['hat_nguyen_to'] = 0;
+        if(ownedSeeds['hat_kim_loai'] === undefined) ownedSeeds['hat_kim_loai'] = 0;
+        if(ownedSeeds['hat_tinh_yeu'] === undefined) ownedSeeds['hat_tinh_yeu'] = 0;
+
+        // 5. Tải Chậu & Đồ rèn & Trang bị
         ownedPots = Object.assign({ 'so_dua': 5, 'chau_dong': 0, 'chau_bac': 0, 'chau_vang': 0, 'chau_bach_kim': 0, 'chau_kim_cuong': 0, 'chau_kim_cuong_do': 0 }, gameData.ownedPots || {});
         craftingQueue = gameData.craftingQueue || [];
         equippedPots = gameData.equippedPots || ['so_dua', 'so_dua', 'so_dua', 'so_dua', 'so_dua'];
+        
+        // Đồng bộ lại chậu đang dùng nếu dữ liệu cũ chưa có
         farmSlots.forEach((slot, idx) => { if(slot && slot.potType) { equippedPots[idx] = slot.potType; } });
+        
+        // 6. Tải các chỉ số phụ & Trang trí
         lastFedTime = gameData.lastFedTime || 0;
         globalPetAge = gameData.globalPetAge || 0;
-
-        // --- DÒNG MỚI ĐƯỢC THÊM VÀO ĐÂY ---
-        incubationFinishTime = gameData.incubationFinishTime || 0;
-        // ----------------------------------
+        vineDecorations = gameData.vineDecorations || [null, null, null, null, null];
+        ownedDecorations = gameData.ownedDecorations || { 'chau_chau': 0 };
+        // Tải kho vật phẩm đặc biệt
+ownedArtifacts = Object.assign({ 'manh_nguyen_to': 0, 'manh_kim_loai': 0, 'vuong_mien': 0 }, gameData.ownedArtifacts || {});
+grasshopperExchanged = gameData.grasshopperExchanged || 0;
+usedGiftcodes = gameData.usedGiftcodes || [];
     }
 }
 
@@ -1451,14 +2096,13 @@ function _saveGame(showAlert = false){
     const gameData = { 
         playerName, farmIcon, level, exp, dau, la, tool, farmSlots, 
         activePet, ownedPets, hasIceEgg, isIceDragonHatched, isIceDragonEvolved, 
-        hatchedPetType, // LƯU LOẠI PET ĐÃ ẤP
+        hatchedPetType, 
         ownedSeeds, lastFedTime, globalPetAge,
         ownedPots, craftingQueue, equippedPots,
-
-        // --- THÊM DÒNG NÀY ---
-        incubationFinishTime 
-        // ---------------------
-    }; 
+        incubationFinishTime, vineDecorations, ownedDecorations, ownedArtifacts,
+        grasshopperExchanged,
+        usedGiftcodes
+    };
     localStorage.setItem('farmLolGame', JSON.stringify(gameData));
     if(showAlert) alert("Đã lưu trò chơi!");
 }
@@ -1471,25 +2115,43 @@ function deleteGame(){
         localStorage.removeItem('farmLolGame');
         playerName = "Nông dân"; farmIcon = "🌾"; level = 0; exp = 0; 
         
-        // Reset tiền về 0 (cục vàng biến mất)
+        // Reset tiền về 0
         dau = 0; 
         la = 0; 
         
         farmSlots = Array(5).fill(null); 
         activePet = null; ownedPets = []; 
-        hasIceEgg = false; isIceDragonHatched = false; isIceDragonEvolved = false; hatchedPetType = "thien_than";
-        ownedSeeds = { 'hat_nguyen_to': 0, 'hat_kim_loai': 0 };
+        
+        // --- SỬA 1: Reset trạng thái Trứng & Rồng & Thời gian ấp ---
+        hasIceEgg = false; 
+        isIceDragonHatched = false; 
+        isIceDragonEvolved = false; 
+        hatchedPetType = "thien_than";
+        incubationFinishTime = 0; // Quan trọng: Xoá thời gian ấp để mất Thiên Nga 🦢
+        
+        ownedSeeds = { 'hat_nguyen_to': 0, 'hat_kim_loai': 0, 'hat_tinh_yeu': 0 };
         ownedPots = { 'so_dua': 0, 'chau_dong': 0, 'chau_bac': 0, 'chau_vang': 0, 'chau_bach_kim': 0, 'chau_kim_cuong': 0, 'chau_kim_cuong_do': 0 };
         equippedPots = ['so_dua', 'so_dua', 'so_dua', 'so_dua', 'so_dua'];
         craftingQueue = [];
-        lastFedTime = 0; globalPetAge = 0; 
+        lastFedTime = 0; globalPetAge = 0;
+        
+        // Reset 5 vị trí dây leo về trống
+        vineDecorations = [null, null, null, null, null];
+        
+        // Reset kho đồ trang trí
+        ownedDecorations = { 'chau_chau': 0 };
+        ownedArtifacts = { 'manh_nguyen_to': 0, 'manh_kim_loai': 0, 'vuong_mien': 0 }; // Reset vật phẩm về 0
+
+        grasshopperExchanged = 0;  // Reset biến đếm đổi quà
+        usedGiftcodes = [];        // Reset danh sách Giftcode đã dùng
 
         // Xóa luôn quả đào nếu nó đang hiện
         const rewardIcon = document.getElementById('daily-reward-icon');
         if(rewardIcon) rewardIcon.remove();
 
         alert("Đã xóa nông trại!");
-        updateDisplay(); updateControlButtons();
+        updateDisplay(); 
+        updateControlButtons();
     }
 }
 btnDelete.addEventListener('click', deleteGame);
@@ -1521,7 +2183,7 @@ function closeInteractionPopup() {
 // --- HÀM XỬ LÝ ẤP TRỨNG MỚI (CÓ HẸN GIỜ 24H) ---
 function handleIceDragonInteraction(action, selectedType = 'thien_than') {
         // 24 giờ = 24 * 60 phút * 60 giây * 1000 mili giây
-    const HATCH_DURATION = 24 * 60 * 60 * 1000; 
+    const HATCH_DURATION = 24* 60 * 60 * 1000; 
     
     // MẸO: Muốn test nhanh 10 giây thì đổi dòng trên thành:
     // const HATCH_DURATION = 10 * 1000;
@@ -1587,22 +2249,21 @@ function renderPotList(container, slotNum, slotIndex) {
     Object.keys(ownedPots).forEach(potKey => {
         const amount = ownedPots[potKey] || 0;
         const potDef = POT_DEFINITIONS[potKey];
-        
-        // Chỉ hiện nếu có số lượng > 0
-        if (amount > 0 && potDef) {
+        // SỬA: Kiểm tra nếu đang dùng thì vẫn hiện ra dù kho = 0
+        const isEquipped = (currentSlotPot === potKey);
+
+        // ĐIỀU KIỆN MỚI: (Có trong kho HOẶC Đang dùng) VÀ (Dữ liệu hợp lệ)
+        if ((amount > 0 || isEquipped) && potDef) {
             hasItem = true;
             const card = document.createElement('div');
             card.className = "shop-item";
-            
-            const isEquipped = (currentSlotPot === potKey); 
-            
-            // --- HIỂN THỊ EXP BONUS ---
+
+            // Hiển thị dòng Bonus Exp
             let bonusText = "";
             if (potDef.expBonus > 0) {
                 bonusText = `<div style="color:#4CAF50; font-size:0.8em; font-weight:bold;">+${potDef.expBonus} Exp/lần</div>`;
             }
 
-            // HTML cơ bản cho phần thông tin
             let htmlContent = `
                 <img src="${potDef.img}" style="width: 40px; height: 40px; object-fit: contain;">
                 <div style="font-weight: bold; font-size: 0.9em; margin-top:5px;">${potDef.name}</div>
@@ -1610,89 +2271,90 @@ function renderPotList(container, slotNum, slotIndex) {
                 <div style="color: var(--text-muted); font-size: 0.8em; margin:3px 0 5px 0;">Có: ${amount}</div>
             `;
 
-            // --- XỬ LÝ NÚT BẤM ---
-            // Nút "Thay Chậu/Đang Dùng" mặc định
+            // Nút bấm: Nếu đang dùng thì hiện màu Xám, chưa dùng thì màu Xanh
             const btnEquipHTML = `
                 <button class="btn-equip-pot" style="background:${isEquipped ? 'grey' : '#2196F3'}; border-radius:6px; cursor:${isEquipped ? 'default' : 'pointer'}; width: 100%;">
                     ${isEquipped ? 'Đang dùng' : 'Thay Chậu'}
                 </button>
             `;
 
-            // NẾU LÀ SỌ DỪA -> HIỆN THÊM NÚT BÁN
+            // Nếu là Sọ Dừa -> Thêm nút Bán
             if (potKey === 'so_dua') {
                 htmlContent += `
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; width:100%; margin-top:5px;">
                         ${btnEquipHTML}
-                        <button class="btn-sell-pot" style="
-                            width:100%; border:none; border-radius:6px; 
-                            padding:6px; font-weight:700; font-size:11px; 
-                            color:white; cursor:pointer; 
-                            background:#FF5722; box-shadow: 0 2px 0 #E64A19;
-                        ">💰 Bán</button>
+                        <button class="btn-sell-pot" style="width:100%; border:none; border-radius:6px; padding:6px; font-weight:700; font-size:11px; color:white; cursor:pointer; background:#FF5722; box-shadow: 0 2px 0 #E64A19;">💰 Bán</button>
                     </div>
                 `;
             } else {
-                // Các chậu khác chỉ hiện nút Thay Chậu
                 htmlContent += `<div style="width:100%; margin-top:5px;">${btnEquipHTML}</div>`;
             }
 
             card.innerHTML = htmlContent;
-            
-            // --- SỰ KIỆN NÚT THAY CHẬU ---
+
+            // --- SỰ KIỆN: THAY CHẬU ---
             const btnEquip = card.querySelector('.btn-equip-pot');
-            if(btnEquip) {
+            if (btnEquip) {
                 btnEquip.onclick = () => {
-                    if (isEquipped) return;
-                    if (farmSlots[slotIndex]) { alert("Hãy thu hoạch cây trước!"); return; }
+                    if (isEquipped) return; // Đang dùng thì không làm gì
+                    if (farmSlots[slotIndex]) {
+                        alert("Hãy thu hoạch cây trước!");
+                        return;
+                    }
+
                     const oldPot = currentSlotPot;
                     const newPot = potKey;
-                    ownedPots[newPot]--;
-                    ownedPots[oldPot] = (ownedPots[oldPot] || 0) + 1;
-                    equippedPots[slotIndex] = newPot;
-                    alert(`Đã thay sang ${potDef.name} (Bonus +${potDef.expBonus} Exp)!`);
-                    updateDisplay();
-                    closeInteractionPopup();
+
+                    // Kiểm tra kỹ lại xem kho còn hàng để thay không
+                    if (ownedPots[newPot] > 0) {
+                        ownedPots[newPot]--; // Trừ cái mới
+                        ownedPots[oldPot] = (ownedPots[oldPot] || 0) + 1; // Trả cái cũ về kho
+                        equippedPots[slotIndex] = newPot; // Gán vào ô đất
+
+                        alert(`Đã thay sang ${potDef.name} (Bonus +${potDef.expBonus} Exp)!`);
+                        updateDisplay();
+                        closeInteractionPopup();
+                    } else {
+                        alert("Lỗi: Không tìm thấy chậu này trong kho!");
+                    }
                 };
             }
 
-            // --- SỰ KIỆN NÚT BÁN (CHỈ SỌ DỪA) ---
+            // --- SỰ KIỆN: BÁN SỌ DỪA ---
             const btnSell = card.querySelector('.btn-sell-pot');
             if (btnSell && potKey === 'so_dua') {
                 btnSell.onclick = () => {
-                    // Tính số lượng Sọ Dừa đang được dùng ở các ô đất
-                    const currentlyUsedCount = equippedPots.filter(p => p === 'so_dua').length;
-                    
-                    // Số lượng có thể bán = Tổng có - Số đang dùng
-                    const sellableAmount = amount - currentlyUsedCount;
+                    // Chỉ bán số lượng đang RẢNH (không tính cái đang trồng)
+                    const sellableAmount = amount;
 
                     if (sellableAmount <= 0) {
-                        alert(`Bạn có ${amount} Sọ Dừa nhưng tất cả đang được dùng để trồng cây!\nHãy thay chậu khác trước khi bán.`);
+                        alert(`Bạn không còn Sọ Dừa dư nào trong kho để bán!\n(Các chậu đang trồng cây không thể bán).`);
                         return;
                     }
 
-                    const sellPrice = 1000; // Giá mua 1000 -> Bán 1000
-                    let sellQtyStr = prompt(`Giá bán lại: ${sellPrice.toLocaleString()} Đậu/chậu.\nBạn có thể bán tối đa: ${sellableAmount} cái.\nNhập số lượng muốn bán:`, "1");
-                    
+                    const sellPrice = 500;
+                    let sellQtyStr = prompt(`Giá bán lại: ${sellPrice.toLocaleString()} Đậu/chậu.\nTrong kho đang có: ${sellableAmount} cái.\nNhập số lượng muốn bán:`, "1");
+
                     if (sellQtyStr === null) return;
                     let sellQty = parseInt(sellQtyStr);
 
-                    if (isNaN(sellQty) || sellQty <= 0) {
-                        alert("Số lượng không hợp lệ!");
+                    if (!Number.isInteger(sellQty) || sellQty <= 0) {
+                        alert("Vui lòng nhập số nguyên dương hợp lệ!");
                         return;
                     }
                     if (sellQty > sellableAmount) {
-                        alert(`Bạn chỉ có thể bán tối đa ${sellableAmount} cái (những cái khác đang được dùng)!`);
+                        alert(`Bạn chỉ có ${sellableAmount} cái trong kho!`);
                         return;
                     }
 
                     const totalValue = sellQty * sellPrice;
-                    if(confirm(`Bán ${sellQty}x Sọ Dừa để nhận ${totalValue.toLocaleString()} Đậu?`)) {
+                    if (confirm(`Bán ${sellQty}x Sọ Dừa để nhận ${totalValue.toLocaleString()} Đậu?`)) {
                         ownedPots['so_dua'] -= sellQty;
                         dau += totalValue;
                         alert(`Đã bán thành công! Nhận được ${totalValue.toLocaleString()} Đậu.`);
-                        
+
                         updateDisplay();
-                        // Render lại danh sách để cập nhật số lượng ngay lập tức
+                        // Render lại để cập nhật số lượng ngay lập tức
                         container.innerHTML = "";
                         renderPotList(container, slotNum, slotIndex);
                     }
@@ -1702,8 +2364,8 @@ function renderPotList(container, slotNum, slotIndex) {
             container.appendChild(card);
         }
     });
-    
-    // Phần thông báo cuối danh sách
+
+    // Thông báo cuối danh sách
     if (farmSlots[slotIndex]) {
         container.innerHTML = `<div style="grid-column: span 2; text-align:center; padding:10px; color:#ef5350; font-weight:bold;">⚠️ Thu hoạch cây trước khi thay chậu!</div>` + container.innerHTML;
     } else if (!hasItem) {
@@ -1756,41 +2418,43 @@ function renderSeedList(container, slotNum, slotIndex) {
             };
 
             // --- Logic Nút Bán (MỚI) ---
-            card.querySelector('.btn-sell-seed').onclick = () => {
-                // Hỏi người chơi số lượng muốn bán
-                let sellQtyStr = prompt(`Giá bán lại: ${seedData.price} Đậu/hạt.\nBạn muốn bán bao nhiêu ${seedData.name}?`, "1");
-                if (sellQtyStr === null) return; // Người chơi ấn Hủy
+card.querySelector('.btn-sell-seed').onclick = () => {
+    // Hỏi người chơi số lượng muốn bán
+    let sellQtyStr = prompt(`Giá bán lại: ${seedData.price} Đậu/hạt.\nBạn muốn bán bao nhiêu ${seedData.name}?`, "1");
+    if (sellQtyStr === null) return; // Người chơi ấn Hủy
 
-                let sellQty = parseInt(sellQtyStr);
-                
-                // Kiểm tra tính hợp lệ
-                if (isNaN(sellQty) || sellQty <= 0) {
-                    alert("Số lượng không hợp lệ!");
-                    return;
-                }
-                if (sellQty > amount) {
-                    alert(`Bạn chỉ có ${amount} hạt, không thể bán ${sellQty}!`);
-                    return;
-                }
+    // --- BẮT ĐẦU ĐOẠN VỪA SỬA ---
+    let sellQty = Number(sellQtyStr);
+    
+    // Kiểm tra tính hợp lệ chặt chẽ
+    if (!Number.isInteger(sellQty) || sellQty <= 0) {
+        alert("Vui lòng nhập số nguyên dương hợp lệ (Không nhập số âm hoặc số thập phân)!");
+        return;
+    }
 
-                // Thực hiện giao dịch
-                const totalValue = sellQty * seedData.price;
-                
-                if(confirm(`Bán ${sellQty}x ${seedData.name} để nhận ${totalValue.toLocaleString()} Đậu?`)) {
-                    ownedSeeds[seedValue] -= sellQty;
-                    dau += totalValue;
-                    
-                    alert(`Đã bán thành công! Nhận được ${totalValue.toLocaleString()} Đậu.`);
-                    
-                    // Cập nhật lại giao diện
-                    updateDisplay();
-                    updateSeedShop();
-                    
-                    // Render lại danh sách này để cập nhật số lượng hiển thị ngay lập tức
-                    container.innerHTML = ""; 
-                    renderSeedList(container, slotNum, slotIndex);
-                }
-            };
+    if (sellQty > amount) {
+        alert(`Bạn chỉ có ${amount} hạt, không thể bán ${sellQty}!`);
+        return;
+    }
+
+    // Thực hiện giao dịch
+    const totalValue = sellQty * seedData.price;
+    
+    if(confirm(`Bán ${sellQty}x ${seedData.name} để nhận ${totalValue.toLocaleString()} Đậu?`)) {
+        ownedSeeds[seedValue] -= sellQty;
+        dau += totalValue;
+        
+        alert(`Đã bán thành công! Nhận được ${totalValue.toLocaleString()} Đậu.`);
+        
+        // Cập nhật lại giao diện
+        updateDisplay();
+        updateSeedShop();
+        
+        // Render lại danh sách này để cập nhật số lượng hiển thị ngay lập tức
+        container.innerHTML = ""; 
+        renderSeedList(container, slotNum, slotIndex);
+    }
+};
 
             container.appendChild(card);
         }
@@ -1800,14 +2464,77 @@ function renderSeedList(container, slotNum, slotIndex) {
          container.innerHTML = `<div style="grid-column: span 2; text-align: center; margin: 15px 0; color: #666;">Hết hạt giống.</div>`;
     }
 }
+// --- HÀM TẠO HIỆU ỨNG BAY ---
+function spawnFloatingReward(slotId, htmlContent, delay = 0, typeClass = "float-exp") {
+    // 1. Tìm vị trí của ô đất (slot) trong giao diện
+    const slotEl = document.getElementById(`slot-${slotId}`);
+    if (!slotEl) return;
 
+    // 2. Tạo phần tử bay
+    setTimeout(() => {
+        const floater = document.createElement("div");
+        floater.className = `floating-reward ${typeClass}`;
+        floater.innerHTML = htmlContent;
+
+        // 3. Lấy vị trí top/left hiện tại của slot để đặt floater
+        // Vì slot nằm trong .app-wrapper (relative), ta lấy style top/left của nó
+        // Cộng thêm một chút offset để nó xuất hiện giữa ô
+        const currentTop = parseInt(slotEl.style.top || 0);
+        const currentLeft = parseInt(slotEl.style.left || 0) || (slotEl.offsetLeft); // Fallback nếu style left là calc
+
+        // Lưu ý: Do dùng calc() trong CSS, lấy offsetLeft/Top từ DOM chuẩn hơn
+        floater.style.top = (slotEl.offsetTop - 20) + "px"; 
+        floater.style.left = (slotEl.offsetLeft + 10) + "px";
+
+        // Thêm ngẫu nhiên vị trí X một chút để không bị chồng chéo nếu rớt nhiều món
+        const randomX = Math.floor(Math.random() * 20) - 10; 
+        floater.style.left = (slotEl.offsetLeft + 10 + randomX) + "px";
+
+        // 4. Gắn vào main (nơi chứa các slot)
+        document.querySelector("main").appendChild(floater);
+
+        // 5. Tự xóa sau khi animation kết thúc (1.2s)
+        setTimeout(() => { floater.remove(); }, 1200);
+
+    }, delay);
+}
 function updateFarmState() {
     const now = Date.now();
     let changed = false; 
+
+    // --- LOGIC COMBO MỚI: KIỂM TRA ĐỦ 5 MÓN ---
+    // Hàm .every() sẽ trả về true nếu tất cả các phần tử trong mảng vineDecorations đều khác null (tức là đã treo đồ)
+    const isFullSet = vineDecorations.every(item => item !== null);
+
+    // Nếu đủ 5 món bất kỳ: Giảm 2 giờ (7200000 ms)
+    // Nếu chưa đủ: Giảm 1 giờ (3600000 ms) như cũ
+    const reductionAmount = isFullSet ? 7200000 : 3600000;
+    
+    // Nếu muốn hiện thông báo Combo (tuỳ chọn, mở console để xem)
+    // if(isFullSet) console.log("Combo kích hoạt: Giảm 2h!");
+    // ------------------------------------------
+
     farmSlots.forEach((slotData, index) => {
         if (slotData && slotData.stage < PLANT_STAGES.length - 1) { 
             const nextStageInfo = PLANT_STAGES[slotData.stage + 1];
-            if (now >= slotData.plantedAt + nextStageInfo.duration) { slotData.stage += 1; changed = true; }
+            
+            let requiredDuration = nextStageInfo.duration;
+            
+            // Danh sách các vật phẩm hỗ trợ giảm thời gian
+            const fastGrowthItems = ['chau_chau', 'treo_con_ca', 'treo_long_den', 'treo_trai_chau', 'treo_chong_chong'];
+
+            // Kiểm tra xem vị trí này có treo vật phẩm nằm trong danh sách trên không
+            if (fastGrowthItems.includes(vineDecorations[index])) {
+                // ÁP DỤNG THỜI GIAN GIẢM ĐÃ TÍNH Ở TRÊN
+                requiredDuration -= reductionAmount; 
+                
+                if (requiredDuration < 0) requiredDuration = 0; // Không để thời gian âm
+            }
+
+            if (now >= slotData.plantedAt + requiredDuration) { 
+                slotData.stage += 1; 
+                changed = true; 
+            }
         }
     });
     if (changed) updateDisplay();
@@ -1833,299 +2560,322 @@ const potSlots = document.querySelectorAll(".pot-slot");
 potSlots.forEach(slot => {
     slot.addEventListener("click", () => {
         if (level === 0) { alert("Bạn cần tạo nông trại trước!"); return; }
+        
+        // --- SỬA LỖI: Luôn hiển thị khung text trước ---
         interactionText.style.display = 'block';
+        interactionControls.innerHTML = ''; // Reset nút bấm
         if (activePopupInterval) clearInterval(activePopupInterval);
 
         const slotNum = slot.getAttribute('data-slot');
         const slotNumInt = parseInt(slotNum);
 
         const renderSlotStatus = () => {
+            // Đảm bảo xóa nút cũ mỗi lần render lại
             interactionControls.innerHTML = '';
             
-                        if (slotNum === "1") {
-                // TRƯỜNG HỢP 1: ĐANG TRONG QUÁ TRÌNH ẤP (CÓ ĐỒNG HỒ)
+            if (slotNum === "1") {
+                // --- LOGIC CHO TRỨNG/PET (GIỮ NGUYÊN) ---
                 if (incubationFinishTime > 0) {
                     interactionTitle.innerHTML = `⏳ Đang Ấp Trứng`;
-                    
-                    // Hàm con để vẽ đồng hồ
                     const updateTimer = () => {
                         const now = Date.now();
                         const timeLeft = incubationFinishTime - now;
-                        
                         if (timeLeft <= 0) {
                             interactionText.innerHTML = "Đang hoàn tất quá trình nở...";
                             return;
                         }
-
-                        // Tính toán Giờ : Phút : Giây
                         let seconds = Math.floor((timeLeft / 1000) % 60);
                         let minutes = Math.floor((timeLeft / (1000 * 60)) % 60);
                         let hours = Math.floor((timeLeft / (1000 * 60 * 60)));
-                        
                         let timeString = "";
                         if(hours > 0) timeString += `${hours}h `;
                         if(minutes > 0 || hours > 0) timeString += `${minutes}m `;
                         timeString += `${seconds}s`;
 
                         interactionText.innerHTML = `
-    <div style="text-align:center;">
-        <img src="1000000102.png" style="width:80px; display:block; margin: 0 auto 15px auto;">
-        
-        <div style="font-size:0.95em; color: #555;">Đang hấp thụ linh khí...</div>
-        
-        <div style="margin-top:10px; font-size:1.2em; color:#E65100; font-weight:bold; background:rgba(0,0,0,0.05); padding:10px; border-radius:10px;">
-            🐣 Nở sau: ${timeString}
-        </div>
-    </div>
-`;
+                            <div style="text-align:center;">
+                                <img src="1000000102.png" style="width:80px; display:block; margin: 0 auto 15px auto;">
+                                <div style="font-size:0.95em; color: #555;">Đang hấp thụ linh khí...</div>
+                                <div style="margin-top:10px; font-size:1.2em; color:#E65100; font-weight:bold; background:rgba(0,0,0,0.05); padding:10px; border-radius:10px;">
+                                    🐣 Nở sau: ${timeString}
+                                </div>
+                            </div>`;
                     };
-
-                    updateTimer(); // Chạy ngay lập tức 1 lần
-                    
-                    // Cài đặt chạy mỗi giây để số nhảy
+                    updateTimer();
                     if(activePopupInterval) clearInterval(activePopupInterval);
                     activePopupInterval = setInterval(updateTimer, 1000);
-                    
-                    interactionControls.innerHTML = ''; // Ẩn nút bấm
                 } 
-                
-                // TRƯỜNG HỢP 2: CHƯA ẤP HOẶC ĐÃ NỞ XONG
                 else {
+                    // Logic hiển thị thông tin Pet/Trứng như cũ
                     let petTitle = `🐾 Pet Mây`;
                     let description = '';
-
-                                        // Nếu đã nở rồi
                     if (isIceDragonHatched) {
                         petTitle = (hatchedPetType === 'than_chet') ? `💀 Thần Chết` : `👼 Thiên Thần`;
                         description = `<span style="color:#2196F3;">⭐⭐⭐⭐⭐</span><br>⚡ Hiệu ứng: Auto Thu hoạch (Pet sẽ tự bay đi thu hoạch khi cây chín)`;
                         
-                        // --- TÍNH NĂNG ĐỔI PET MỚI ---
-                        interactionControls.innerHTML = ''; 
-                        
-                        // Xác định Pet muốn đổi sang
+                        // Nút đổi Pet
                         const targetType = (hatchedPetType === 'thien_than') ? 'than_chet' : 'thien_than';
                         const targetName = (targetType === 'thien_than') ? '👼 Thiên Thần' : '💀 Thần Chết';
-                        
                         const btnSwitch = document.createElement('button');
                         btnSwitch.className = "btn-buy";
-                        btnSwitch.style.background = "#673AB7"; // Màu tím huyền bí
+                        btnSwitch.style.background = "#673AB7";
                         btnSwitch.style.marginTop = "15px";
                         btnSwitch.style.padding = "10px";
                         btnSwitch.style.height = "auto";
-                        
-                        btnSwitch.innerHTML = `
-                            Đổi sang ${targetName}
-                            <div style="font-size:0.8em; font-weight:normal; margin-top:4px; color:#E1BEE7;">
-                                Yêu cầu: 10.000 🫘 + 100 Hạt Nguyên Tố
-                            </div>
-                        `;
+                        btnSwitch.innerHTML = `Đổi sang ${targetName}<div style="font-size:0.8em; font-weight:normal; margin-top:4px; color:#E1BEE7;">Yêu cầu: 10.000 🫘 + 100 Mãnh Nguyên Tố</div>`;
                         
                         btnSwitch.onclick = () => {
-                            const costDau = 10000;
-                            const costSeed = 100;
-                            const currentSeeds = ownedSeeds['hat_nguyen_to'] || 0;
-                            
-                            if (dau >= costDau && currentSeeds >= costSeed) {
-                                if (confirm(`Bạn có chắc muốn đổi sang ${targetName}?\nChi phí: ${costDau.toLocaleString()} Đậu và ${costSeed} Hạt Nguyên Tố.`)) {
-                                    // Trừ tài nguyên
+                            const costDau = 10000; const costShard = 100;
+                            const currentShards = ownedArtifacts['manh_nguyen_to'] || 0;
+                            if (dau >= costDau && currentShards >= costShard) {
+                                if (confirm(`Đổi sang ${targetName}?`)) {
                                     dau -= costDau;
-                                    ownedSeeds['hat_nguyen_to'] -= costSeed;
-                                    
-                                    // Đổi loại Pet
+                                    ownedArtifacts['manh_nguyen_to'] -= costShard;
                                     hatchedPetType = targetType;
-                                    
-                                    // Lưu và cập nhật
-                                    saveGame();
-                                    updateDisplay();
-                                    
-                                    // Thông báo và đóng popup để refresh hình ảnh
-                                    alert(`Chuyển đổi thành công sang ${targetName}!`);
+                                    saveGame(); updateDisplay(); alert(`Đã chuyển sang ${targetName}!`);
                                     closeInteractionPopup();
                                 }
-                            } else {
-                                alert(`Bạn không đủ tài nguyên!\n\nCần: ${costDau.toLocaleString()} Đậu & ${costSeed} Hạt Nguyên Tố.\nHiện có: ${dau.toLocaleString()} Đậu & ${currentSeeds} Hạt Nguyên Tố.`);
-                            }
+                            } else { alert("Không đủ tài nguyên!"); }
                         };
-                        
                         interactionControls.appendChild(btnSwitch);
-                        // -----------------------------
                     }
-                    // Nếu chưa nở (đang là trứng)
                     else if (hasIceEgg) {
                         petTitle = `Trứng Ngũ Sắc`;
                         description = `Kiu 🦢 ấp trứng (Thời gian: 24 giờ)!`;
-                        
-                        // Tạo Menu chọn Pet
                         const selectionDiv = document.createElement('div');
-                        selectionDiv.style.margin = "15px 0";
-                        selectionDiv.style.textAlign = "left";
-                        selectionDiv.style.background = "rgba(0,0,0,0.05)";
-                        selectionDiv.style.padding = "10px";
-                        selectionDiv.style.borderRadius = "8px";
-
                         selectionDiv.innerHTML = `
-                            <div style="font-size:0.9em; margin-bottom:8px; font-weight:bold;">Bạn muốn ấp ra Pet nào?</div>
-                            <label style="display:flex; align-items:center; margin-bottom:8px; cursor:pointer;">
-                                <input type="radio" name="hatch_choice" value="thien_than" checked style="margin-right:8px; transform:scale(1.2);"> 
-                                <span>👼 Thiên Thần (Cute)</span>
-                            </label>
-                            <label style="display:flex; align-items:center; cursor:pointer;">
-                                <input type="radio" name="hatch_choice" value="than_chet" style="margin-right:8px; transform:scale(1.2);"> 
-                                <span>💀 Thần Chết (Ngầu)</span>
-                            </label>
-                        `;
-                        interactionControls.innerHTML = ''; 
+                            <div style="margin:15px 0; background:rgba(0,0,0,0.05); padding:10px; border-radius:8px;">
+                                <div style="font-size:0.9em; margin-bottom:8px; font-weight:bold;">Bạn muốn ấp ra Pet nào?</div>
+                                <label style="display:flex; align-items:center; margin-bottom:8px;"><input type="radio" name="hatch_choice" value="thien_than" checked style="margin-right:8px;"> 👼 Thiên Thần</label>
+                                <label style="display:flex; align-items:center;"><input type="radio" name="hatch_choice" value="than_chet" style="margin-right:8px;"> 💀 Thần Chết</label>
+                            </div>`;
                         interactionControls.appendChild(selectionDiv);
-                        
                         const btnHatch = document.createElement('button');
                         btnHatch.textContent = `Bắt đầu Ấp (24h)`;
                         btnHatch.className = "btn-buy";
                         btnHatch.style.background = 'orange';
-                        
                         btnHatch.onclick = () => {
                             const choices = document.getElementsByName('hatch_choice');
                             let selected = 'thien_than';
                             for(const c of choices) { if(c.checked) selected = c.value; }
                             handleIceDragonInteraction('hatch', selected); 
                         };
-                        
                         interactionControls.appendChild(btnHatch);
                     } 
-                    // Nếu chưa có gì
-                    else { 
-                        description = `Chưa có pet nào ở đây! Hãy vào Shop mua Trứng Ngũ Sắc.`; 
-                        interactionControls.innerHTML = '';
-                    }
+                    else { description = `Chưa có pet nào! Vào Shop mua Trứng Ngũ Sắc.`; }
                     
                     interactionTitle.innerHTML = petTitle;
                     interactionText.innerHTML = description;
                 }
             }
+            // --- LOGIC CÁC Ô ĐẤT TRỒNG CÂY (ĐÃ SỬA LỖI Ở ĐÂY) ---
             else if (FARM_IDS.includes(slotNumInt)) {
-                 if (interactionTitle) interactionTitle.innerHTML = "🌱 Trồng Trọt"; 
+                 interactionTitle.innerHTML = "🌱 Trồng Trọt"; // Đặt lại tiêu đề
                  const slotIndex = FARM_IDS.indexOf(slotNumInt); 
                  const slotData = farmSlots[slotIndex];
                  
+                 // 1. Ô ĐẤT TRỐNG -> Mở kho hạt giống
                  if (slotData === null) {
                      if(activePopupInterval) clearInterval(activePopupInterval);
                      showSeedSelectionPopup(slotNum, slotIndex); 
                      return; 
-                 } else {
-                     updateFarmState(); 
+                 } 
+                 
+                 // 2. CÓ CÂY -> Hiển thị trạng thái
+                 else {
+                     updateFarmState(); // Cập nhật trạng thái mới nhất
                      const currentStage = PLANT_STAGES[slotData.stage];
                      const isReadyForHarvest = slotData.stage === PLANT_STAGES.length - 1;
-                     let statusMessage = `Bạn đang trồng <b>${slotData.name}</b>.<br>`;
                      
-                     if (isReadyForHarvest) { 
-                         if(activePopupInterval) clearInterval(activePopupInterval);
-                         statusMessage += `<br><span style="color:#4caf50; font-weight:bold; font-size:1.1em;">✨ SẴN SÀNG THU HOẠCH!</span>`; 
-                     } else {
-                         const nextStageInfo = PLANT_STAGES[slotData.stage + 1];
-                         const timeToNext = (slotData.plantedAt + nextStageInfo.duration) - Date.now();
-                         statusMessage += `Giai đoạn: ${currentStage.name}.<br>`;
-                         statusMessage += `<div style="margin-top:8px;">⏳ Lớn sau: <b id="plant-timer" style="color:#d32f2f;">${getCountdownTimePlant(timeToNext)}</b></div>`;
-                         
-                         if(document.getElementById('interaction-popup').classList.contains('popup-active')) { 
-                             if (activePopupInterval) clearInterval(activePopupInterval);
-                             activePopupInterval = setInterval(() => {
-                                 const timerEl = document.getElementById("plant-timer");
-                                 if (timerEl) {
-                                     const newTimeToNext = (slotData.plantedAt + nextStageInfo.duration) - Date.now();
-                                     if (newTimeToNext <= 0) {
-                                         clearInterval(activePopupInterval); activePopupInterval = null; renderSlotStatus(); 
-                                     } else { timerEl.textContent = getCountdownTimePlant(newTimeToNext); }
-                                 } else { clearInterval(activePopupInterval); activePopupInterval = null; }
-                             }, 1000);
-                         }
-                     }
-                     interactionText.innerHTML = statusMessage;
-                     
-                     // --- 4. CẬP NHẬT LOGIC THU HOẠCH VỚI EXP BONUS ---
+                     // Tạo thông báo cơ bản
+                     let statusMessage = `Bạn đang trồng <b style="color:#4CAF50; font-size:1.1em;">${slotData.name}</b><br>`;
+                     statusMessage += `<span style="color:#795548; font-size:0.9em;">Giai đoạn: ${currentStage.name}</span><br>`;
+
+                     // TRƯỜNG HỢP A: ĐÃ CHÍN (THU HOẠCH)
                      if (isReadyForHarvest) {
-                         const btnHarvest = document.createElement('button');
+                         interactionText.innerHTML = statusMessage + `<div style="margin-top:10px; color:#E65100; font-weight:bold;">✨ Cây đã chín! Thu hoạch ngay.</div>`;
                          
+                         const btnHarvest = document.createElement('button');
                          const currentPotType = slotData.potType || 'so_dua';
                          const potDef = POT_DEFINITIONS[currentPotType];
                          const potBonus = potDef ? (potDef.expBonus || 0) : 0;
 
-                         // Nếu đã nở Thiên Thần (được tính là Evolved = true khi nở)
+                         // Logic Auto Thu Hoạch (Pet)
                          if (isIceDragonEvolved) {
                              const harvesterName = (hatchedPetType === 'than_chet') ? "💀 Thần Chết" : "👼 Thiên Thần";
                              btnHarvest.innerHTML = `${harvesterName} Thu Hoạch (Auto)`;
                              btnHarvest.className = "btn-buy";
                              btnHarvest.style.background = 'linear-gradient(45deg, #2196F3, #00BCD4)';
                              
-                             // --- LOGIC MỚI: THIÊN THẦN BAY THU HOẠCH ---
                              btnHarvest.onclick = () => {
-                                 closeInteractionPopup(); 
-                                 const angelImg = document.getElementById('ice-egg-img');
-                                 if (angelImg) { angelImg.classList.add('angel-harvesting'); }
+    // 1. KIỂM TRA KHÓA: Nếu đang thu hoạch thì dừng lại ngay
+    if (isHarvesting) return; 
+    
+    // 2. BẬT KHÓA
+    isHarvesting = true; 
 
-                                 setTimeout(() => {
-                                     let totalExpReceived = 0; let hasHarvested = false;
-                                     farmSlots.forEach((sData, sIdx) => {
-                                         if (sData && sData.stage === PLANT_STAGES.length - 1) {
-                                             const hSeedValue = sData.value;
-                                             const hReturnAmount = 2; 
-                                             
-                                             const sPotType = sData.potType || 'so_dua';
-                                             const sPotDef = POT_DEFINITIONS[sPotType];
-                                             const sBonus = sPotDef ? (sPotDef.expBonus || 0) : 0;
-                                             
-                                             // --- THAY ĐỔI: EXP THIÊN THẦN VỀ 10 (XOÁ X2) ---
-                                             const hExp = 10 + sBonus; 
+    // Đóng popup ngay
+    closeInteractionPopup(); 
+    
+    // Hiệu ứng Pet bay
+    const angelImg = document.getElementById('ice-egg-img');
+    if (angelImg) { angelImg.classList.add('angel-harvesting'); }
+    
+    // Xử lý sau 2 giây
+    setTimeout(() => {
+        let hasHarvested = false; 
+        
+        farmSlots.forEach((sData, sIdx) => {
+            // ... (Logic tính toán EXP và Item giữ nguyên như cũ) ...
+            // Chỉ thu hoạch cây đã chín
+            if (sData && sData.stage === PLANT_STAGES.length - 1) {
+                const hSeedValue = sData.value; 
+                const slotId = FARM_IDS[sIdx];
 
-                                             exp += hExp; totalExpReceived += hExp;
-                                             if (ownedSeeds[hSeedValue] !== undefined) ownedSeeds[hSeedValue] += hReturnAmount;
-                                             else ownedSeeds[hSeedValue] = hReturnAmount;
-                                             farmSlots[sIdx] = null; hasHarvested = true;
-                                         }
-                                     });
+                // Tính EXP
+                const sPotType = sData.potType || 'so_dua'; 
+                const sPotDef = POT_DEFINITIONS[sPotType];
+                const sBonus = sPotDef ? (sPotDef.expBonus || 0) : 0; 
+                const hExp = 10 + sBonus; 
+                exp += hExp; 
 
-                                     if (angelImg) { angelImg.classList.remove('angel-harvesting'); }
+                spawnFloatingReward(slotId, `+${hExp} XP`, 0, "float-exp");
 
-                                     if (hasHarvested) {
-                                         alert(`${harvesterName} đã bay một vòng và thu hoạch xong!\n\nTổng nhận: ${totalExpReceived} EXP!`);
-                                         updateDisplay(); checkLevelUp(); updateSeedShop();
-                                     } else {
-                                         alert(`${harvesterName} bay về tay trắng: Không có cây nào chín cả!`);
-                                     }
-                                 }, 2000); 
-                             };
-                         } else {
-                             // Thu hoạch thủ công
+                // Cộng hạt giống
+                const hReturnAmount = 2; 
+                if (ownedSeeds[hSeedValue] === undefined) ownedSeeds[hSeedValue] = 0;
+                ownedSeeds[hSeedValue] += hReturnAmount;
+                
+                // Rớt đồ & Hiệu ứng
+                if (HARVEST_DROPS[hSeedValue]) {
+                    const dropInfo = HARVEST_DROPS[hSeedValue];
+                    if (!ownedArtifacts[dropInfo.id]) ownedArtifacts[dropInfo.id] = 0;
+                    ownedArtifacts[dropInfo.id]++;
+                    
+                    spawnFloatingReward(slotId, 
+                        `<img src="${dropInfo.img}" style="width:25px; height:25px; object-fit:contain;"> +1`, 
+                        200, "float-item"
+                    );
+                }
+                
+                farmSlots[sIdx] = null; // Xóa cây
+                hasHarvested = true;
+            }
+        });
+        
+        // Tắt hiệu ứng bay
+        if (angelImg) angelImg.classList.remove('angel-harvesting');
+        
+        // Cập nhật game
+        if (hasHarvested) {
+            updateDisplay(); 
+            checkLevelUp(); 
+            updateSeedShop();
+            saveGame(); 
+        } else { 
+            showToast("Chưa có cây nào chín cả!", "⚠️", "Pet Báo Cáo");
+        }
+
+        // 3. MỞ KHÓA: Cho phép thu hoạch tiếp (Quan trọng!)
+        isHarvesting = false; 
+
+    }, 2000); 
+};
+                         } 
+                         // Logic Thu Hoạch Thủ Công
+                         else {
                              const harvestedSeedValue = slotData.value; const returnAmount = 2; 
-                             
-                             // --- XÁC NHẬN EXP CƠ BẢN LÀ 10 (KHÔNG X2) ---
-                             let baseExp = 10;
-                             
-                             let finalExp = baseExp + potBonus;
-                             
-                             let msgButton = `🌾 Thu hoạch (Nhận ${returnAmount} Hạt + ${finalExp} Exp)`;
-                             if(potBonus > 0) msgButton = `🌾 Thu hoạch (+${finalExp} Exp <span style='font-size:0.8em'>gồm +${potBonus} chậu</span>)`;
-
+                             let baseExp = 10; let finalExp = baseExp + potBonus;
+                             let msgButton = potBonus > 0 ? `🌾 Thu hoạch (+${finalExp} Exp)` : `🌾 Thu hoạch (Nhận ${returnAmount} Hạt + ${finalExp} Exp)`;
                              btnHarvest.innerHTML = msgButton;
                              btnHarvest.className = "btn-buy";
                              btnHarvest.style.background = '#FF9800';
                              
                              btnHarvest.onclick = () => {
-                                 exp += finalExp; 
-                                 if (ownedSeeds[harvestedSeedValue] !== undefined) ownedSeeds[harvestedSeedValue] += returnAmount;
-                                 else ownedSeeds[harvestedSeedValue] = returnAmount;
-                                 farmSlots[slotIndex] = null; 
+                             // 1. Lấy ID của ô đất để icon bay lên đúng chỗ
+                             const slotId = FARM_IDS[slotIndex]; 
+
+                             // 2. Cộng EXP & Hiệu ứng bay EXP
+                             exp += finalExp; 
+                             spawnFloatingReward(slotId, `+${finalExp} XP`, 0, "float-exp");
+
+                             // 3. Cộng Hạt Giống vào kho
+                             if (ownedSeeds[harvestedSeedValue] !== undefined) ownedSeeds[harvestedSeedValue] += returnAmount;
+                             else ownedSeeds[harvestedSeedValue] = returnAmount;
+
+                             // 4. Xử lý Rớt Đồ (Artifacts) & Hiệu ứng bay Vật phẩm
+                             if (HARVEST_DROPS[harvestedSeedValue]) {
+                                 const dropInfo = HARVEST_DROPS[harvestedSeedValue];
                                  
-                                 let alertMsg = `Thu hoạch thành công!\nBạn nhận được ${finalExp} EXP.`;
-                                 if(potBonus > 0) alertMsg += `\n(Đã bao gồm +${potBonus} EXP từ ${potDef.name})`;
+                                 // Cộng vào kho
+                                 if (!ownedArtifacts[dropInfo.id]) ownedArtifacts[dropInfo.id] = 0;
+                                 ownedArtifacts[dropInfo.id]++;
                                  
-                                 alert(alertMsg);
-                                 closeInteractionPopup(); updateDisplay(); checkLevelUp(); updateSeedShop(); 
-                             };
+                                 // Tạo hiệu ứng bay lên (trễ 200ms để không đè lên chữ XP)
+                                 spawnFloatingReward(slotId, 
+                                     `<img src="${dropInfo.img}" style="width:25px; height:25px; object-fit:contain;"> +1`, 
+                                     200, "float-item"
+                                 );
+                             }
+
+                             // 5. Xóa cây khỏi ô đất
+                             farmSlots[slotIndex] = null; 
+                             
+                             // 6. Cập nhật giao diện và đóng bảng
+                             closeInteractionPopup(); 
+                             updateDisplay(); 
+                             checkLevelUp(); 
+                             updateSeedShop(); 
+                             saveGame(); // Lưu game ngay để tránh mất đồ
+                         };
                          }
                          interactionControls.appendChild(btnHarvest);
                      }
+                     
+                     // TRƯỜNG HỢP B: ĐANG LỚN (HIỆN ĐỒNG HỒ) - ĐÂY LÀ PHẦN BỊ THIẾU
+                     else {
+                         const updatePlantTimer = () => {
+                             if (!farmSlots[slotIndex]) return;
+                             
+                             const now = Date.now();
+                             const nextStageInfo = PLANT_STAGES[slotData.stage + 1];
+                             let requiredDuration = nextStageInfo.duration;
+                             
+                             // --- TÍNH TOÁN GIẢM GIỜ (COMBO DÂY LEO) ---
+                             const isFullSet = vineDecorations.every(item => item !== null);
+                             const reductionAmount = isFullSet ? 7200000 : 3600000;
+                             
+                             const fastGrowthItems = ['chau_chau', 'treo_con_ca', 'treo_long_den', 'treo_trai_chau', 'treo_chong_chong'];
+                             if (fastGrowthItems.includes(vineDecorations[slotIndex])) {
+                                 requiredDuration -= reductionAmount;
+                                 if (requiredDuration < 0) requiredDuration = 0;
+                             }
+                             // ------------------------------------------
+
+                             const finishTime = slotData.plantedAt + requiredDuration;
+                             const timeLeft = finishTime - now;
+
+                             if (timeLeft <= 0) {
+                                 // Hết giờ -> Render lại để hiện nút thu hoạch
+                                 if(activePopupInterval) clearInterval(activePopupInterval);
+                                 updateFarmState(); // Cập nhật state
+                                 renderSlotStatus(); // Gọi lại hàm render
+                                 return;
+                             }
+                             
+                             interactionText.innerHTML = statusMessage + `
+                                <div style="margin-top:10px; background:#f5f5f5; padding:8px; border-radius:5px;">
+                                    ⏳ Lớn sau: <b style="color:#2196F3;">${getCountdownTimePlant(timeLeft)}</b>
+                                </div>`;
+                         };
+                         
+                         updatePlantTimer(); // Chạy ngay 1 lần
+                         if(activePopupInterval) clearInterval(activePopupInterval);
+                         activePopupInterval = setInterval(updatePlantTimer, 1000);
+                     }
                  }
             } else { 
-                if (interactionTitle) interactionTitle.innerHTML = "Thông Báo"; 
+                interactionTitle.innerHTML = "Thông Báo"; 
                 interactionText.innerHTML = `Ô đất này chưa mở khóa!`; 
             }
         };
@@ -2162,7 +2912,7 @@ if (pugPet) {
     });
 }
 
-// --- TÌM ĐOẠN NÀY VÀ THAY THẾ TOÀN BỘ (ĐÃ SỬA ĐỂ TẠO HIỆU ỨNG QUÀ) ---
+// --- ĐOẠN 1: SỬA SỰ KIỆN CLICK BÁT XƯƠNG ---
 const boneBowl = document.getElementById("bone-bowl");
 if (boneBowl) {
     boneBowl.addEventListener("click", () => {
@@ -2185,23 +2935,18 @@ if (boneBowl) {
             if (!isSameDay) {
                 interactionText.innerHTML = `Pet đang đói bụng...`;
                 const btnFeed = document.createElement('button');
-                btnFeed.innerHTML = "🦴 Cho ăn ngay (Miễn phí)"; // Đã sửa text cho khớp yêu cầu
+                btnFeed.innerHTML = "🦴 Cho ăn ngay (Miễn phí)"; 
                 btnFeed.className = "btn-buy";
                 
-                // --- SỰ KIỆN CLICK CHO ĂN ---
+                // --- SỬA Ở ĐÂY: KHÔNG LƯU GAME NGAY LẬP TỨC ---
                 btnFeed.onclick = () => {
-                    lastFedTime = Date.now(); 
-                    globalPetAge += 1; 
-                    
-                    // 1. Lưu game
-                    saveGame(); 
-                    
-                    // 2. Đóng popup ngay để thấy quà bay ra
+                    // Chỉ đóng popup và hiện quả đào. 
+                    // Chưa lưu lastFedTime vội để phòng trường hợp lỡ tay tắt mất.
                     hidePopup('interaction-popup');
-                    
-                    // 3. Gọi hàm hiển thị quà
                     spawnDailyReward();
                 };
+                // ----------------------------------------------
+                
                 interactionControls.appendChild(btnFeed);
             } else {
                 interactionText.innerHTML = `${petName} đã no rồi! 🐶`;
@@ -2211,7 +2956,7 @@ if (boneBowl) {
     });
 }
 
-// --- HÀM MỚI: HIỂN THỊ QUÀ (ĐÃ SỬA LẤY ĐÚNG TÊN PET) ---
+// --- ĐOẠN 2: SỬA HÀM HIỆN QUÀ VÀ LƯU DỮ LIỆU ---
 function spawnDailyReward() {
     // Xóa quà cũ nếu chưa nhận (tránh trùng lặp)
     const existingReward = document.getElementById('daily-reward-icon');
@@ -2242,26 +2987,27 @@ function spawnDailyReward() {
 
     wrapper.appendChild(img);
 
-    // --- SỰ KIỆN NHẬN QUÀ ---
+    // --- SỰ KIỆN NHẬN QUÀ (QUAN TRỌNG: LƯU GAME TẠI ĐÂY) ---
     wrapper.onclick = () => {
-        la += 5; // Cộng 5 lá
+        // 1. Cập nhật dữ liệu game TẠI ĐÂY (Chỉ khi bấm trúng quà mới tính là đã ăn)
+        la += 5;                // Cộng lá
+        lastFedTime = Date.now(); // Đánh dấu hôm nay đã ăn
+        globalPetAge += 1;      // Tăng tuổi pet
         
-        // --- ĐOẠN CODE MỚI: TÌM TÊN PET HIỆN TẠI ---
+        // --- Tìm tên Pet hiện tại ---
         let petName = "Pet";
-        // Gộp danh sách pet shop và shop thường để tìm tên
         const allPets = petShopItems.concat(shopItems.filter(i => i.type === "pet"));
         const currentPetData = allPets.find(p => p.value === activePet);
-        
         if (currentPetData) {
-            petName = currentPetData.name; // Lấy tên thật (Ví dụ: Choco, Pug Péo...)
+            petName = currentPetData.name; 
         }
-        // -------------------------------------------
 
         alert(`Bạn nhận được 5 Lá từ ${petName}! 🍂`);
         
         // Hiệu ứng bay lên biến mất
         wrapper.style.animation = 'flyUpReward 0.5s ease-out forwards';
         
+        // Lưu game ngay lập tức để ghi nhận kết quả
         updateDisplay();
         saveGame();
 
@@ -2296,6 +3042,15 @@ function showBlacksmithPopup() {
     interactionTitle.innerHTML = "🔨 Thợ Rèn Chaos";
     interactionText.style.display = 'none';
     interactionControls.innerHTML = "";
+        // --- CODE THÊM: HIỂN THỊ TÀI NGUYÊN HIỆN CÓ ---
+    const resourceHeader = document.createElement("div");
+    resourceHeader.style.cssText = "display:flex; justify-content:space-around; background:#fff3e0; padding:10px; border-radius:8px; margin-bottom:10px; font-size:0.9em; border:1px solid #ffe0b2;";
+    resourceHeader.innerHTML = `
+        <div>🫘 Đậu: <b style="color:#795548">${dau.toLocaleString()}</b></div>
+        <div>🔩 Kim Loại: <b style="color:#546E7A">${(ownedArtifacts['manh_kim_loai']||0).toLocaleString()}</b></div>
+    `;
+    interactionControls.appendChild(resourceHeader);
+    // ------------------------------------------------
     
     const container = document.createElement("div");
     container.style.cssText = 'max-height: 400px; overflow-y: auto; padding: 2px;';
@@ -2325,9 +3080,10 @@ function showBlacksmithPopup() {
             let currentAmt = 0;
             let matName = matKey;
 
-            if (matKey === 'hat_kim_loai') {
-                 currentAmt = ownedSeeds['hat_kim_loai'] || 0;
-                 matName = "Kim Loại";
+            // --- SỬA: KIỂM TRA MÃNH KIM LOẠI TRONG KHO ARTIFACTS ---
+            if (matKey === 'manh_kim_loai') {
+                 currentAmt = ownedArtifacts['manh_kim_loai'] || 0;
+                 matName = "Mãnh Kim Loại";
             } else if (POT_DEFINITIONS[matKey]) {
                  currentAmt = ownedPots[matKey] || 0;
                  matName = POT_DEFINITIONS[matKey].name;
@@ -2388,7 +3144,8 @@ function startCrafting(recipe) {
     
     for (const [matKey, matQty] of Object.entries(recipe.materials)) {
         let currentAmt = 0;
-        if (matKey === 'hat_kim_loai') currentAmt = ownedSeeds['hat_kim_loai'] || 0;
+        // --- SỬA: KIỂM TRA KHO MÃNH ---
+        if (matKey === 'manh_kim_loai') currentAmt = ownedArtifacts['manh_kim_loai'] || 0;
         else if (ownedPots[matKey] !== undefined) currentAmt = ownedPots[matKey] || 0;
         
         if (currentAmt < matQty) {
@@ -2403,8 +3160,9 @@ function startCrafting(recipe) {
         dau -= (recipe.cost.dau || 0);
         
         for (const [matKey, matQty] of Object.entries(recipe.materials)) {
-            if (matKey === 'hat_kim_loai') {
-                 ownedSeeds['hat_kim_loai'] -= matQty;
+            // --- SỬA: TRỪ NGUYÊN LIỆU MÃNH ---
+            if (matKey === 'manh_kim_loai') {
+                 ownedArtifacts['manh_kim_loai'] -= matQty;
             } else if (ownedPots[matKey] !== undefined) {
                  ownedPots[matKey] -= matQty;
             }
@@ -2421,7 +3179,7 @@ function startCrafting(recipe) {
             alert("Đã bắt đầu rèn!");
             updateDisplay();
             showBlacksmithPopup();
-            updateBlacksmithVisuals(); // CẬP NHẬT HÌNH ẢNH 
+            updateBlacksmithVisuals(); 
         }
     }
 }
@@ -2514,21 +3272,63 @@ if (brandContainer) {
     });
 }
 
+// --- BỔ SUNG HÀM GÁN SỰ KIỆN CHO VẬT PHẨM TREO (CHÂU CHẤU...) ---
+function initGrasshopperEvents() {
+    // Lấy tất cả các thẻ img dùng để hiển thị vật phẩm treo
+    // ID của chúng là grasshopper-0, grasshopper-1, ...
+    for (let i = 0; i < 5; i++) {
+        const itemEl = document.getElementById(`grasshopper-${i}`);
+        if (itemEl) {
+            // Clone để xóa sự kiện cũ (nếu có)
+            const newItemEl = itemEl.cloneNode(true);
+            itemEl.parentNode.replaceChild(newItemEl, itemEl);
+
+            newItemEl.addEventListener('click', () => {
+                if (level === 0) { alert("Bạn cần tạo nông trại trước!"); return; }
+                // Mở popup dây leo tại vị trí tương ứng
+                showVinePopup(i);
+            });
+        }
+    }
+}
 function initializeGame(){
+    // 1. Tải dữ liệu cũ
     loadGame(); 
+    
+    // 2. Cài đặt giao diện (Dark mode & Scale)
     const isDarkMode = localStorage.getItem('darkMode') === 'true';
     if(isDarkMode) document.body.classList.add('dark-mode');
-    
     adjustAppWrapperScale(); 
     
-    updateDisplay(); updateControlButtons(); updateShop(); 
-    updateBlacksmithVisuals(); // CẬP NHẬT TRẠNG THÁI HÌNH ẢNH KHI LOAD GAME
+    // 3. Cập nhật hiển thị các thành phần
+    updateDisplay(); 
+    updateControlButtons(); 
+    updateShop(); 
+    updateBlacksmithVisuals(); 
+    
+    // 4. Khởi tạo sự kiện click
+    initVineEvents();        // Sự kiện dây leo
+    initGrasshopperEvents(); // Sự kiện châu chấu/đồ treo
+    
+    // 5. Bắt đầu hiệu ứng khói (QUAN TRỌNG: Để khói chạy ngay khi vào game)
+    if(typeof startSmokeEffect === 'function') startSmokeEffect(); 
 }
 
-setInterval(updateFarmState, 1000); 
-setInterval(checkGlobalCrafting, 1000); 
+// --- GAME LOOP: TỐI ƯU HÓA ---
+// Gộp 3 hàm kiểm tra vào chung 1 nhịp (1 giây/lần) giúp game mượt hơn
+setInterval(() => {
+    updateFarmState();        // Kiểm tra cây lớn
+    checkGlobalCrafting();    // Kiểm tra thợ rèn
+    checkIncubationState();   // Kiểm tra trứng nở
+}, 1000);
+
+// --- TỰ ĐỘNG LƯU ---
+// Chạy riêng 60 giây/lần
 setInterval(autoSave, 60000);
-setInterval(checkIncubationState, 1000);
+
+// --- KHỞI CHẠY GAME ---
+// Dòng này giúp game chạy ngay khi tải xong, dù dòng cũ có hay không thì thêm ở đây vẫn an toàn
+window.onload = initializeGame;
 // --- HÀM KIỂM TRA TRỨNG NỞ (CHẠY TỰ ĐỘNG) ---
 function checkIncubationState() {
     // Chỉ chạy khi đang có thời gian ấp (lớn hơn 0)
@@ -2562,8 +3362,581 @@ function checkIncubationState() {
         }
     }
 }
-window.onload = initializeGame;
+// ======================================================
+// --- LOGIC TƯƠNG TÁC DÂY LEO & CHÂU CHẤU (MỚI) ---
+// ======================================================
 
+// 1. Gán sự kiện click cho các dây leo ngay khi chạy game
+// Lưu ý: Hàm này sẽ tự chạy nhờ logic bên dưới, bạn không cần gọi thủ công
+function initVineEvents() {
+    const vines = document.querySelectorAll('.vine-deco');
+    vines.forEach(vine => {
+        // Xóa sự kiện cũ để tránh bị double click (nếu có)
+        const newVine = vine.cloneNode(true); 
+        vine.parentNode.replaceChild(newVine, vine);
+        
+        newVine.addEventListener('click', (e) => {
+            if (level === 0) { alert("Bạn cần tạo nông trại trước!"); return; }
+            
+            // Lấy vị trí dây leo (0-4) từ HTML
+            const index = parseInt(e.target.getAttribute('data-index'));
+            showVinePopup(index);
+        });
+    });
+}
+
+// Gọi hàm gán sự kiện này mỗi khi khởi tạo
+// (Bạn hãy tìm dòng initializeGame và thêm initVineEvents() vào trong đó nếu muốn chắc chắn,
+// hoặc dán dòng này vào cuối file script: setTimeout(initVineEvents, 1000); )
+
+
+// --- 2. Hàm hiển thị Popup khi click vào dây leo (ĐÃ LÀM ĐẸP & LOGIC HƠN) ---
+function showVinePopup(index) {
+    // Reset tiêu đề
+    interactionTitle.innerHTML = `🌿 Dây Leo (Vị trí ${index + 1})`;
+
+    // 1. KIỂM TRA & HIỂN THỊ COMBO
+    const isFullSet = vineDecorations.every(item => item !== null);
+    let comboHTML = "";
+    
+    if (isFullSet) {
+        // Giao diện khi ĐÃ kích hoạt Combo
+        comboHTML = `
+        <div style="
+            background: linear-gradient(135deg, #fff9c4 0%, #fff176 100%);
+            border: 2px solid #fbc02d;
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        ">
+            <div style="font-size:1.2em; margin-bottom:5px;">⚡⚡⚡</div>
+            <strong style="color:#f57f17; font-size:1em;">ĐÃ KÍCH HOẠT COMBO!</strong>
+            <div style="font-size:0.85em; color:#5d4037; margin-top:2px;">Toàn bộ cây trồng được giảm <b>2 giờ</b> trưởng thành.</div>
+        </div>`;
+    } else {
+        // Giao diện khi CHƯA kích hoạt Combo
+        const missingCount = vineDecorations.filter(x => x === null).length;
+        comboHTML = `
+        <div style="
+            background: #f5f5f5;
+            border: 1px dashed #bdbdbd;
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+        ">
+            <strong style="color:#757575;">Chưa kích hoạt Combo</strong>
+            <div style="font-size:0.85em; color:#9e9e9e; margin-top:2px;">
+                Cần treo thêm <b>${missingCount}</b> món nữa để giảm <b>2 giờ</b> (Hiện tại chỉ giảm 1h/món).
+            </div>
+        </div>`;
+    }
+
+    interactionText.innerHTML = comboHTML;
+    interactionControls.innerHTML = '';
+
+    // 2. TẠO DANH SÁCH VẬT PHẨM (Clean List Style)
+    const listContainer = document.createElement('div');
+    listContainer.style.cssText = `
+        max-height: 280px; 
+        overflow-y: auto; 
+        display: flex; 
+        flex-direction: column; 
+        gap: 8px; 
+        padding: 5px;
+    `;
+
+    const currentDecoID = vineDecorations[index];
+
+    // Duyệt qua tất cả vật phẩm cấu hình để hiển thị
+    HANGING_ITEMS_CONFIG.forEach(item => {
+        const ownedAmount = ownedDecorations[item.id] || 0;
+        const isEquippedHere = (currentDecoID === item.id);
+        
+        // Chỉ hiển thị những món mình CÓ hoặc ĐANG TREO (hoặc hiển thị mờ nếu muốn khoe vật phẩm)
+        // Ở đây mình sẽ hiển thị TẤT CẢ để người chơi biết game có những gì
+        
+        const itemRow = document.createElement('div');
+        // Style cho từng dòng
+        itemRow.style.cssText = `
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
+            background: white;
+            border: 1px solid ${isEquippedHere ? '#4CAF50' : '#eee'};
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+            transition: transform 0.1s;
+        `;
+        if(isEquippedHere) itemRow.style.background = "#e8f5e9"; // Màu xanh nhạt nếu đang treo
+
+        // Logic xác định tác dụng
+        const speedUpItems = ['chau_chau', 'treo_con_ca', 'treo_long_den', 'treo_trai_chau', 'treo_chong_chong'];
+        let effectBadge = "";
+        if (speedUpItems.includes(item.id)) {
+            effectBadge = `<span style="background:#E3F2FD; color:#1565C0; font-size:0.7em; padding:2px 6px; border-radius:4px; font-weight:bold;">⚡ -1 Giờ</span>`;
+        }
+
+        // Logic Nút Bấm
+        let btnHtml = '';
+        if (isEquippedHere) {
+            // Đang treo tại ô này
+            btnHtml = `<button disabled style="
+                background:transparent; color:#2E7D32; border: 2px solid #2E7D32; 
+                border-radius:20px; padding:5px 10px; font-weight:bold; font-size: 0.8em; opacity: 0.7;">
+                ✔ Đang dùng
+            </button>`;
+        } else if (ownedAmount > 0) {
+            // Có hàng -> Cho phép treo
+            btnHtml = `<button class="btn-equip-item" data-id="${item.id}" style="
+                background:var(--primary); color:white; border:none; 
+                border-radius:20px; padding:6px 15px; cursor:pointer; font-weight:bold; font-size: 0.85em; 
+                box-shadow: 0 2px 0 var(--primary-dark);">
+                Treo
+            </button>`;
+        } else {
+            // Hết hàng -> Nút Tìm/Mua
+            btnHtml = `<button onclick="document.getElementById('event-cloud').click()" style="
+                background:#f5f5f5; color:#999; border:1px solid #ddd; 
+                border-radius:20px; padding:5px 10px; cursor:pointer; font-size: 0.8em;">
+                🔍 Tìm
+            </button>`;
+        }
+
+        itemRow.innerHTML = `
+            <div style="display:flex; align-items:center; gap: 12px;">
+                <div style="width:45px; height:45px; background:#f9f9f9; border-radius:8px; display:flex; align-items:center; justify-content:center; border:1px solid #eee;">
+                    <img src="${item.img}" style="width:80%; height:80%; object-fit:contain;">
+                </div>
+                <div style="text-align:left;">
+                    <div style="font-weight:700; color:#3e2723; font-size: 0.95em;">${item.name}</div>
+                    <div style="display:flex; align-items:center; gap:5px; margin-top:2px;">
+                        ${effectBadge}
+                        <span style="font-size:0.75em; color:#795548;">Kho: <b>${ownedAmount}</b></span>
+                    </div>
+                </div>
+            </div>
+            <div>${btnHtml}</div>
+        `;
+        
+        listContainer.appendChild(itemRow);
+    });
+
+    interactionControls.appendChild(listContainer);
+
+    // 3. NÚT GỠ BỎ (Nếu đang treo đồ)
+    if (currentDecoID !== null) {
+        const removeContainer = document.createElement('div');
+        removeContainer.style.marginTop = "15px";
+        removeContainer.style.borderTop = "1px dashed #ddd";
+        removeContainer.style.paddingTop = "10px";
+
+        const removeBtn = document.createElement('button');
+        removeBtn.innerHTML = "❌ Gỡ vật phẩm này xuống";
+        
+        // --- THAY ĐỔI Ở ĐÂY: Gán class CSS mới tạo ---
+        removeBtn.className = "btn-remove-vines"; 
+        // ---------------------------------------------
+        
+        removeBtn.onclick = () => {
+            if(confirm("Bạn muốn gỡ vật phẩm này về kho?")) {
+                // Trả lại kho
+                if (!ownedDecorations[currentDecoID]) ownedDecorations[currentDecoID] = 0;
+                ownedDecorations[currentDecoID]++;
+                
+                // Xóa khỏi dây
+                vineDecorations[index] = null;
+                
+                saveGame(); updateDisplay(); closeInteractionPopup();
+            }
+        };
+        removeContainer.appendChild(removeBtn);
+        interactionControls.appendChild(removeContainer);
+    }
+
+    // 4. GÁN SỰ KIỆN CHO NÚT TREO
+    const equipBtns = listContainer.querySelectorAll('.btn-equip-item');
+    equipBtns.forEach(btn => {
+        btn.onclick = (e) => {
+            const itemId = e.target.getAttribute('data-id');
+            const itemData = HANGING_ITEMS_CONFIG.find(i => i.id === itemId);
+
+            // Logic thay thế:
+            // 1. Nếu đang treo cái cũ -> Tháo cái cũ trả về kho
+            if (currentDecoID) {
+                if (!ownedDecorations[currentDecoID]) ownedDecorations[currentDecoID] = 0;
+                ownedDecorations[currentDecoID]++;
+            }
+
+            // 2. Lấy cái mới từ kho ra treo -> Trừ kho
+            if (ownedDecorations[itemId] > 0) {
+                ownedDecorations[itemId]--;
+                vineDecorations[index] = itemId;
+
+                // Hiệu ứng phản hồi nhỏ
+                alert(`Đã treo ${itemData.name}!\n(Hiệu ứng: Giảm 1h trưởng thành)`);
+                
+                saveGame(); updateDisplay(); closeInteractionPopup();
+            }
+        };
+    });
+
+    showPopup('interaction-popup');
+}
+// --- SỰ KIỆN CLICK MÂY ĐEN (SHOP ĐỔI ĐỒ TREO) ---
+const eventCloud = document.getElementById("event-cloud");
+if (eventCloud) {
+    eventCloud.addEventListener("click", () => {
+        if (level === 0) { alert("Bạn cần tạo nông trại trước!"); return; }
+        
+        const myCrowns = ownedArtifacts['vuong_mien'] || 0;
+        const MAX_EXCHANGE = 5; // Giới hạn tối đa 5 cái mỗi loại
+
+        // --- 1. HEADER SỰ KIỆN ĐẸP MẮT ---
+        interactionTitle.innerHTML = "🎉 Shop Sự Kiện";
+        interactionText.style.display = 'block';
+        interactionText.innerHTML = `
+            <div style="
+                background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%); 
+                padding: 12px; 
+                border-radius: 15px; 
+                margin-bottom: 15px; 
+                text-align: center; 
+                border: 2px solid #f48fb1;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            ">
+                <div style="color: #880E4F; font-size: 0.85em; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; font-weight:bold;">
+                    👑 Vương Miện Của Bạn
+                </div>
+                <div style="font-size: 2em; font-weight: 800; color: #C2185B; text-shadow: 1px 1px 0px rgba(255,255,255,0.5);">
+                    ${myCrowns.toLocaleString('vi-VN')}
+                </div>
+            </div>
+        `;
+        
+        interactionControls.innerHTML = '';
+        
+        // --- 2. CONTAINER DẠNG LƯỚI (GRID 2 CỘT) ---
+        const shopContainer = document.createElement('div');
+        shopContainer.style.cssText = `
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 12px; 
+            max-height: 380px; 
+            overflow-y: auto; 
+            padding: 4px;
+        `;
+
+        HANGING_ITEMS_CONFIG.forEach(item => {
+            const currentOwned = ownedDecorations[item.id] || 0;
+            const isMaxed = currentOwned >= MAX_EXCHANGE; // Đã đổi tối đa
+            const canAfford = myCrowns >= item.price;     // Đủ tiền
+
+            // Tạo Card cho từng món
+            const itemCard = document.createElement('div');
+            itemCard.style.cssText = `
+                background: white;
+                border: 1px solid ${isMaxed ? '#eee' : '#f8bbd0'};
+                border-radius: 12px;
+                padding: 10px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: space-between;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+                position: relative;
+                overflow: hidden;
+                transition: transform 0.1s;
+            `;
+            if(isMaxed) itemCard.style.opacity = "0.7";
+
+            // Hiệu ứng giảm giờ (Badge)
+            const speedUpItems = ['chau_chau', 'treo_con_ca', 'treo_long_den', 'treo_trai_chau', 'treo_chong_chong'];
+            let badgeHTML = "";
+            if (speedUpItems.includes(item.id)) {
+                badgeHTML = `<div style="
+                    position: absolute; top: 0; left: 0; 
+                    background: #E3F2FD; color: #1565C0; 
+                    font-size: 0.65em; font-weight: bold; 
+                    padding: 3px 8px; border-bottom-right-radius: 8px;
+                ">⚡ -1 Giờ</div>`;
+            }
+
+            // Trạng thái nút bấm & Màu sắc
+            let btnText = "Đổi Ngay";
+            let btnBg = "linear-gradient(45deg, #EC407A, #D81B60)"; // Màu hồng đậm
+            let btnCursor = "pointer";
+            let btnDisabled = false;
+
+            if (isMaxed) {
+                btnText = "Đã Max";
+                btnBg = "#9E9E9E"; 
+                btnCursor = "default";
+                btnDisabled = true;
+            } else if (!canAfford) {
+                btnText = "KO Đủ";
+                btnBg = "#cfd8dc"; // Xám nhạt
+                btnCursor = "not-allowed";
+                btnDisabled = true;
+            }
+
+            // Nội dung Card
+            itemCard.innerHTML = `
+                ${badgeHTML}
+                <div style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; margin-top: 10px;">
+                    <img src="${item.img}" style="max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 3px 3px rgba(0,0,0,0.2));">
+                </div>
+                
+                <div style="text-align: center; width: 100%; margin: 8px 0;">
+                    <div style="font-weight: 700; color: #3e2723; font-size: 0.9em; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        ${item.name}
+                    </div>
+                    <div style="color: #C2185B; font-weight: bold; font-size: 0.95em;">
+                        👑 ${item.price}
+                    </div>
+                    <div style="font-size: 0.75em; color: #757575; margin-top: 2px;">
+                        Đã có: <b>${currentOwned}/${MAX_EXCHANGE}</b>
+                    </div>
+                </div>
+
+                <button class="btn-exchange-event" data-id="${item.id}" ${btnDisabled ? 'disabled' : ''}
+                    style="
+                        width: 100%;
+                        background: ${btnBg}; 
+                        color: white; 
+                        border: none; 
+                        padding: 8px 0; 
+                        border-radius: 8px; 
+                        font-weight: bold; 
+                        font-size: 0.85em;
+                        cursor: ${btnCursor};
+                        box-shadow: ${btnDisabled ? 'none' : '0 3px 0 #880E4F'};
+                        transition: transform 0.1s;
+                    ">
+                    ${btnText}
+                </button>
+            `;
+            
+            shopContainer.appendChild(itemCard);
+        });
+
+        interactionControls.appendChild(shopContainer);
+        
+        // --- 3. XỬ LÝ CLICK ĐỔI ĐỒ (LOGIC GIỮ NGUYÊN) ---
+        const buttons = shopContainer.querySelectorAll('.btn-exchange-event');
+        buttons.forEach(btn => {
+            btn.onclick = (e) => {
+                const itemId = e.target.getAttribute('data-id');
+                const itemData = HANGING_ITEMS_CONFIG.find(i => i.id === itemId);
+                const currentOwned = ownedDecorations[itemId] || 0;
+
+                // 1. Kiểm tra giới hạn
+                if (currentOwned >= MAX_EXCHANGE) return; // Nút đã disabled nhưng check lại cho chắc
+
+                // 2. Kiểm tra tiền
+                if (ownedArtifacts['vuong_mien'] >= itemData.price) {
+                    // Hiệu ứng bấm nút
+                    e.target.style.transform = "translateY(3px)";
+                    e.target.style.boxShadow = "none";
+                    setTimeout(() => {
+                         if (confirm(`Đổi ${itemData.price} Vương Miện lấy 1 ${itemData.name}?`)) {
+                            // Trừ tiền
+                            ownedArtifacts['vuong_mien'] -= itemData.price;
+                            
+                            // Cộng đồ
+                            if (!ownedDecorations[itemId]) ownedDecorations[itemId] = 0;
+                            ownedDecorations[itemId]++;
+                            
+                            // Lưu game
+                            saveGame();
+                            updateDisplay();
+                            
+                            // Reload lại popup để cập nhật giao diện (số lượng, nút bấm...)
+                            eventCloud.click(); 
+                        } else {
+                            // Nếu hủy thì trả lại hiệu ứng nút
+                            e.target.style.transform = "translateY(0)";
+                            e.target.style.boxShadow = "0 3px 0 #880E4F";
+                        }
+                    }, 100);
+                }
+            };
+        });
+
+        showPopup('interaction-popup');
+    });
+}
+/* --- CHỨC NĂNG 3 LÔ (INVENTORY) --- */
+
+// Hàm mở kho đồ
+function openInventory() {
+    // Thêm kiểm tra level để đồng bộ với các icon khác
+    if (level === 0) { 
+        alert("Bạn cần tạo nông trại trước!"); 
+        return; 
+    }
+
+    // 1. Cập nhật số Đậu và Lá hiện tại lên giao diện 3 Lô
+    const invDauEl = document.getElementById('inv-dau');
+    const invLaEl = document.getElementById('inv-la');
+    
+    if (invDauEl) invDauEl.innerText = dau.toLocaleString('vi-VN');
+    if (invLaEl) invLaEl.innerText = la.toLocaleString('vi-VN');
+
+    // 2. Định nghĩa danh sách vật phẩm cần hiển thị
+    if (typeof ownedArtifacts === 'undefined') { window.ownedArtifacts = {}; }
+
+    const itemsToShow = [
+        { id: 'manh_nguyen_to', name: 'Mãnh Nguyên Tố', img: '1000000135.png' },
+        { id: 'manh_kim_loai', name: 'Mãnh Kim Loại', img: '1000000136.png' },
+        { id: 'vuong_mien',    name: 'Vương Miện',    img: '1000000137.png' }
+    ];
+
+    // 3. Tạo danh sách hiển thị
+    const listContainer = document.getElementById('inventory-list');
+    if (listContainer) {
+        listContainer.innerHTML = ''; 
+
+        itemsToShow.forEach(item => {
+            let qty = ownedArtifacts[item.id] || 0;
+            let div = document.createElement('div');
+            div.className = 'inventory-item';
+            div.innerHTML = `
+                <img src="${item.img}" style="width:40px; height:40px; margin-right:10px; object-fit:contain;">
+                <div style="flex:1;">
+                    <div style="font-weight:bold; color:#3e2723;">${item.name}</div>
+                    <div style="font-size:12px; color:#795548;">Số lượng: <b style="color:#D84315;">${qty}</b></div>
+                </div>
+            `;
+            listContainer.appendChild(div);
+        });
+    }
+
+    // 4. Hiển thị Popup
+    showPopup('inventory-box');
+}
+// --- CHỨC NĂNG GIFTCODE (ĐÃ TỐI ƯU) ---
+
+function showGiftcodePopup() {
+    if (level === 0) { alert("Bạn cần tạo nông trại trước!"); return; }
+    const inputEl = document.getElementById('giftcode-input');
+    if(inputEl) inputEl.value = ''; 
+    showPopup('online-box');
+}
+
+function handleGiftcode() {
+    const inputEl = document.getElementById('giftcode-input');
+    const code = inputEl.value.trim().toUpperCase(); 
+
+    if (!code) { alert("Vui lòng nhập mã!"); return; }
+
+    const VALID_CODE = "FARMLOL"; 
+    
+    if (code === VALID_CODE) {
+        if (usedGiftcodes.includes(code)) {
+            alert("❌ Bạn đã sử dụng mã này rồi!");
+        } else {
+            const bonusDau = 10000;
+            const bonusLa = 1000;
+            
+            dau += bonusDau;
+            la += bonusLa;
+            usedGiftcodes.push(code);
+            
+            saveGame();
+            updateDisplay();
+            hidePopup('online-box');
+            
+            // Cập nhật lại kho nếu đang mở
+            if(document.getElementById('inventory-box').classList.contains('popup-active')){
+                openInventory();
+            }
+
+            if(typeof showToast === "function") {
+                showToast(`Nhận: ${bonusDau.toLocaleString()} Đậu + ${bonusLa.toLocaleString()} Lá`, "🎁", "Giftcode Thành Công");
+            } else {
+                alert(`🎉 CHÚC MỪNG!\nNhận: ${bonusDau.toLocaleString()} Đậu + ${bonusLa.toLocaleString()} Lá`);
+            }
+        }
+    } else {
+        alert("❌ Mã Giftcode không đúng hoặc đã hết hạn!");
+    }
+}
+
+// --- HỆ THỐNG KHÓI & KHỞI TẠO GAME (ĐÃ SỬA LỖI THỪA CODE) ---
+
+function spawnRedSmoke() {
+    const box = document.getElementById('giftcode-supply-drop');
+    if (!box) return; 
+
+    const startTop = box.offsetTop; 
+    const startLeft = box.offsetLeft; 
+    const boxWidth = box.offsetWidth; 
+
+    const smoke = document.createElement('div');
+    smoke.className = 'smoke-particle';
+    const randomDX = Math.floor(Math.random() * 50) - 25; 
+    smoke.style.setProperty('--dx', `${randomDX}px`);
+    const randomX = Math.random() * 14 - 7; 
+    
+    smoke.style.left = (startLeft + (boxWidth / 2) - 8 + randomX) + 'px'; 
+    smoke.style.top = (startTop + 10) + 'px'; 
+
+    document.querySelector('main').appendChild(smoke);
+    setTimeout(() => { smoke.remove(); }, 2500);
+}
+
+function startSmokeEffect() {
+    // Xóa interval cũ trước khi tạo mới để tránh bị chồng lặp (memory leak)
+    if(window.smokeInterval) clearInterval(window.smokeInterval);
+    
+    window.smokeInterval = setInterval(() => {
+        // Chỉ tạo khói khi tab đang hiển thị và Hòm thính có trên màn hình
+        if(!document.hidden && document.getElementById('giftcode-supply-drop')) {
+            spawnRedSmoke();
+        }
+    }, 150);
+}
+
+function initializeGame(){
+    loadGame(); // 1. Tải save
+    
+    // 2. Cài đặt giao diện
+    const isDarkMode = localStorage.getItem('darkMode') === 'true';
+    if(isDarkMode) document.body.classList.add('dark-mode');
+    adjustAppWrapperScale(); 
+    
+    // 3. Tính toán logic game NGAY LẬP TỨC (Sửa lỗi cây bị delay 1s)
+    updateFarmState(); 
+    checkGlobalCrafting();
+    checkIncubationState();
+
+    // 4. Cập nhật hiển thị
+    updateDisplay(); 
+    updateControlButtons(); 
+    updateShop(); 
+    updateBlacksmithVisuals(); 
+    
+    // 5. Khởi tạo sự kiện
+    initVineEvents();        
+    initGrasshopperEvents(); 
+    startSmokeEffect(); 
+}
+
+// --- GAME LOOP ---
+setInterval(() => {
+    updateFarmState();        
+    checkGlobalCrafting();    
+    checkIncubationState();   
+}, 1000);
+
+setInterval(autoSave, 60000);
+
+// Chỉ giữ lại 1 dòng onload duy nhất
+window.onload = initializeGame;
 </script>
 </body>
 </html>
