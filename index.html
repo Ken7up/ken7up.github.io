@@ -397,8 +397,59 @@
   }
 
   /* --- SLOT POSITIONS --- */
-  #slot-1 { width: 50px; height: 50px; top: 140px; left: calc(50% - 160px); }
-  #slot-1 img { width: 120%; height: 120%; top: -10px; left: -10px; }
+  /* Chỉnh vị trí ô Slot 1 (giữ nguyên vị trí ô) */
+  #slot-1 { 
+      width: 50px; 
+      height: 50px; 
+      top: 140px; 
+      left: calc(50% - 160px); 
+  }
+
+  /* --- VỊ TRÍ ẢNH PET Ở SLOT 1 (ĐÃ SỬA CÂN ĐỐI) --- */
+  
+  /* 1. Cấu hình chung mặc định */
+  #slot-1 img { 
+      position: absolute;       
+      z-index: 5;
+      object-fit: contain; 
+      transition: none !important;
+      
+      /* Mặc định an toàn nếu chưa load class */
+      width: 100%; height: 100%; top: 0; left: 0;
+  }
+
+  /* 2. Class riêng cho QUẢ TRỨNG (To, nằm trọn trong chậu) */
+  .fix-egg {
+      width: 150% !important;
+      height: 120% !important;
+      top: -18% !important;    /* Đẩy lên một chút */
+      left: -35% !important;    /* Căn giữa */
+  }
+
+  /* 3. Class riêng cho THIÊN THẦN (Cần to và bay cao hơn) */
+  .fix-angel {
+      width: 145% !important;   /* To hơn để thấy rõ cánh */
+      height: 145% !important;
+      top: -35% !important;     /* Bay cao hẳn lên */
+      left: -35% !important;
+  }
+
+  /* 4. Class riêng cho THẦN CHẾT (Dáng cao, gầy) */
+  .fix-reaper {
+      width: 290% !important;
+      height: 150% !important;
+      top: -40% !important;
+      left: -100% !important;
+  }
+
+  /* 5. Class riêng cho BI GAI (Nhỏ, tròn, cần nằm thấp) */
+  .fix-bigai {
+      width: 120% !important;   /* Kích thước vừa vặn */
+      height: 110% !important;
+      top: -30% !important;      /* Nằm gần miệng chậu */
+      left: -20% !important;      /* Căn giữa tuyệt đối */
+      filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.6)); /* Thêm hào quang nhẹ */
+  }
   
   #slot-6 { width: 50px; height: 35px; top: 335px; left: calc(50% - 30px + 10px + 15px); }
   #slot-6 img { width: 130%; height: 130%; top: -15px; left: -10px; }
@@ -544,28 +595,96 @@
   }
   .dark-mode .tab-btn.active { background: #4caf50; color: white; }
 
-  /* --- BLACKSMITH TABLE --- */
-  .blacksmith-table { display: block; width: 100%; }
-  .blacksmith-table thead { display: none; } 
-  .blacksmith-table tbody { display: flex; flex-direction: column; gap: 10px; }
-  .blacksmith-table tr {
-      display: flex; align-items: center; justify-content: space-between;
-      background: #fff; padding: 8px; border-radius: 12px;
-      border: 1px solid #eee; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  /* --- CSS MỚI CHO THỢ RÈN (BLACKSMITH) --- */
+  /* Container danh sách */
+  .blacksmith-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 5px;
   }
-  .dark-mode .blacksmith-table tr { background: #2c2c35; border-color: #444; }
 
-  .blacksmith-table td { border: none !important; padding: 0 5px !important; display: block; }
-  
-  .blacksmith-table td:first-child { flex: 1; }
-  .blacksmith-recipe { display: flex; align-items: center; gap: 10px; }
-  
-  .blacksmith-table td:nth-child(2) { flex: 2; font-size: 0.8em; }
-  
-  .blacksmith-table td:last-child { flex: 1; text-align: right; }
+  /* Một hàng công thức rèn */
+  .blacksmith-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #ffffff;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      padding: 8px 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      transition: transform 0.1s;
+  }
+  .dark-mode .blacksmith-row {
+      background: #2c2c35;
+      border-color: #444;
+  }
 
-  .req-status-ok { color: var(--primary); font-weight: 700; }
-  .req-status-fail { color: #f44336; }
+  /* Phần bên trái: Ảnh + Tên */
+  .bs-info {
+      display: flex;
+      align-items: center;
+      flex: 1.2; /* Chiếm nhiều chỗ hơn chút */
+      gap: 10px;
+  }
+
+  /* KHUNG ẢNH CỐ ĐỊNH (Quan trọng để sửa lỗi to nhỏ) */
+  .bs-icon-box {
+      width: 50px;
+      height: 50px;
+      background: #f5f5f5;
+      border: 1px solid #eeeeee;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0; /* Không bị co lại */
+  }
+  .dark-mode .bs-icon-box {
+      background: #3a3a45;
+      border-color: #555;
+  }
+
+  .bs-icon-box img {
+      width: 80%;       /* Ảnh chỉ chiếm 80% khung để có khoảng thở */
+      height: 80%;
+      object-fit: contain; /* Giữ nguyên tỉ lệ ảnh */
+      filter: drop-shadow(0 2px 3px rgba(0,0,0,0.15));
+  }
+
+  .bs-name {
+      font-weight: 700;
+      font-size: 0.95em;
+      color: var(--text-main);
+      line-height: 1.2;
+  }
+  .dark-mode .bs-name { color: #e0e0e0; }
+
+  /* Phần giữa: Nguyên liệu */
+  .bs-req {
+      flex: 1.5;
+      font-size: 0.8em;
+      padding: 0 5px;
+      border-left: 1px dashed #ddd;
+      border-right: 1px dashed #ddd;
+      margin: 0 5px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 2px;
+  }
+  .dark-mode .bs-req { border-color: #555; }
+
+  /* Phần bên phải: Nút bấm */
+  .bs-action {
+      flex: 0.8;
+      text-align: right;
+  }
+
+  .req-line { display: flex; align-items: center; gap: 4px; }
+  .req-ok { color: var(--primary); font-weight: 600; }
+  .req-miss { color: #f44336; }
 
   /* --- INPUT NAME BOX --- */
   #name-box input {
@@ -712,16 +831,74 @@
 #backpack-slot:hover { transform: scale(1.1); } /* Phóng to khi di chuột vào */
 #backpack-slot img { width: 100%; height: 100%; object-fit: contain; }
 
-/* Tùy chỉnh danh sách vật phẩm trong kho */
+/* --- GIAO DIỆN 3 LÔ (GRID 2 CỘT CÂN ĐỐI) --- */
+#inventory-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Chia làm 2 cột đều tăm tắp */
+    gap: 12px; /* Khoảng cách giữa các ô */
+    max-height: 320px;
+    overflow-y: auto;
+    padding: 5px;
+    margin-top: 10px;
+}
+
 .inventory-item {
     display: flex;
+    flex-direction: column; /* Xếp dọc: Ảnh trên - Chữ dưới */
     align-items: center;
-    background: #fff;
-    border: 1px solid #eee;
-    margin-bottom: 8px;
-    padding: 8px;
-    border-radius: 8px;
-    box-shadow: 0 2px 2px rgba(0,0,0,0.05);
+    justify-content: center;
+    
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 10px;
+    
+    box-shadow: 0 3px 5px rgba(0,0,0,0.05); /* Bóng đổ nhẹ */
+    transition: transform 0.1s;
+}
+
+.inventory-item:active {
+    transform: scale(0.95); /* Hiệu ứng nhún khi bấm */
+}
+
+/* KHUNG CHỨA ẢNH (QUAN TRỌNG ĐỂ CÂN ĐỐI) */
+.inventory-img-box {
+    width: 55px;  /* Cố định chiều rộng */
+    height: 55px; /* Cố định chiều cao */
+    
+    background: #f5f5f5; /* Màu nền xám nhẹ sau lưng vật phẩm */
+    border-radius: 50%;  /* Bo tròn khung */
+    border: 1px solid #eeeeee;
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px; /* Cách phần chữ bên dưới */
+}
+
+.inventory-img-box img {
+    width: 70%;  /* Ảnh vật phẩm chỉ chiếm 70% khung để không bị tràn */
+    height: 70%;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.15));
+}
+
+.inventory-name {
+    font-size: 0.85em;
+    font-weight: 700;
+    color: #3e2723;
+    margin-bottom: 4px;
+    text-align: center;
+}
+
+.inventory-qty {
+    background: #FFF3E0;
+    color: #E65100;
+    font-size: 0.8em;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-weight: bold;
+    border: 1px solid #FFE0B2;
 }
 /* --- CSS CHO TOAST NOTIFICATION (PHIÊN BẢN PRO) --- */
 #toast-notification {
@@ -894,6 +1071,148 @@
         filter: blur(12px); /* Lên cao thì nhòe đi như khói thật */
     }
 }
+#bee-guard {
+    position: absolute;
+    width: 15px;              
+    height: auto;
+    
+    top: 233px;               
+    left: calc(50% - 166px);  
+    
+    z-index: 15;
+    cursor: pointer;
+    
+    filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
+
+    display: none; /* Mặc định ẩn đi để JS xử lý */
+}
+
+/* Vẫn giữ hiệu ứng nhún khi bấm vào */
+#bee-guard:active {
+    transform: scale(0.9);
+}
+
+/* Hiệu ứng khi bấm vào thì nhún nhẹ */
+#bee-guard:active {
+    transform: scale(0.9);
+}
+/* --- CSS CHO MINIGAME CÂU CÁ (PRO VERSION) --- */
+#fishing-popup {
+    background: #E0F7FA;
+    border: 4px solid #0277BD;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    font-family: 'Fredoka', sans-serif;
+}
+
+/* Khu vực chờ cá cắn */
+#fishing-waiting { text-align: center; padding: 20px; }
+
+@keyframes float-bobber { 
+    0%, 100% { transform: translateY(0) rotate(-5deg); } 
+    50% { transform: translateY(-10px) rotate(5deg); } 
+}
+
+.fishing-float-anim { 
+    font-size: 60px; 
+    margin-bottom: 15px;
+    display: flex;             
+    justify-content: center;   
+    align-items: center;       
+    animation: float-bobber 2s ease-in-out infinite;
+    filter: drop-shadow(0 10px 10px rgba(0,0,0,0.2));
+}
+
+/* Khu vực chơi game */
+#fishing-game-area {
+    display: none; 
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    height: 340px;
+    position: relative;
+    margin-top: 10px;
+    background: #B3E5FC;
+    border-radius: 15px;
+    padding: 10px;
+    border: 2px solid #81D4FA;
+}
+
+/* Cột nước chính (Thanh Bar) */
+#fishing-bar-container {
+    width: 50px;
+    height: 300px;
+    background: linear-gradient(to right, #2c3e50, #4ca1af); /* Màu nước sâu */
+    border-radius: 25px;
+    position: relative;
+    overflow: hidden;
+    border: 4px solid #37474F;
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
+}
+
+/* Vùng Xanh (Mục tiêu - Sẽ di chuyển) */
+#zone-green {
+    position: absolute; 
+    left: 2px; 
+    width: calc(100% - 4px); 
+    height: 80px; /* Chiều cao vùng an toàn */
+    background: rgba(118, 255, 3, 0.5);
+    border-top: 2px solid #76FF03;
+    border-bottom: 2px solid #76FF03;
+    z-index: 1;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(118, 255, 3, 0.4);
+    transition: bottom 0.1s linear; /* Di chuyển mượt */
+}
+
+/* Thanh trượt (Bobber - Người chơi điều khiển) */
+#fishing-bobber {
+    position: absolute; 
+    left: 50%; 
+    transform: translateX(-50%);
+    bottom: 10%;
+    width: 36px; 
+    height: 20px;
+    background: #FF5722; /* Màu cam nổi bật */
+    border: 2px solid #fff;
+    border-radius: 10px;
+    z-index: 10;
+    transition: bottom 0.05s linear; 
+    box-shadow: 0 0 8px rgba(255, 87, 34, 0.8);
+}
+/* Thêm thanh ngang nhỏ giữa bobber cho giống thật */
+#fishing-bobber::after {
+    content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 2px; background: rgba(0,0,0,0.2);
+}
+
+/* Thanh tiến độ bắt cá (Bên phải) */
+#catch-progress-container {
+    width: 25px; height: 300px;
+    background: #eceff1; 
+    border-radius: 15px;
+    position: relative; 
+    overflow: hidden; 
+    border: 2px solid #cfd8dc;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+}
+
+#catch-progress-fill {
+    position: absolute; bottom: 0; left: 0; width: 100%; height: 0%;
+    background: linear-gradient(0deg, #FFEB3B, #FFC107, #FF9800, #4CAF50);
+    transition: height 0.1s;
+}
+
+/* Hiệu ứng khi thanh đầy (chiến thắng) */
+.progress-full {
+    filter: drop-shadow(0 0 5px #4CAF50);
+}
+
+#fishing-timer {
+    position: absolute; top: 15px; right: 20px;
+    font-size: 1.8em; font-weight: 900; color: #0277BD;
+    text-shadow: 2px 2px 0px white;
+}
 </style>
 </head>
 <body>
@@ -921,6 +1240,7 @@
 <main>
   <img id="beanstalk-bg" src="1000000105.png" alt="Khu vườn bên hồ" />
   
+  <img id="bee-guard" src="1000000144.gif" alt="Ong Nùi Giẻ" onclick="showBeePopup()" />
   <img id="light-bulb" src="1000000123.gif" alt="Bóng đèn" />
   
   <div id="pot-container">
@@ -939,9 +1259,9 @@
         <img id="seed-img-3" class="seed-image" src="" alt="Vật phẩm trồng" style="display:none;" />
     </div>
     
-    <div class="pot-slot" id="slot-6" data-slot="6">
-        <img src="1000000116.gif" alt="Em bé câu cá" />
-    </div>
+    <div class="pot-slot" id="slot-6" data-slot="6" onclick="showFishingPrePopup()">
+    <img src="1000000116.gif" alt="Em bé câu cá" style="pointer-events: none;" />
+</div>
     
     <div class="pot-slot" id="slot-4" data-slot="4">
         <img class="pot-base-img" src="1000000112.png" alt="Chậu đất" />
@@ -1133,7 +1453,58 @@
         Đóng
     </button>
 </div>
+<div id="fishing-popup" class="shop-box" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9); background: #E3F2FD; width: 90%; max-width: 350px; padding: 15px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 2000; text-align: center; border: 4px solid #2196F3; display: none; opacity: 0; transition: all 0.3s;">
+    
+    <h3 style="color:#1565C0; margin: 0 0 10px 0;">🎣 Đìa Cá Dồ</h3>
+    
+    <div id="fishing-waiting">
+        <div id="fishing-start-ui">
+            <p style="color:#555; font-size:0.9em;">Dùng <b>x1 Nhộng Ong</b> <img src="1000000145.png" width="15" style="vertical-align:middle;"> để câu.</p>
+            <div style="background:rgba(255,255,255,0.5); padding:10px; border-radius:10px; margin:10px 0; font-size:0.85em; color:#37474F;">
+                🐟 Cá Trê (50%)<br>🦈 Cá Dồ (30%)<br>🐠 Cá Tai Tượng (20%)
+            </div>
+            <button id="btn-start-fishing" style="background:#29B6F6; color:white; border:none; padding:12px 20px; border-radius:25px; font-weight:bold; font-size:1em; cursor:pointer; box-shadow: 0 4px 0 #0288D1; width:100%;">
+                Quăng Cần Ngay!
+            </button>
+        </div>
+        
+        <div id="fishing-waiting-anim" style="display:none;">
+            <div class="fishing-float-anim">🌊🎣🌊</div>
+            <p style="color:#0277BD; font-weight:bold;">Đang đợi cá cắn câu...</p>
+            <div id="fishing-countdown" style="font-size:3em; font-weight:900; color:#FF9800;">5</div>
+        </div>
+    </div>
+
+    <div id="fishing-game-area">
+        <div id="fishing-bar-container">
+            <div id="zone-green"></div> <div id="zone-red"></div>   <div id="fishing-bobber"></div> </div>
+        
+        <div style="display:flex; flex-direction:column; align-items:center;">
+            <div style="font-size:0.7em; font-weight:bold; color:#E65100; margin-bottom:5px;">BẮT!</div>
+            <div id="catch-progress-container">
+                <div id="catch-progress-fill"></div>
+            </div>
+        </div>
+        
+        <div id="fishing-timer">10s</div>
+    </div>
+    
+    <div id="fishing-guide-text" style="font-size:0.85em; color:#555; margin-top:10px; display:none;">
+        👆 <b>NHẤP LIÊN TỤC</b> để giữ thanh xám ở vùng Xanh!
+    </div>
+
+    <button onclick="closeFishingPopup()" style="margin-top:15px; background:#ef5350; color:white; border:none; padding:8px 20px; border-radius:20px; font-weight:bold; width:100%; cursor:pointer;">Thoát</button>
+</div>
 <script>
+// --- CẤU HÌNH THỜI GIAN GAME (CHỈNH TẠI ĐÂY) ---
+const GAME_CONFIG = {
+    // Thời gian ấp trứng (Mặc định: 24 * 60 * 60 * 1000 là 24 giờ)
+    // Để test nhanh, bạn sửa thành: 10 * 1000 (10 giây)
+    HATCH_TIME: 24 * 60 * 60 * 1000, 
+    
+    // Thời gian nâng cấp Pet (Mặc định: 24 giờ)
+    UPGRADE_TIME: 24 * 60 * 60 * 1000 
+};
 // --- LOGIC SCALING (GIỮ NGUYÊN) ---
 function adjustAppWrapperScale() {
     const appWrapper = document.querySelector(".app-wrapper");
@@ -1187,7 +1558,9 @@ let incubationFinishTime = 0; // Thời gian kết thúc ấp trứng
 let ownedPets = []; 
 let ownedSeeds = { 'hat_nguyen_to': 0, 'hat_kim_loai': 0, 'hat_tinh_yeu': 0 };
 let globalPetAge = 0;
+let petLevels = { 'thien_than': 1, 'than_chet': 1 }; // Lưu cấp sao riêng
 // --- KHAI BÁO KHO VẬT PHẨM ĐẶC BIỆT (MỚI) ---
+let petStarLevel = 1; // Biến lưu cấp độ sao của Pet
 let ownedArtifacts = { 'manh_nguyen_to': 0, 'manh_kim_loai': 0, 'vuong_mien': 0 };
 let grasshopperExchanged = 0; // Biến theo dõi số lần đã đổi (Tối đa 5)
 let isHarvesting = false; // Biến chống click đúp khi thu hoạch
@@ -1217,11 +1590,12 @@ const HANGING_ITEMS_CONFIG = [
 ];
 // Cấu hình vật phẩm rớt khi thu hoạch
 const HARVEST_DROPS = {
-    'hat_nguyen_to': { id: 'manh_nguyen_to', name: 'Mãnh Nguyên Tố', img: '1000000135.png' },
-    'hat_kim_loai': { id: 'manh_kim_loai', name: 'Mãnh Kim Loại', img: '1000000136.png' },
+    'hat_nguyen_to': { id: 'manh_nguyen_to', name: 'Mảnh Nguyên Tố', img: '1000000135.png' },
+    'hat_kim_loai': { id: 'manh_kim_loai', name: 'Mảnh Kim Loại', img: '1000000136.png' },
     'hat_tinh_yeu': { id: 'vuong_mien', name: 'Vương Miện', img: '1000000137.png' }
 };
-let lastFedTime = 0; 
+let lastFedTime = 0;
+let lastBeePokeTime = 0; // Biến lưu thời gian lần cuối thọc ong
 let activePopupInterval = null;
 
 // --- 1. CẬP NHẬT DANH SÁCH CHẬU ---
@@ -1237,12 +1611,12 @@ const POT_DEFINITIONS = {
     'chau_dong': { name: "Chậu Đồng", img: "1000000117.png", expBonus: 1 },
     'chau_bac': { name: "Chậu Bạc", img: "1000000118.png", expBonus: 2 },
     'chau_vang': { name: "Chậu Vàng", img: "1000000119.png", expBonus: 3 },
-    'chau_bach_kim': { name: "Chậu Bạch Kim", img: "1000000120.png", expBonus: 4 },
-    'chau_kim_cuong': { name: "Chậu Kim Cương", img: "1000000121.png", expBonus: 5 },
-    'chau_kim_cuong_do': { name: "Chậu K.Cương Đỏ", img: "1000000122.png", expBonus: 6 }
+    'chau_bach_kim': { name: "Chậu BK", img: "1000000120.png", expBonus: 4 }, // Đã sửa tên
+    'chau_kim_cuong': { name: "Chậu KC", img: "1000000121.png", expBonus: 5 }, // Đã sửa tên
+    'chau_kim_cuong_do': { name: "Chậu KCĐ", img: "1000000122.png", expBonus: 6 } // Đã sửa tên
 };
 
-// --- 2. CẬP NHẬT CÔNG THỨC RÈN (ĐÃ CHỈNH SỬA: DÙNG MÃNH KIM LOẠI) ---
+// --- 2. CẬP NHẬT CÔNG THỨC RÈN (ĐÃ CHỈNH SỬA: DÙNG MẢNH KIM LOẠI) ---
 const CRAFTING_RECIPES = [
     {
         id: 'craft_so_dua',
@@ -1260,7 +1634,6 @@ const CRAFTING_RECIPES = [
         icon: '1000000117.png',
         duration: 2 * 60 * 60 * 1000, 
         cost: { dau: 2000 },
-        // Sửa: hat_kim_loai -> manh_kim_loai
         materials: { 'so_dua': 1, 'manh_kim_loai': 20 }
     },
     {
@@ -1284,7 +1657,7 @@ const CRAFTING_RECIPES = [
     {
         id: 'craft_chau_bach_kim',
         output: 'chau_bach_kim',
-        name: 'Chậu Bạch Kim',
+        name: 'Chậu BK', // Đã sửa tên
         icon: '1000000120.png',
         duration: 5 * 60 * 60 * 1000, 
         cost: { dau: 5000 },
@@ -1293,7 +1666,7 @@ const CRAFTING_RECIPES = [
     {
         id: 'craft_chau_kim_cuong',
         output: 'chau_kim_cuong',
-        name: 'Chậu Kim Cương',
+        name: 'Chậu KC', // Đã sửa tên
         icon: '1000000121.png',
         duration: 6 * 60 * 60 * 1000, 
         cost: { dau: 6000 },
@@ -1302,7 +1675,7 @@ const CRAFTING_RECIPES = [
     {
         id: 'craft_chau_kim_cuong_do',
         output: 'chau_kim_cuong_do',
-        name: 'Chậu K.Cương Đỏ',
+        name: 'Chậu KCĐ', // Đã sửa tên
         icon: '1000000122.png',
         duration: 7 * 60 * 60 * 1000, 
         cost: { dau: 7000 },
@@ -1356,15 +1729,19 @@ let petShopItems = [
     },
 ];
 
+// --- DANH SÁCH SHOP ---
 let shopItems = [
-    { id: 201, name: "Trứng Ngũ Sắc", price: 100, currency: "la", type: "item", icon: "1000000102.png", value: "trung_bang_tuyet", category: "pet_may" },
-    { id: 202, name: "Thiên Thần", price: 0, currency: "dau", type: "pet", icon: "1000000127.gif", value: "1000000127.gif" },
-    // --- THÊM THẦN CHẾT VÀO DANH SÁCH ---
-    { id: 203, name: "Thần Chết", price: 0, currency: "dau", type: "pet", icon: "1000000104.gif", value: "1000000104.gif" },
-    // ------------------------------------
+    // 1. Thêm BI GAI vào đầu danh sách (Giá 0 để đánh dấu là Pet khởi đầu)
+    { id: 201, name: "Bi Gai", price: 0, currency: "dau", type: "pet", icon: "1000000149.gif", value: "1000000149.gif", category: "pet_may" },
+
+    // 2. Giữ nguyên Thiên Thần và Thần Chết (Vẫn bán trong Shop)
+    { id: 202, name: "Thiên Thần", price: 100, currency: "la", type: "pet", icon: "1000000127.gif", value: "1000000127.gif", category: "pet_may" },
+    { id: 203, name: "Thần Chết",  price: 100, currency: "la", type: "pet", icon: "1000000104.gif", value: "1000000104.gif", category: "pet_may" },
+    
+    // Các loại hạt giống giữ nguyên
     { id: 204, name: "Hạt Nguyên Tố", price: 100, currency: "dau", type: "seed", icon: "1000000125.png", value: "hat_nguyen_to", category: "hat_may" }, 
-    { id: 205, name: "Hạt Kim Loại", price: 100, currency: "dau", type: "seed", icon: "1000000126.png", value: "hat_kim_loai", category: "hat_may" },
-    { id: 206, name: "Hạt Tình Yêu", price: 100, currency: "dau", type: "seed", icon: "1000000132.png", value: "hat_tinh_yeu", category: "hat_may" },
+    { id: 205, name: "Hạt Kim Loại",  price: 100, currency: "dau", type: "seed", icon: "1000000126.png", value: "hat_kim_loai", category: "hat_may" },
+    { id: 206, name: "Hạt Tình Yêu",  price: 100, currency: "dau", type: "seed", icon: "1000000132.png", value: "hat_tinh_yeu", category: "hat_may" },
 ];
 
 // --- CẬP NHẬT THỜI GIAN TRỒNG CÂY (0h - 6h - 12h) ---
@@ -1437,12 +1814,13 @@ function updateBlacksmithVisuals() {
     const idleImg = document.getElementById('chaos-blacksmith');
     const workingImg = document.getElementById('chaos-blacksmith-working');
     
-    // Nếu hàng chờ có đồ (đang rèn) -> Hiện GIF, Ẩn PNG
-    if (craftingQueue.length > 0) {
+    // Kiểm tra biến craftingQueue (hàng chờ rèn)
+    if (craftingQueue && craftingQueue.length > 0) {
+        // Đang bận: Ẩn ảnh tĩnh, Hiện ảnh động
         if(idleImg) idleImg.style.display = 'none';
         if(workingImg) workingImg.style.display = 'block';
     } else {
-        // Nếu rảnh -> Hiện PNG, Ẩn GIF
+        // Đang rảnh: Hiện ảnh tĩnh, Ẩn ảnh động
         if(idleImg) idleImg.style.display = 'block';
         if(workingImg) workingImg.style.display = 'none';
     }
@@ -1480,6 +1858,7 @@ const pugPetImg = document.getElementById("pug-pet");
 const iceEggImg = document.getElementById("ice-egg-img"); 
 
 let currentShopTab = 'pet_may';
+let currentPetTab = 'cloud';
 
 function expNeeded(lv){ return lv * 100; }
 
@@ -1553,56 +1932,20 @@ function updateDisplay(){
   
   const angelData = shopItems.find(i => i.name === "Thiên Thần");
   const reaperData = shopItems.find(i => i.name === "Thần Chết");
+  const biGaiData = shopItems.find(i => i.name === "Bi Gai"); // <--- MỚI: Lấy thông tin Bi Gai
   
-  // LOGIC HIỂN THỊ HÌNH ẢNH Ở SLOT 1
-  if (iceEggImg) {
-      if (isIceDragonHatched) {
-          // Đã nở -> Kiểm tra xem là Thiên Thần hay Thần Chết
-          if (hatchedPetType === 'than_chet' && reaperData) {
-              iceEggImg.src = reaperData.icon;
-              iceEggImg.alt = reaperData.name;
-              
-              // --- SỬA: PHÓNG TO THẦN CHẾT ---
-              iceEggImg.style.width = "220%";
-              iceEggImg.style.height = "220%";
-              iceEggImg.style.top = "-35px";
-              iceEggImg.style.left = "-35px";
+  // ... (giữ nguyên phần code hiển thị Slot 1 ở giữa nếu có) ...
 
-          } else if (angelData) {
-              iceEggImg.src = angelData.icon; 
-              iceEggImg.alt = angelData.name;
-
-              // --- RESET SIZE CHO THIÊN THẦN ---
-              iceEggImg.style.width = "120%"; 
-              iceEggImg.style.height = "120%";
-              iceEggImg.style.top = "-10px";
-              iceEggImg.style.left = "-10px";
-          }
-          iceEggImg.style.display = 'block'; 
-      } else if (hasIceEgg) {
-          // Chưa nở -> Trứng
-          iceEggImg.src = "1000000102.png"; 
-          iceEggImg.alt = "Trứng Ngũ Sắc"; 
-          iceEggImg.style.display = 'block'; 
-
-          // --- RESET SIZE CHO TRỨNG ---
-          iceEggImg.style.width = "120%"; 
-          iceEggImg.style.height = "120%";
-          iceEggImg.style.top = "-10px";
-          iceEggImg.style.left = "-10px";
-
-      } else {
-          iceEggImg.src = ""; 
-          iceEggImg.alt = ""; 
-          iceEggImg.style.display = 'none'; 
-      }
-  }
-  
     // --- SỬA LỖI PET: Dùng container để định vị ---
     const petContainer = document.getElementById("pet-container");
     
     if (pugPetImg && petContainer) {
-      if (activePet && !(angelData && activePet === angelData.value) && !(reaperData && activePet === reaperData.value)) { 
+      // Dưới đây là câu lệnh kiểm tra: Nếu KHÔNG PHẢI Thiên Thần, KHÔNG PHẢI Thần Chết, và KHÔNG PHẢI Bi Gai thì mới hiện dưới đất
+      if (activePet && 
+          !(angelData && activePet === angelData.value) && 
+          !(reaperData && activePet === reaperData.value) &&
+          !(biGaiData && activePet === biGaiData.value) // <--- MỚI: Chặn Bi Gai hiện dưới đất
+      ) { 
           pugPetImg.src = activePet;
           pugPetImg.style.display = 'block'; 
           
@@ -1637,6 +1980,55 @@ function updateDisplay(){
           pugPetImg.src = "";
           pugPetImg.style.display = 'none';
           pugPetImg.classList.remove("pet-breathing-effect"); 
+      }
+  }
+  // --- SỬA LỖI SLOT 1: CẬP NHẬT HÌNH ẢNH & KÍCH THƯỚC CHUẨN ---
+  const slot1Img = document.getElementById("ice-egg-img");
+  
+  if (slot1Img) {
+      // 1. Xóa sạch các class định dạng cũ để tránh xung đột
+      slot1Img.classList.remove('fix-egg', 'fix-angel', 'fix-reaper', 'fix-bigai');
+
+      // 2. TRƯỜNG HỢP: TRỨNG ĐÃ NỞ (Đã có Pet Hộ Vệ)
+      if (isIceDragonHatched) {
+          slot1Img.style.display = 'block';
+          slot1Img.classList.remove('egg-shaking'); 
+          slot1Img.style.animation = "none"; 
+          slot1Img.style.transform = "none"; 
+          
+          if (hatchedPetType === 'than_chet') {
+              slot1Img.src = "1000000104.gif";
+              slot1Img.classList.add('fix-reaper'); // Áp dụng size Thần Chết
+          }
+          else if (hatchedPetType === 'bi_gai') {
+              slot1Img.src = "1000000149.gif";
+              slot1Img.classList.add('fix-bigai');  // Áp dụng size Bi Gai
+          }
+          else {
+              slot1Img.src = "1000000127.gif"; 
+              slot1Img.classList.add('fix-angel');  // Áp dụng size Thiên Thần
+          }
+      } 
+      
+      // 3. TRƯỜNG HỢP: ĐANG LÀ QUẢ TRỨNG (Chưa nở)
+      else if (hasIceEgg) {
+          slot1Img.style.display = 'block';
+          slot1Img.src = "1000000102.png"; 
+          slot1Img.classList.add('fix-egg'); // Áp dụng size Trứng
+
+          if (incubationFinishTime > 0) {
+             slot1Img.style.animation = "shake-egg 0.5s infinite"; 
+          } else {
+             slot1Img.style.animation = "none"; 
+             slot1Img.style.transform = "none"; 
+          }
+      } 
+      
+      // 4. TRƯỜNG HỢP: KHÔNG CÓ GÌ
+      else {
+          slot1Img.style.display = 'none';
+          slot1Img.src = "";
+          slot1Img.style.animation = "none"; 
       }
   }
 
@@ -1758,19 +2150,102 @@ vineDecorations.forEach((itemId, index) => {
   });
   // ----------------------------------------------
 }
+// --- ĐÃ SỬA: HIỂN THỊ KHO PET ĐỂ ĐỔI VÀ CẬP NHẬT NGAY ---
+function showCloudPetInventory() {
+    interactionTitle.innerHTML = "🐾 Kho Pet Mây";
+    interactionText.innerHTML = "Chọn Pet bạn muốn đưa ra bảo vệ nông trại:";
+    interactionControls.innerHTML = "";
 
+    const container = document.createElement('div');
+    container.style.cssText = "display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;";
+
+    const guardianPets = [
+        // Thêm dòng này:
+        { type: 'bi_gai',     name: 'Bi Gai',     icon: '1000000149.gif', value: '1000000149.gif' },
+        // Giữ nguyên 2 dòng cũ:
+        { type: 'thien_than', name: 'Thiên Thần', icon: '1000000127.gif', value: '1000000127.gif' },
+        { type: 'than_chet',  name: 'Thần Chết',  icon: '1000000104.gif', value: '1000000104.gif' }
+    ];
+
+    let hasAny = false;
+
+    guardianPets.forEach(p => {
+        // Chỉ hiện những con đã sở hữu
+        if (isPetOwned(p.value)) {
+            hasAny = true;
+            // Kiểm tra xem con này có phải con đang nở (active ở slot 1) không
+            const isCurrent = (hatchedPetType === p.type);
+            
+            // Lấy level riêng của con này
+            const pLevel = petLevels[p.type] || 1;
+            let stars = "";
+            for(let i=0; i<pLevel; i++) stars += "⭐";
+
+            const itemDiv = document.createElement('div');
+            itemDiv.className = "shop-item";
+            itemDiv.style.borderColor = isCurrent ? "#4CAF50" : "#eee";
+            itemDiv.style.background = isCurrent ? "#E8F5E9" : "#fff";
+
+            itemDiv.innerHTML = `
+                <img src="${p.icon}" style="width:50px; height:50px; object-fit:contain;">
+                <div style="font-weight:bold; margin-top:5px; color:${isCurrent ? '#2E7D32' : '#333'}">${p.name}</div>
+                <div style="font-size:0.8em; color:#FF9800;">${stars}</div>
+                <button class="btn-select-pet" style="
+                    margin-top:8px; width:100%; border:none; border-radius:15px; padding:5px;
+                    background: ${isCurrent ? '#ccc' : 'var(--primary)'};
+                    color: white; font-size: 0.8em; cursor: ${isCurrent ? 'default' : 'pointer'};
+                ">
+                    ${isCurrent ? 'Đang Chọn' : 'Chọn'}
+                </button>
+            `;
+
+            if (!isCurrent) {
+                itemDiv.querySelector('.btn-select-pet').onclick = () => {
+                    // Logic đổi Pet
+                    hatchedPetType = p.type;
+                    petStarLevel = petLevels[p.type] || 1; // Cập nhật lại sao hiển thị theo con mới đổi
+
+                    // QUAN TRỌNG: Lưu và Cập nhật ngay lập tức
+                    saveGame();
+                    updateDisplay(); // Hàm này sẽ đổi ảnh ở Slot 1 ngay lập tức
+                    
+                    if(typeof showToast === 'function') {
+                        showToast(`Đã đổi sang ${p.name}`, "🔄", "Thành Công");
+                    } else {
+                        alert(`Đã đổi sang ${p.name}!`);
+                    }
+                    
+                    closeInteractionPopup();
+
+                    // Mở lại popup Slot 1 để thấy thông tin mới
+                    setTimeout(() => { document.querySelector('#slot-1').click(); }, 300);
+                };
+            }
+            container.appendChild(itemDiv);
+        }
+    });
+
+    if(!hasAny) {
+        container.innerHTML = "<div>Bạn chưa có Pet nào.</div>";
+    }
+
+    interactionControls.appendChild(container);
+    showPopup('interaction-popup');
+}
+// --- CODE MỚI: showShopPopup ---
 function showShopPopup() {
     const wrapper = document.getElementById('shop-tab-container-wrapper');
     if (!wrapper) return;
     wrapper.innerHTML = '';
     
-    const tabs = document.createElement('div');
-    tabs.className = 'tab-container';
-    tabs.innerHTML = `
-        <button class="tab-btn ${currentShopTab==='pet_may'?'active':''}" onclick="switchShopTab('pet_may')">🐾 Pet Mây</button>
-        <button class="tab-btn ${currentShopTab==='hat_may'?'active':''}" onclick="switchShopTab('hat_may')">🫘 Hạt Mây</button>
-    `;
-    wrapper.appendChild(tabs);
+    // Đặt mặc định là hạt mây để hiển thị luôn
+    currentShopTab = 'hat_may'; 
+
+    // Tạo tiêu đề thay vì Tab chọn
+    const title = document.createElement('div');
+    title.style.cssText = "font-weight:bold; color:#795548; margin-bottom:10px; text-align:left; border-bottom:1px solid #eee; padding-bottom:5px;";
+    title.innerHTML = "🌱 Danh sách Hạt Giống";
+    wrapper.appendChild(title);
 
     const contentContainer = document.createElement('div');
     contentContainer.id = 'shop-content-grid';
@@ -1786,40 +2261,50 @@ function switchShopTab(tabName) {
     showShopPopup();
 }
 
+// --- CODE MỚI: renderShopItems (ĐÃ CÂN ĐỐI ẢNH HẠT GIỐNG) ---
 function renderShopItems(container) {
   container.innerHTML = "";
-  const itemsToRender = shopItems.filter(item => item.category === currentShopTab);
+  // SỬA: Luôn lọc theo 'hat_may' để chỉ hiển thị hạt giống
+  const itemsToRender = shopItems.filter(item => item.category === 'hat_may');
 
-  function createShopItemHTML(item) {
-    if (item.type === "pet" && (item.name === "Thiên Thần" || item.name === "Thần Chết")) return ''; 
-    
-    const isOwned = (item.value === "trung_bang_tuyet" && (hasIceEgg || isIceDragonHatched));
-    
-    let buttonHTML = `<button class="btn-buy" data-id="${item.id}" data-type="general">Mua</button>`;
-    
-    if (isOwned) { 
-        buttonHTML = `<button disabled class="btn-buy" style="background:#bdbdbd; box-shadow:none;">Đã Có</button>`;
-    }
-
-    const currencyIcon = item.currency === "dau" ? '🫘' : '🍂';
-    const currencyColor = item.currency === "dau" ? '#795548' : '#E65100'; 
-    
-    return `
-      <div class="shop-item">
-        <img src="${item.icon}" alt="${item.name}" style="width:50px; height:50px; object-fit:contain; margin-bottom:5px;" />
+  itemsToRender.forEach(item => { 
+      const itemDiv = document.createElement("div");
+      itemDiv.className = "shop-item";
+      
+      const currencyIcon = item.currency === "dau" ? '🫘' : '🍂';
+      const currencyColor = item.currency === "dau" ? '#795548' : '#E65100'; 
+      
+      itemDiv.innerHTML = `
+        <div style="
+            width: 60px; 
+            height: 60px; 
+            background: #f5f5f5; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            margin-bottom: 8px;
+            border: 1px solid #eee;
+        ">
+            <img src="${item.icon}" alt="${item.name}" style="
+                width: 65%; 
+                height: 65%; 
+                object-fit: contain; 
+                filter: drop-shadow(0 2px 3px rgba(0,0,0,0.15));
+            " />
+        </div>
         <div style="font-weight:700; font-size:0.9em; color: var(--text-main); margin-bottom: 2px;">${item.name}</div>
         <div style="font-size:0.8em; color:var(--text-muted); margin-bottom: 5px;">
           <span style="color:${currencyColor};">${currencyIcon}</span> <b>${item.price.toLocaleString('vi-VN')}</b>
         </div>
-        ${buttonHTML}
-      </div>
-    `;
-  }
+        <button class="btn-buy" data-id="${item.id}" data-type="general">Mua</button>
+      `;
+      container.appendChild(itemDiv);
+  });
   
-  itemsToRender.forEach(item => { container.insertAdjacentHTML('beforeend', createShopItemHTML(item)); });
-  
-  document.querySelectorAll(".btn-buy[data-type='general']").forEach(btn => { btn.addEventListener("click", handleBuy); });
-  updateDisplay();
+  container.querySelectorAll(".btn-buy").forEach(btn => { 
+      btn.addEventListener("click", handleBuy); 
+  });
 }
 
 function updateShop(){
@@ -1829,41 +2314,158 @@ function updateShop(){
     }
 }
 
+// --- SỬA LỖI: updatePetShop (ĐÃ FIX LỖI SAO) ---
 function updatePetShop() {
     if (!petShopItemsContainer) return;
     petShopItemsContainer.innerHTML = "";
-    petShopItemsContainer.style.cssText = "display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;";
+    
+    // Chuyển sang hiển thị dạng khối
+    petShopItemsContainer.style.display = "block"; 
 
-    const allPets = petShopItems;
-    allPets.forEach(item => {
+    // 1. Phân loại Pet
+    const cloudPets = shopItems.filter(i => i.name === "Thiên Thần" || i.name === "Thần Chết" || i.name === "Bi Gai");
+    const lamePets = petShopItems; // Các con Choco, Pug...
+
+    // 2. TẠO THANH TAB NGANG
+    const tabContainer = document.createElement("div");
+    tabContainer.className = "tab-container"; 
+    tabContainer.innerHTML = `
+        <button class="tab-btn ${currentPetTab === 'cloud' ? 'active' : ''}" id="btn-tab-cloud">
+            ☁️ Pet Mây
+        </button>
+        <button class="tab-btn ${currentPetTab === 'lame' ? 'active' : ''}" id="btn-tab-lame">
+            🐕 Pet Lỏ
+        </button>
+    `;
+    petShopItemsContainer.appendChild(tabContainer);
+
+    // Gán sự kiện chuyển Tab
+    tabContainer.querySelector("#btn-tab-cloud").onclick = () => {
+        currentPetTab = 'cloud';
+        updatePetShop(); 
+    };
+    tabContainer.querySelector("#btn-tab-lame").onclick = () => {
+        currentPetTab = 'lame';
+        updatePetShop(); 
+    };
+
+    // 3. Hàm tạo HTML cho từng con Pet
+    const createPetHTML = (item, isCloudPet) => {
         const owned = isPetOwned(item.value); 
-        const isActive = item.value === activePet; 
-        const itemDiv = document.createElement("div");
-        itemDiv.className = "pet-shop-item";
-        
+        let isActive = false;
+        let starDisplay = ""; // <--- Tên biến đúng là starDisplay
+        let guardianType = "";
+
+        if (isCloudPet) {
+            if (item.name === "Thiên Thần") guardianType = 'thien_than';
+            else if (item.name === "Thần Chết") guardianType = 'than_chet';
+            else if (item.name === "Bi Gai") guardianType = 'bi_gai';
+            
+            isActive = (hatchedPetType === guardianType);
+            
+            if (owned) {
+                const pLevel = petLevels[guardianType] || 1;
+                // --- ĐÃ SỬA LỖI TẠI DÒNG NÀY (starsDisplay -> starDisplay) ---
+                for(let i=0; i<pLevel; i++) starDisplay += "⭐"; 
+                // -------------------------------------------------------------
+                starDisplay = `<div style="color:#FF9800; font-size:0.7em; margin-bottom:3px; height:15px;">${starDisplay}</div>`;
+            } else {
+                 starDisplay = `<div style="height:15px;"></div>`; 
+            }
+        } else {
+            isActive = (item.value === activePet);
+            starDisplay = `<div style="height:15px;"></div>`; 
+        }
+
         const currencyIcon = item.currency === "la" ? '🍂' : '🫘';
         const currencyColor = item.currency === "la" ? '#E65100' : '#795548';
-        const currencyDisplay = `<span style="font-size:0.8em; color:${currencyColor};">${currencyIcon}</span> ${item.price.toLocaleString('vi-VN')}`; 
-        
+        const priceDisplay = `<span style="font-size:0.8em; color:${currencyColor};">${currencyIcon}</span> ${item.price.toLocaleString('vi-VN')}`;
+
         let buttonHTML = '';
-        if (!owned) buttonHTML = `<button class="btn-buy-pet" data-id="${item.id}" data-type="pet-shop-internal" style="background:var(--primary);">Mua</button>`;
-        else if (isActive) buttonHTML = `<button disabled style="background:#4CAF50; color:white; border:none; border-radius:8px; padding:5px; font-size:11px; width:100%;">Đang Dùng</button>`;
-        else buttonHTML = `<button class="btn-activate-pet" data-value="${item.value}" style="background:#2196F3; color:white; border:none; border-radius:8px; padding:5px; font-size:11px; width:100%; cursor:pointer;">Chọn</button>`;
+        if (!owned) {
+            let buyType = isCloudPet ? "general" : "pet-shop-internal";
+            buttonHTML = `<button class="btn-buy-pet" data-id="${item.id}" data-type="${buyType}" style="background:var(--primary);">Mua</button>`;
+        } else if (isActive) {
+            buttonHTML = `<button disabled style="background:#4CAF50; color:white; border:none; border-radius:8px; padding:5px; font-size:11px; width:100%; opacity:0.8;">✅ Đang Dùng</button>`;
+        } else {
+            buttonHTML = `<button class="btn-activate-pet" data-value="${item.value}" data-guardian="${isCloudPet ? guardianType : ''}" style="background:#2196F3; color:white; border:none; border-radius:8px; padding:5px; font-size:11px; width:100%; cursor:pointer;">Chọn</button>`;
+        }
+
+        const itemDiv = document.createElement("div");
+        itemDiv.className = "pet-shop-item";
+        itemDiv.style.cssText = "background: white; border: 1px solid #eee; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.05); min-height: 180px;";
 
         itemDiv.innerHTML = `
-            <img src="${item.icon}" alt="${item.name}" style="width:40px;height:40px;object-fit:contain;" />
-            <div style="font-weight:600; font-size:0.85em; margin: 4px 0;">${item.name}</div>
-            <div style="font-size:0.8em;">${currencyDisplay}</div>
-            <div style="width:100%; margin-top:5px;">${buttonHTML}</div>
+            <div style="width: 100%; height: 70px; display: flex; align-items: center; justify-content: center; margin-bottom: 5px;">
+                <img src="${item.icon}" alt="${item.name}" style="max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 3px 3px rgba(0,0,0,0.1));" />
+            </div>
+            
+            <div style="font-weight:700; font-size:0.95em; margin: 2px 0; color:#333; text-align:center; height: 20px; display: flex; align-items: center; justify-content: center;">
+                ${item.name}
+            </div>
+            
+            ${starDisplay}
+            
+            <div style="font-size:0.8em; margin-bottom:8px; height: 20px; display:flex; align-items:center;">
+                ${owned ? '<span style="color:#4CAF50; font-weight:bold;">Đã sở hữu</span>' : priceDisplay}
+            </div>
+            
+            <div style="width:100%; margin-top: auto;">${buttonHTML}</div>
         `;
-        petShopItemsContainer.appendChild(itemDiv);
+        return itemDiv;
+    };
+
+    // 4. VẼ DANH SÁCH
+    const gridContainer = document.createElement("div");
+    gridContainer.style.cssText = "display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;";
+
+    if (currentPetTab === 'cloud') {
+        const note = document.createElement("div");
+        note.innerHTML = "(Hộ Vệ: Bảo vệ nông trại & Auto thu hoạch)";
+        note.style.cssText = "grid-column: span 2; font-size: 0.8em; color: #1976D2; text-align: center; margin-bottom: 5px;";
+        gridContainer.appendChild(note);
+
+        cloudPets.forEach(pet => {
+            gridContainer.appendChild(createPetHTML(pet, true));
+        });
+    } else {
+        const note = document.createElement("div");
+        note.innerHTML = "(Đi Dạo: Chạy lon ton cho vui & Tặng quà)";
+        note.style.cssText = "grid-column: span 2; font-size: 0.8em; color: #E65100; text-align: center; margin-bottom: 5px;";
+        gridContainer.appendChild(note);
+
+        lamePets.forEach(pet => {
+            gridContainer.appendChild(createPetHTML(pet, false));
+        });
+    }
+
+    petShopItemsContainer.appendChild(gridContainer);
+
+    // 5. Gán sự kiện click
+    petShopItemsContainer.querySelectorAll(".btn-buy-pet").forEach(btn => { 
+        btn.addEventListener("click", handleBuy); 
     });
     
-    document.querySelectorAll(".btn-buy-pet[data-type='pet-shop-internal']").forEach(btn => { btn.addEventListener("click", handleBuy); });
-    document.querySelectorAll(".btn-activate-pet").forEach(btn => {
-        btn.addEventListener("click", (e) => { activatePet(e.target.getAttribute("data-value")); updatePetShop(); });
+    petShopItemsContainer.querySelectorAll(".btn-activate-pet").forEach(btn => {
+        btn.addEventListener("click", (e) => { 
+            const val = e.target.getAttribute("data-value");
+            const gType = e.target.getAttribute("data-guardian");
+
+            if (gType) {
+                hatchedPetType = gType;
+                petStarLevel = petLevels[gType] || 1; 
+                let showName = "Bi Gai";
+                if(gType === 'thien_than') showName = "Thiên Thần";
+                if(gType === 'than_chet') showName = "Thần Chết";
+
+                saveGame(); updateDisplay(); updatePetShop(); 
+                if(typeof showToast === 'function') showToast(`Đã đổi Hộ Vệ: ${showName}`, "🛡️");
+            } else {
+                activatePet(val); 
+                updatePetShop(); 
+            }
+        });
     });
-    updateDisplay();
 }
 
 function updateSeedShop() {
@@ -1905,6 +2507,7 @@ function updateSeedShop() {
     updateDisplay();
 }
 
+// --- LOGIC MUA HÀNG ---
 function handleBuy(event) {
   const itemId = parseInt(event.target.getAttribute("data-id"));
   const itemType = event.target.getAttribute("data-type");
@@ -1918,8 +2521,8 @@ function handleBuy(event) {
   
   if (!item) return;
   
-// Sửa: Áp dụng cho TẤT CẢ vật phẩm có type là 'seed'
-if (item.type === 'seed') {
+  // 1. MUA HẠT GIỐNG (Giữ nguyên)
+  if (item.type === 'seed') {
       const currencyName = item.currency === 'la' ? 'Lá' : 'Đậu';
       let quantityStr = prompt(`Bạn muốn mua bao nhiêu ${item.name}?\n(Giá: ${item.price} ${currencyName}/hạt)`, "1");
       
@@ -1927,63 +2530,105 @@ if (item.type === 'seed') {
       let quantity = parseInt(quantityStr);
       
       if (isNaN(quantity) || quantity <= 0) {
-          alert("Số lượng không hợp lệ!");
-          return;
+          alert("Số lượng không hợp lệ!"); return;
       }
       
       let totalCost = item.price * quantity;
-      
-      // Kiểm tra xem người dùng dùng loại tiền nào
       let userMoney = (item.currency === 'la') ? la : dau;
 
       if (userMoney >= totalCost) {
           if (confirm(`Tổng tiền là ${totalCost.toLocaleString('vi-VN')} ${currencyName}. Bạn chắc chắn muốn mua ${quantity} hạt chứ?`)) {
-              // Trừ đúng loại tiền
-              if (item.currency === 'la') {
-                  la -= totalCost;
-              } else {
-                  dau -= totalCost;
-              }
+              if (item.currency === 'la') la -= totalCost;
+              else dau -= totalCost;
 
               if (ownedSeeds[item.value] !== undefined) ownedSeeds[item.value] += quantity;
               else ownedSeeds[item.value] = quantity;
               
               alert(`Đã mua thành công ${quantity}x ${item.name}!`);
-_saveGame(false);
-updateDisplay(); updateShop(); updatePetShop(); updateSeedShop(); updateControlButtons();
+              _saveGame(false);
+              updateDisplay(); updateShop(); updatePetShop(); updateSeedShop(); updateControlButtons();
           }
       } else {
           alert(`Bạn không đủ ${currencyName}! Cần ${totalCost.toLocaleString('vi-VN')} ${currencyName}.`);
       }
       return; 
   }
-  // --------------------------------------------------------
   
-  if (item.type === "item" && item.value === "trung_bang_tuyet" && (hasIceEgg || isIceDragonHatched)) {
-      alert(`${item.name} đã được sở hữu!`); 
-      return; 
+  // 2. KIỂM TRA ĐÃ CÓ PET CHƯA
+  if (item.type === "pet" && isPetOwned(item.value)) { 
+      alert(`${item.name} đã được sở hữu!`); return; 
   }
-  
-  if (item.type === "pet" && isPetOwned(item.value)) { alert(`${item.name} đã được sở hữu!`); return; }
 
+  // 3. LOGIC MUA PET/ITEM KHÁC
   let canBuy = false;
   if (item.currency === "dau" && dau >= item.price) { dau -= item.price; canBuy = true; } 
   else if (item.currency === "la" && la >= item.price) { la -= item.price; canBuy = true; }
 
   if (canBuy) {
-    if (item.type === "tool") { tool = item.value; alert(`Bạn đã trang bị ${item.name}!`); } 
-    else if (item.type === "pet") { 
-        ownedPets.push(item.value); activePet = item.value;
-        alert(`Bạn đã mua Pet ${item.name}! Pet đã được kích hoạt!`);
-        if(itemType === "general") hidePopup('shop-box');
-    } else if (item.type === "item") { 
-        if (item.value === "trung_bang_tuyet") { hasIceEgg = true; alert(`Bạn đã mua thành công ${item.name}!.`); } 
-        else { alert(`Bạn đã mua thành công ${item.name}!`); }
-    } else if (item.type === "seed") { 
-        if (ownedSeeds[item.value] !== undefined) ownedSeeds[item.value] += 1;
-        else ownedSeeds[item.value] = 1;
-        alert(`Bạn đã mua 1x ${item.name}!`);
+    if (item.type === "tool") { 
+        tool = item.value; alert(`Bạn đã trang bị ${item.name}!`); 
     } 
+    else if (item.type === "pet") { 
+        
+        // KIỂM TRA: Nếu là Pet Hộ Vệ (Bi Gai, Thiên Thần, Thần Chết)
+        if (item.name === "Thiên Thần" || item.name === "Thần Chết" || item.name === "Bi Gai") {
+             
+             // --- [BẮT ĐẦU SỬA: CHẶN MUA NẾU ĐANG ẤP] ---
+             
+             // Kiểm tra biến incubationFinishTime. Nếu > 0 nghĩa là đang có đồng hồ đếm ngược (đang ấp hoặc nâng cấp)
+             if (incubationFinishTime > 0) {
+                 
+                 // 1. HOÀN TIỀN LẠI (Vì bên trên đã lỡ trừ tiền rồi)
+                 if (item.currency === "dau") {
+                     dau += item.price;
+                 } else {
+                     la += item.price;
+                 }
+                 
+                 // 2. Cập nhật lại giao diện để hiển thị số tiền đã hoàn
+                 updateDisplay();
+
+                 // 3. Thông báo cho người chơi
+                 alert("🚫 Đang trong quá trình ấp trứng/nâng cấp!\nVui lòng đợi trứng nở xong mới được mua Pet mới.");
+                 
+                 // 4. Dừng hàm lại ngay lập tức, không cho chạy tiếp lệnh bên dưới
+                 return; 
+             }
+             // --- [KẾT THÚC SỬA] ---
+
+             // Nếu không bận ấp trứng thì chạy logic mua bình thường:
+             ownedPets.push(item.value);
+
+             // 1. Xác định loại vừa mua
+             let newType = 'bi_gai'; // Mặc định
+             if (item.name === "Thiên Thần") newType = 'thien_than';
+             if (item.name === "Thần Chết") newType = 'than_chet';
+             
+             // 2. Gán làm pet hiện tại
+             hatchedPetType = newType;
+             
+             // 3. Reset trạng thái về Trứng & Đang Ấp
+             isIceDragonHatched = false; 
+             isIceDragonEvolved = false;
+             
+             // 4. Đặt thời gian ấp (Lấy từ CONFIG)
+             incubationFinishTime = Date.now() + GAME_CONFIG.HATCH_TIME;
+
+             // 5. Đánh dấu là đang có trứng
+             hasIceEgg = true;
+
+             alert(`Đã mua ${item.name}! Quá trình ấp trứng (Slot 1) đã bắt đầu.`);
+             
+        } else {
+             // TRƯỜNG HỢP: Mua Pet thường (Chó, Mèo... - Pet đi dạo)
+             // Logic này giữ nguyên, không cần chặn vì Pet đi dạo không ảnh hưởng Slot 1
+             ownedPets.push(item.value);
+             activePet = item.value;
+             alert(`Bạn đã mua Pet ${item.name}! Pet đã được kích hoạt!`);
+        }
+        
+        if(itemType === "general") hidePopup('shop-box');
+    }
     else if (item.type === "pot_base") {
         if (ownedPots[item.value] !== undefined) ownedPots[item.value] += 1;
         else ownedPots[item.value] = 1;
@@ -2004,6 +2649,7 @@ function handleNewGame(){
 }
 btnNew.addEventListener('click', handleNewGame);
 
+// --- BƯỚC 4: TẠO GAME MỚI (MẶC ĐỊNH CÓ TRỨNG) ---
 btnNext.addEventListener('click', () => {
     let inputName = nameInput.value.trim();
     const nameRegex = new RegExp(/^[\p{L}\p{N}]{2,12}$/u); 
@@ -2015,33 +2661,40 @@ btnNext.addEventListener('click', () => {
         alert("Tên chỉ được chứa chữ cái và số!"); return;
     }
     
-        playerName = inputName;
+    playerName = inputName;
     hidePopup('name-box');
     farmIcon = "🏠"; 
     level = 1; exp = 0; 
     dau = 1000; la = 100; 
     
-    // --- SỬA: MẶC ĐỊNH LÀ CHOCO ---
     activePet = "1000000128.gif"; 
     ownedPets = ["1000000128.gif"]; 
-    // ------------------------------
 
-    hasIceEgg = false; isIceDragonHatched = false; isIceDragonEvolved = false; hatchedPetType = "thien_than";
+    // === QUAN TRỌNG: Tặng trứng mặc định ===
+    hasIceEgg = true; // Có trứng ngay lập tức
+    // =======================================
+    
+    isIceDragonHatched = false; isIceDragonEvolved = false; hatchedPetType = "thien_than";
     ownedSeeds = { 'hat_nguyen_to': 1, 'hat_kim_loai': 1, 'hat_tinh_yeu': 1 };
     ownedPots = { 'so_dua': 0, 'chau_dong': 0, 'chau_bac': 0, 'chau_vang': 0, 'chau_bach_kim': 0, 'chau_kim_cuong': 0, 'chau_kim_cuong_do': 0 }; 
     equippedPots = ['so_dua', 'so_dua', 'so_dua', 'so_dua', 'so_dua']; 
+    
     lastFedTime = 0; 
+    lastBeePokeTime = 0; 
     farmSlots = Array(5).fill(null); 
     globalPetAge = 0;
-
     vineDecorations = [null, null, null, null, null]; 
     ownedDecorations = { 'chau_chau': 0 };
+    ownedArtifacts = { 'manh_nguyen_to': 10000, 'manh_kim_loai': 10000, 'vuong_mien': 10000 };
+    grasshopperExchanged = 0;  
+    usedGiftcodes = [];        
 
-    // Reset vật phẩm đặc biệt về 0
-    ownedArtifacts = { 'manh_nguyen_to': 0, 'manh_kim_loai': 0, 'vuong_mien': 0 };
-
-    alert(`Chào mừng ${playerName} đến với Farm LOL!`);
-    updateDisplay(); updateControlButtons();
+    checkBeeHiveSpawn();      
+    updateGiftcodeBoxState(); 
+    updateDisplay(); 
+    updateControlButtons();
+    
+    alert(`Chào mừng ${playerName}!\nBạn nhận được 01 TRỨNG NGŨ SẮC miễn phí ở Slot 1.`);
 });
 
 function loadGame(){
@@ -2062,51 +2715,76 @@ function loadGame(){
         farmSlots = gameData.farmSlots ? (Array.isArray(gameData.farmSlots) ? gameData.farmSlots : Array(5).fill(null)) : Array(5).fill(null);
         if (farmSlots.length < 5) { while(farmSlots.length < 5) farmSlots.push(null); }
         
-        // 3. Tải Pet & Trạng thái Trứng (QUAN TRỌNG CHO VIỆC KHÔNG MẤT TRỨNG)
+        // 3. Tải Pet & Trạng thái Trứng
         activePet = gameData.activePet || null; 
         ownedPets = gameData.ownedPets || []; 
         hasIceEgg = gameData.hasIceEgg || false; 
         isIceDragonHatched = gameData.isIceDragonHatched || false; 
         isIceDragonEvolved = gameData.isIceDragonEvolved || false;
-        hatchedPetType = gameData.hatchedPetType || "thien_than"; // Tải loại Pet đã ấp
-        incubationFinishTime = gameData.incubationFinishTime || 0; // Tải thời gian ấp trứng
+        hatchedPetType = gameData.hatchedPetType || "thien_than"; 
+        incubationFinishTime = gameData.incubationFinishTime || 0; 
         
-        // 4. SỬA LỖI MẤT HẠT GIỐNG TẠI ĐÂY:
-        // Code cũ chỉ lấy 2 hạt, code mới sẽ lấy toàn bộ danh sách đã lưu
+        // --- [MỚI] TẢI CẤP ĐỘ RIÊNG CHO TỪNG PET ---
+        if (gameData.petLevels) {
+            petLevels = gameData.petLevels;
+        } else {
+            // Nếu file save cũ chưa có, tạo mới và chuyển đổi dữ liệu cũ
+            petLevels = { 'thien_than': 1, 'than_chet': 1 };
+            // Nếu trước đó đã có cấp độ, gán nó cho con pet hiện tại
+            if (gameData.petStarLevel) {
+                petLevels[hatchedPetType] = gameData.petStarLevel;
+            }
+        }
+        // Cập nhật biến hiển thị hiện tại theo con pet đang chọn
+        petStarLevel = petLevels[hatchedPetType] || 1;
+        // ------------------------------------------
+
+        // 4. Tải Hạt giống
         const savedSeeds = gameData.ownedSeeds || {};
         ownedSeeds = Object.assign({}, savedSeeds); 
         
-        // Đảm bảo các hạt cơ bản không bị lỗi nếu file save cũ chưa có
         if(ownedSeeds['hat_nguyen_to'] === undefined) ownedSeeds['hat_nguyen_to'] = 0;
         if(ownedSeeds['hat_kim_loai'] === undefined) ownedSeeds['hat_kim_loai'] = 0;
         if(ownedSeeds['hat_tinh_yeu'] === undefined) ownedSeeds['hat_tinh_yeu'] = 0;
 
-        // 5. Tải Chậu & Đồ rèn & Trang bị
+        // 5. Tải Chậu & Đồ rèn
         ownedPots = Object.assign({ 'so_dua': 5, 'chau_dong': 0, 'chau_bac': 0, 'chau_vang': 0, 'chau_bach_kim': 0, 'chau_kim_cuong': 0, 'chau_kim_cuong_do': 0 }, gameData.ownedPots || {});
         craftingQueue = gameData.craftingQueue || [];
         equippedPots = gameData.equippedPots || ['so_dua', 'so_dua', 'so_dua', 'so_dua', 'so_dua'];
         
-        // Đồng bộ lại chậu đang dùng nếu dữ liệu cũ chưa có
         farmSlots.forEach((slot, idx) => { if(slot && slot.potType) { equippedPots[idx] = slot.potType; } });
         
-        // 6. Tải các chỉ số phụ & Trang trí
+        // 6. Tải các chỉ số phụ & Trang trí & Kho đồ
         lastFedTime = gameData.lastFedTime || 0;
+        lastBeePokeTime = gameData.lastBeePokeTime || 0;
+
+        // Đảm bảo kho chứa có Nhộng Ong
+        if (typeof ownedArtifacts === 'undefined') ownedArtifacts = {};
+        
         globalPetAge = gameData.globalPetAge || 0;
+        
         vineDecorations = gameData.vineDecorations || [null, null, null, null, null];
         ownedDecorations = gameData.ownedDecorations || { 'chau_chau': 0 };
+        
         // Tải kho vật phẩm đặc biệt
-ownedArtifacts = Object.assign({ 'manh_nguyen_to': 0, 'manh_kim_loai': 0, 'vuong_mien': 0 }, gameData.ownedArtifacts || {});
-grasshopperExchanged = gameData.grasshopperExchanged || 0;
-usedGiftcodes = gameData.usedGiftcodes || [];
+        ownedArtifacts = Object.assign({ 'manh_nguyen_to': 0, 'manh_kim_loai': 0, 'vuong_mien': 0, 'nhong_ong': 0 }, gameData.ownedArtifacts || {});
+        
+        grasshopperExchanged = gameData.grasshopperExchanged || 0;
+        usedGiftcodes = gameData.usedGiftcodes || [];
     }
 }
 
 function _saveGame(showAlert = false){
+    // Lưu cấp độ hiện tại vào object trước khi save
+    petLevels[hatchedPetType] = petStarLevel;
+
     const gameData = { 
         playerName, farmIcon, level, exp, dau, la, tool, farmSlots, 
         activePet, ownedPets, hasIceEgg, isIceDragonHatched, isIceDragonEvolved, 
         hatchedPetType, 
-        ownedSeeds, lastFedTime, globalPetAge,
+        ownedSeeds, lastFedTime, globalPetAge, lastBeePokeTime, 
+        petStarLevel, // Vẫn lưu để tương thích ngược
+        petLevels,    // <-- QUAN TRỌNG: Lưu biến này
         ownedPots, craftingQueue, equippedPots,
         incubationFinishTime, vineDecorations, ownedDecorations, ownedArtifacts,
         grasshopperExchanged,
@@ -2122,45 +2800,51 @@ function autoSave() { if (level > 0) { _saveGame(false); } }
 function deleteGame(){
     if(confirm("Bạn có chắc chắn muốn xóa nông trại hiện tại?")){
         localStorage.removeItem('farmLolGame');
+        
+        // 1. Reset các chỉ số cơ bản
         playerName = "Nông dân"; farmIcon = "🌾"; level = 0; exp = 0; 
+        dau = 0; la = 0; 
         
-        // Reset tiền về 0
-        dau = 0; 
-        la = 0; 
-        
+        // 2. Reset cây trồng và pet
         farmSlots = Array(5).fill(null); 
         activePet = null; ownedPets = []; 
-        
-        // --- SỬA 1: Reset trạng thái Trứng & Rồng & Thời gian ấp ---
         hasIceEgg = false; 
         isIceDragonHatched = false; 
         isIceDragonEvolved = false; 
         hatchedPetType = "thien_than";
-        incubationFinishTime = 0; // Quan trọng: Xoá thời gian ấp để mất Thiên Nga 🦢
+        incubationFinishTime = 0;
         
+        // 3. Reset kho và chậu
         ownedSeeds = { 'hat_nguyen_to': 0, 'hat_kim_loai': 0, 'hat_tinh_yeu': 0 };
         ownedPots = { 'so_dua': 0, 'chau_dong': 0, 'chau_bac': 0, 'chau_vang': 0, 'chau_bach_kim': 0, 'chau_kim_cuong': 0, 'chau_kim_cuong_do': 0 };
         equippedPots = ['so_dua', 'so_dua', 'so_dua', 'so_dua', 'so_dua'];
-        craftingQueue = [];
+        
+        // 4. RESET HÀNG CHỜ RÈN VỀ RỖNG
+        craftingQueue = []; 
+        
+        // 5. Reset các biến phụ khác
         lastFedTime = 0; globalPetAge = 0;
-        
-        // Reset 5 vị trí dây leo về trống
+        petStarLevel = 1;
         vineDecorations = [null, null, null, null, null];
-        
-        // Reset kho đồ trang trí
         ownedDecorations = { 'chau_chau': 0 };
-        ownedArtifacts = { 'manh_nguyen_to': 0, 'manh_kim_loai': 0, 'vuong_mien': 0 }; // Reset vật phẩm về 0
+        ownedArtifacts = { 'manh_nguyen_to': 0, 'manh_kim_loai': 0, 'vuong_mien': 0 }; 
+        grasshopperExchanged = 0;  
+        usedGiftcodes = [];        
 
-        grasshopperExchanged = 0;  // Reset biến đếm đổi quà
-        usedGiftcodes = [];        // Reset danh sách Giftcode đã dùng
-
-        // Xóa luôn quả đào nếu nó đang hiện
+        // Xóa quả đào (nếu đang hiện)
         const rewardIcon = document.getElementById('daily-reward-icon');
         if(rewardIcon) rewardIcon.remove();
 
-        alert("Đã xóa nông trại!");
+        // 6. Cập nhật giao diện
+        checkBeeHiveSpawn();      
+        updateGiftcodeBoxState(); 
         updateDisplay(); 
         updateControlButtons();
+        
+        // 🔥 QUAN TRỌNG: Gọi hàm này để đổi ảnh Thợ Rèn về trạng thái tĩnh NGAY LẬP TỨC 🔥
+        updateBlacksmithVisuals(); 
+
+        alert("Đã xóa nông trại!");
     }
 }
 btnDelete.addEventListener('click', deleteGame);
@@ -2191,31 +2875,49 @@ function closeInteractionPopup() {
 
 // --- HÀM XỬ LÝ ẤP TRỨNG MỚI (CÓ HẸN GIỜ 24H) ---
 function handleIceDragonInteraction(action, selectedType = 'thien_than') {
-        // 24 giờ = 24 * 60 phút * 60 giây * 1000 mili giây
-    const HATCH_DURATION = 24* 60 * 60 * 1000; 
-    
-    // MẸO: Muốn test nhanh 10 giây thì đổi dòng trên thành:
-    // const HATCH_DURATION = 10 * 1000;
+    // Lấy thời gian từ Config
+    const HATCH_DURATION = GAME_CONFIG.HATCH_TIME;
 
-    const petName = selectedType === 'than_chet' ? "Thần Chết" : "Thiên Thần";
+    // --- SỬA Ở ĐÂY: Logic tên hiển thị ---
+    let petName = "Bi Gai";
+    if (selectedType === 'than_chet') petName = "Thần Chết";
+    else if (selectedType === 'thien_than') petName = "Thiên Thần";
+    // ------------------------------------
 
     if (action === 'hatch') {
-        if(confirm(`Quá trình ấp ${petName} sẽ mất 24 giờ.\nBạn chắc chắn chứ?`)) {
-            // 1. Lưu loại pet người chơi chọn
-            hatchedPetType = selectedType; 
-            
-            // 2. Tính thời gian kết thúc (Hiện tại + 24h)
+        if (confirm(`Quá trình ấp ${petName} sẽ mất 24 giờ.\nBạn chắc chắn chứ?`)) {
+            // 1. Lưu loại pet đang ấp
+            hatchedPetType = selectedType;
+
+            // 2. Tính thời gian xong
             incubationFinishTime = Date.now() + HATCH_DURATION;
+
+            // 3. Đánh dấu sở hữu ngay
+            // --- SỬA Ở ĐÂY: Thêm value ảnh Bi Gai ---
+            let petValue = "1000000149.gif"; 
+            if(selectedType === 'than_chet') petValue = "1000000104.gif";
+            else if(selectedType === 'thien_than') petValue = "1000000127.gif";
+            // ----------------------------------------
             
-            // 3. Đóng popup và thông báo
-            interactionControls.innerHTML = ''; 
+            if (!ownedPets.includes(petValue)) {
+                ownedPets.push(petValue);
+            }
+
+            // 4. Đóng popup & Lưu
+            interactionControls.innerHTML = '';
             closeInteractionPopup();
-            alert(`Đã bắt đầu ấp trứng! Quay lại sau 24 giờ nhé.`);
             
+            if(typeof showToast === 'function') {
+                showToast(`Đang ấp ${petName}...`, "🥚");
+            } else {
+                alert(`Đã bắt đầu ấp trứng! Quay lại sau 24 giờ nhé.`);
+            }
+
             updateDisplay();
-            saveGame(); // Lưu game ngay để không bị mất giờ nếu reload
+            updatePetShop(); 
+            saveGame(); 
         }
-    } 
+    }
 }
 
 let currentSeedTab = 'seeds';
@@ -2570,116 +3272,256 @@ potSlots.forEach(slot => {
     slot.addEventListener("click", () => {
         if (level === 0) { alert("Bạn cần tạo nông trại trước!"); return; }
         
+        // --- SỬA LỖI TẠI ĐÂY: Bỏ qua Slot 6 (Câu cá) ---
+        // Vì Slot 6 đã có sự kiện onclick riêng trong HTML rồi
+        const slotNum = slot.getAttribute('data-slot');
+        if (slotNum === "6") return; 
+        // ------------------------------------------------
+
         // --- SỬA LỖI: Luôn hiển thị khung text trước ---
         interactionText.style.display = 'block';
         interactionControls.innerHTML = ''; // Reset nút bấm
         if (activePopupInterval) clearInterval(activePopupInterval);
 
-        const slotNum = slot.getAttribute('data-slot');
         const slotNumInt = parseInt(slotNum);
 
         const renderSlotStatus = () => {
             // Đảm bảo xóa nút cũ mỗi lần render lại
             interactionControls.innerHTML = '';
             
-            if (slotNum === "1") {
-                // --- LOGIC CHO TRỨNG/PET (GIỮ NGUYÊN) ---
-                if (incubationFinishTime > 0) {
-                    interactionTitle.innerHTML = `⏳ Đang Ấp Trứng`;
-                    const updateTimer = () => {
-                        const now = Date.now();
-                        const timeLeft = incubationFinishTime - now;
-                        if (timeLeft <= 0) {
-                            interactionText.innerHTML = "Đang hoàn tất quá trình nở...";
-                            return;
-                        }
-                        let seconds = Math.floor((timeLeft / 1000) % 60);
-                        let minutes = Math.floor((timeLeft / (1000 * 60)) % 60);
-                        let hours = Math.floor((timeLeft / (1000 * 60 * 60)));
-                        let timeString = "";
-                        if(hours > 0) timeString += `${hours}h `;
-                        if(minutes > 0 || hours > 0) timeString += `${minutes}m `;
-                        timeString += `${seconds}s`;
+        if (slotNum === "1") {
+            // --- TRƯỜNG HỢP 1: ĐANG CÓ THỜI GIAN CHỜ (Ấp hoặc Nâng cấp) ---
+            if (incubationFinishTime > 0) {
+                // SỬA: Logic xác định đang làm gì
+                // Nếu đang có trứng (hasIceEgg) -> Chắc chắn là đang Ấp Mới
+                // Nếu không có trứng mà có giờ -> Là đang Nâng Cấp
+                let isHatchingNew = hasIceEgg; 
+                let actionText = isHatchingNew ? "Đang Ấp Nở" : "Đang Nâng Cấp";
+                
+                // Xác định Level mục tiêu để hiển thị
+                let currentLv = petLevels[hatchedPetType] || 1;
+                // Nếu ấp mới -> Mục tiêu là 1. Nếu nâng cấp -> Mục tiêu là Cấp hiện tại + 1
+                let targetLevel = isHatchingNew ? 1 : (currentLv + 1);
 
-                        interactionText.innerHTML = `
-                            <div style="text-align:center;">
-                                <img src="1000000102.png" style="width:80px; display:block; margin: 0 auto 15px auto;">
-                                <div style="font-size:0.95em; color: #555;">Đang hấp thụ linh khí...</div>
-                                <div style="margin-top:10px; font-size:1.2em; color:#E65100; font-weight:bold; background:rgba(0,0,0,0.05); padding:10px; border-radius:10px;">
-                                    🐣 Nở sau: ${timeString}
-                                </div>
-                            </div>`;
-                    };
-                    updateTimer();
-                    if(activePopupInterval) clearInterval(activePopupInterval);
-                    activePopupInterval = setInterval(updateTimer, 1000);
-                } 
-                else {
-                    // Logic hiển thị thông tin Pet/Trứng như cũ
-                    let petTitle = `🐾 Pet Mây`;
-                    let description = '';
-                    if (isIceDragonHatched) {
-                        petTitle = (hatchedPetType === 'than_chet') ? `💀 Thần Chết` : `👼 Thiên Thần`;
-                        description = `<span style="color:#2196F3;">⭐⭐⭐⭐⭐</span><br>⚡ Hiệu ứng: Auto Thu hoạch (Pet sẽ tự bay đi thu hoạch khi cây chín)`;
-                        
-                        // Nút đổi Pet
-                        const targetType = (hatchedPetType === 'thien_than') ? 'than_chet' : 'thien_than';
-                        const targetName = (targetType === 'thien_than') ? '👼 Thiên Thần' : '💀 Thần Chết';
-                        const btnSwitch = document.createElement('button');
-                        btnSwitch.className = "btn-buy";
-                        btnSwitch.style.background = "#673AB7";
-                        btnSwitch.style.marginTop = "15px";
-                        btnSwitch.style.padding = "10px";
-                        btnSwitch.style.height = "auto";
-                        btnSwitch.innerHTML = `Đổi sang ${targetName}<div style="font-size:0.8em; font-weight:normal; margin-top:4px; color:#E1BEE7;">Yêu cầu: 10.000 🫘 + 100 Mãnh Nguyên Tố</div>`;
-                        
-                        btnSwitch.onclick = () => {
-                            const costDau = 10000; const costShard = 100;
-                            const currentShards = ownedArtifacts['manh_nguyen_to'] || 0;
-                            if (dau >= costDau && currentShards >= costShard) {
-                                if (confirm(`Đổi sang ${targetName}?`)) {
-                                    dau -= costDau;
-                                    ownedArtifacts['manh_nguyen_to'] -= costShard;
-                                    hatchedPetType = targetType;
-                                    saveGame(); updateDisplay(); alert(`Đã chuyển sang ${targetName}!`);
-                                    closeInteractionPopup();
-                                }
-                            } else { alert("Không đủ tài nguyên!"); }
-                        };
-                        interactionControls.appendChild(btnSwitch);
+                interactionTitle.innerHTML = `⏳ ${actionText}`;
+
+                const updateTimer = () => {
+                    const now = Date.now();
+                    const timeLeft = incubationFinishTime - now;
+
+                    if (timeLeft <= 0) {
+                        interactionText.innerHTML = "Đang hoàn tất quá trình...";
+                        return;
                     }
-                    else if (hasIceEgg) {
-                        petTitle = `Trứng Ngũ Sắc`;
-                        description = `Kiu 🦢 ấp trứng (Thời gian: 24 giờ)!`;
-                        const selectionDiv = document.createElement('div');
-                        selectionDiv.innerHTML = `
-                            <div style="margin:15px 0; background:rgba(0,0,0,0.05); padding:10px; border-radius:8px;">
-                                <div style="font-size:0.9em; margin-bottom:8px; font-weight:bold;">Bạn muốn ấp ra Pet nào?</div>
-                                <label style="display:flex; align-items:center; margin-bottom:8px;"><input type="radio" name="hatch_choice" value="thien_than" checked style="margin-right:8px;"> 👼 Thiên Thần</label>
-                                <label style="display:flex; align-items:center;"><input type="radio" name="hatch_choice" value="than_chet" style="margin-right:8px;"> 💀 Thần Chết</label>
-                            </div>`;
-                        interactionControls.appendChild(selectionDiv);
-                        const btnHatch = document.createElement('button');
-                        btnHatch.textContent = `Bắt đầu Ấp (24h)`;
-                        btnHatch.className = "btn-buy";
-                        btnHatch.style.background = 'orange';
-                        btnHatch.onclick = () => {
-                            const choices = document.getElementsByName('hatch_choice');
-                            let selected = 'thien_than';
-                            for(const c of choices) { if(c.checked) selected = c.value; }
-                            handleIceDragonInteraction('hatch', selected); 
-                        };
-                        interactionControls.appendChild(btnHatch);
-                    } 
-                    else { description = `Chưa có pet nào! Vào Shop mua Trứng Ngũ Sắc.`; }
+
+                    let seconds = Math.floor((timeLeft / 1000) % 60);
+                    let minutes = Math.floor((timeLeft / (1000 * 60)) % 60);
+                    let hours = Math.floor((timeLeft / (1000 * 60 * 60)));
+                    let timeString = "";
+                    if (hours > 0) timeString += `${hours}h `;
+                    if (minutes > 0 || hours > 0) timeString += `${minutes}m `;
+                    timeString += `${seconds}s`;
+
+                    const starConfig = {
+                        1: { color: '#9E9E9E', stars: '⭐' },
+                        2: { color: '#4CAF50', stars: '⭐⭐' },
+                        3: { color: '#2196F3', stars: '⭐⭐⭐' },
+                        4: { color: '#9C27B0', stars: '⭐⭐⭐⭐' },
+                        5: { color: '#FF6F00', stars: '⭐⭐⭐⭐⭐' }
+                    };
+                    const style = starConfig[targetLevel] || starConfig[1];
+// --- SỬA LOGIC TÊN HIỂN THỊ KHI ẤP ---
+let petName = "👼 Thiên Thần"; // Mặc định
+if (hatchedPetType === 'than_chet') petName = "💀 Thần Chết";
+if (hatchedPetType === 'bi_gai') petName = "🟢 Bi Gai"; // Thêm dòng này vào
+// -------------------------------------
+
+                    interactionText.innerHTML = `
+                        <div style="text-align:center;">
+                            <div style="font-size:0.85em; font-weight:bold; color:#795548; text-transform:uppercase; letter-spacing:1px; margin-bottom:5px;">
+                                ${actionText}
+                            </div>
+                            <img src="1000000102.png" style="width:80px; display:block; margin: 0 auto 10px auto; filter: drop-shadow(0 0 5px ${style.color});">
+                            <div style="font-size:1.3em; font-weight:900; color:${style.color}; margin-bottom:4px; text-shadow: 1px 1px 0 #fff;">
+                                ${petName}
+                            </div>
+                            <div style="
+                                font-size: 1.1em; color: ${style.color}; font-weight: bold; margin-bottom: 15px; 
+                                display: inline-block; padding: 5px 15px; border: 2px solid ${style.color};
+                                border-radius: 20px; background: rgba(255,255,255,0.8);
+                            ">
+                                Mục tiêu: ${style.stars}
+                            </div>
+                            <div style="font-size:0.9em; color: #555; font-style: italic;">Đang hấp thụ linh khí...</div>
+                            <div style="margin-top:10px; font-size:1.4em; color:#E65100; font-weight:900; background:#FFF3E0; padding:10px; border-radius:10px; border: 1px dashed #FF9800;">
+                                ${timeString}
+                            </div>
+                        </div>`;
+                };
+
+                updateTimer();
+                if (activePopupInterval) clearInterval(activePopupInterval);
+                activePopupInterval = setInterval(updateTimer, 1000);
+            }
+            
+            // --- TRƯỜNG HỢP 2: ĐÃ CÓ PET (HIỆN THỊ THÔNG TIN & ĐỔI PET & ẤP MỚI) ---
+else if (isIceDragonHatched) {
+                petStarLevel = petLevels[hatchedPetType] || 1;
+
+                const starConfig = {
+                    1: { color: '#757575', colorName: 'Xám' },
+                    2: { color: '#4CAF50', colorName: 'Xanh Lá' },
+                    3: { color: '#2196F3', colorName: 'Xanh Dương' },
+                    4: { color: '#9C27B0', colorName: 'Tím' },
+                    5: { color: '#FF6F00', colorName: 'Cam' }
+                };
+                const currentConfig = starConfig[petStarLevel] || starConfig[1];
+                
+                // --- SỬA Ở ĐÂY: Logic hiển thị tên chuẩn ---
+                let baseName = "Thiên Thần"; 
+                if (hatchedPetType === 'than_chet') baseName = "Thần Chết";
+                if (hatchedPetType === 'bi_gai') baseName = "Bi Gai"; 
+                // ------------------------------------------
+                
+                let starsStr = "";
+                for(let i=0; i<petStarLevel; i++) starsStr += "⭐";
+
+                interactionTitle.innerHTML = `
+                    <span style="color:${currentConfig.color}; font-weight:900; font-size:1.1em; text-shadow: 1px 1px 0 #fff; display:block; margin-bottom:5px;">
+                        ${baseName}
+                    </span>
+                    <span style="font-size:0.8em; color:#555;">${starsStr}</span>
+                `;
+                
+                interactionText.innerHTML = `<div style="margin-bottom:15px; font-size:0.9em; color:#555; background:#f5f5f5; padding:8px; border-radius:8px;">
+                    ⚡ <b>Hiệu ứng:</b> Auto Thu hoạch (Cấp ${petStarLevel})
+                </div>`;
+
+                if (petStarLevel < 5) {
+                    const nextLevel = petStarLevel + 1;
+                    const costManh = nextLevel * 100;
+                    const costLa = nextLevel * 10;
+                    const currentManh = ownedArtifacts['manh_nguyen_to'] || 0;
                     
-                    interactionTitle.innerHTML = petTitle;
-                    interactionText.innerHTML = description;
+                    const upgradeDiv = document.createElement('div');
+                    upgradeDiv.style.cssText = "background: #FFF8E1; border: 2px dashed #FFCA28; border-radius: 12px; padding: 12px; margin-bottom: 15px;";
+                    
+                    upgradeDiv.innerHTML = `
+                        <div style="font-weight:bold; color:#FF6F00; margin-bottom:8px; text-transform:uppercase;">🔼 Nâng Cấp Lên ${nextLevel} Sao</div>
+                        <div style="font-size:0.9em; color:#4E342E; text-align:left; line-height:1.6;">
+                            🔸 Mảnh Nguyên Tố: <b>${currentManh}/${costManh}</b><br>
+                            🔸 Lá: <b>${la}/${costLa}</b>
+                        </div>
+                    `;
+                    
+                    const btnUpgrade = document.createElement('button');
+                    btnUpgrade.className = "btn-buy";
+                    btnUpgrade.style.marginTop = "10px";
+                    btnUpgrade.style.width = "100%";
+                    btnUpgrade.textContent = "Nâng Cấp (24h)";
+                    btnUpgrade.onclick = () => {
+                        if (currentManh >= costManh && la >= costLa) {
+                            if (confirm(`Nâng cấp Pet lên ${nextLevel} Sao sẽ mất thời gian chờ?\nTrong lúc nâng cấp, Pet sẽ không thể thu hoạch giúp bạn.`)) {
+    ownedArtifacts['manh_nguyen_to'] -= costManh;
+    la -= costLa;
+    // Lấy thời gian từ Config
+    incubationFinishTime = Date.now() + GAME_CONFIG.UPGRADE_TIME; 
+    
+    saveGame(); updateDisplay(); closeInteractionPopup();
+    alert(`Đã bắt đầu nâng cấp!`);
+}
+                        } else {
+                            alert(`Bạn không đủ tài nguyên!\nCần: ${costManh} Mảnh và ${costLa} Lá.`);
+                        }
+                    };
+                    upgradeDiv.appendChild(btnUpgrade);
+                    interactionControls.appendChild(upgradeDiv);
+                } else {
+                    interactionControls.innerHTML += `<div style="text-align:center; color:#FF6F00; font-weight:bold; margin-bottom:10px;">👑 ĐÃ MAX CẤP</div>`;
+                }
+
+                // --- KHUNG ẤP TRỨNG MỚI (FIX LỖI HIỂN THỊ) ---
+                if (hasIceEgg) {
+                    const hatchContainer = document.createElement('div');
+                    hatchContainer.style.cssText = "margin-top:15px; background:#E0F2F1; padding:10px; border-radius:10px; border:2px dashed #009688;";
+                    
+                    const hasAngel = isPetOwned('1000000127.gif');
+                    const hasReaper = isPetOwned('1000000104.gif');
+                    
+                    let optionsHTML = "";
+                    if (!hasAngel) optionsHTML += `<label style="display:block; margin-bottom:5px; cursor:pointer;"><input type="radio" name="new_hatch_choice" value="thien_than" checked> 👼 Thiên Thần</label>`;
+                    
+                    const reaperChecked = (!hasAngel) ? '' : 'checked';
+                    if (!hasReaper) optionsHTML += `<label style="display:block; cursor:pointer;"><input type="radio" name="new_hatch_choice" value="than_chet" ${reaperChecked}> 💀 Thần Chết</label>`;
+
+                    hatchContainer.innerHTML = `
+                        <div style="font-weight:bold; color:#00796B; margin-bottom:8px;">🥚 PHÁT HIỆN TRỨNG MỚI!</div>
+                        <div style="font-size:0.9em; margin-bottom:8px; color:#555;">Bạn vừa mua thêm trứng, hãy ấp nó để nhận Pet thứ 2:</div>
+                        <div style="margin-bottom:10px; font-weight:bold;">${optionsHTML}</div>
+                    `;
+
+                    const btnHatchNew = document.createElement('button');
+                    btnHatchNew.className = "btn-buy";
+                    btnHatchNew.innerHTML = "Ấp Ngay (24h)";
+                    btnHatchNew.style.background = "#FF5722";
+                    btnHatchNew.onclick = () => {
+                        const choices = document.getElementsByName('new_hatch_choice');
+                        let selected = null;
+                        for(const c of choices) { if(c.checked) selected = c.value; }
+                        
+                        if(selected) {
+                            if(confirm("Bắt đầu ấp trứng mới?\n(Slot 1 sẽ chuyển sang trạng thái Ấp trong 24h)")) {
+                                handleIceDragonInteraction('hatch', selected);
+                            }
+                        } else {
+                            alert("Bạn đã sở hữu cả 2 loại Pet rồi, không cần ấp nữa!");
+                        }
+                    };
+                    
+                    hatchContainer.appendChild(btnHatchNew);
+                    interactionControls.appendChild(hatchContainer);
                 }
             }
-            // --- LOGIC CÁC Ô ĐẤT TRỒNG CÂY (ĐÃ SỬA LỖI Ở ĐÂY) ---
+            // --- TRƯỜNG HỢP 3: LOGIC ẤP TRỨNG (MẶC ĐỊNH LÀ BI GAI) ---
+            else if (hasIceEgg) {
+                interactionTitle.innerHTML = `Trứng Ngũ Sắc`;
+                interactionText.innerHTML = "Quả trứng đang rung lắc dữ dội...";
+                
+                // Tạo giao diện giới thiệu Bi Gai
+                const demoDiv = document.createElement('div');
+                demoDiv.innerHTML = `
+                    <div style="margin:15px 0; background:#E8F5E9; padding:15px; border-radius:15px; border:2px dashed #4CAF50; text-align:center;">
+                        <img src="1000000149.gif" style="width:70px; height:auto; filter:drop-shadow(0 5px 5px rgba(0,0,0,0.2)); margin-bottom:10px;">
+                        <div style="font-weight:900; color:#2E7D32; font-size:1.2em;">Bi Gai</div>
+                        <div style="font-size:0.9em; color:#555;">(Pet khởi đầu)</div>
+                    </div>
+                `;
+                interactionControls.appendChild(demoDiv);
+                
+                // Nút Ấp Ngay
+                const btnHatch = document.createElement('button');
+                btnHatch.innerHTML = `🔨 Đập Trứng (24h)`;
+                btnHatch.className = "btn-buy";
+                btnHatch.style.background = 'linear-gradient(45deg, #4CAF50, #8BC34A)';
+                btnHatch.style.fontSize = '1.1em';
+                btnHatch.style.boxShadow = '0 4px 0 #33691E';
+                
+                // Khi bấm -> Gọi hàm ấp với tham số 'bi_gai'
+                btnHatch.onclick = () => {
+                    handleIceDragonInteraction('hatch', 'bi_gai'); 
+                };
+                interactionControls.appendChild(btnHatch);
+            }
+            
+            // --- TRƯỜNG HỢP 4: KHÔNG CÓ GÌ (Ô TRỐNG) ---
+            else { 
+                interactionTitle.innerHTML = "🐾 Pet Mây";
+                interactionText.innerHTML = "Chưa có pet nào bảo vệ nông trại!<br>Hãy vào <b>Shop Mây</b> mua <b>Trứng Ngũ Sắc</b>.";
+            }
+        }
+            // --- LOGIC CÁC Ô ĐẤT TRỒNG CÂY ---
             else if (FARM_IDS.includes(slotNumInt)) {
-                 interactionTitle.innerHTML = "🌱 Trồng Trọt"; // Đặt lại tiêu đề
+                 interactionTitle.innerHTML = "🌱 Trồng Trọt"; 
                  const slotIndex = FARM_IDS.indexOf(slotNumInt); 
                  const slotData = farmSlots[slotIndex];
                  
@@ -2709,139 +3551,98 @@ potSlots.forEach(slot => {
                          const potDef = POT_DEFINITIONS[currentPotType];
                          const potBonus = potDef ? (potDef.expBonus || 0) : 0;
 
-                         // Logic Auto Thu Hoạch (Pet)
-                         if (isIceDragonEvolved) {
-                             const harvesterName = (hatchedPetType === 'than_chet') ? "💀 Thần Chết" : "👼 Thiên Thần";
-                             btnHarvest.innerHTML = `${harvesterName} Thu Hoạch (Auto)`;
-                             btnHarvest.className = "btn-buy";
-                             btnHarvest.style.background = 'linear-gradient(45deg, #2196F3, #00BCD4)';
-                             
-                             btnHarvest.onclick = () => {
-    // 1. KIỂM TRA KHÓA: Nếu đang thu hoạch thì dừng lại ngay
-    if (isHarvesting) return; 
-    
-    // 2. BẬT KHÓA
-    isHarvesting = true; 
+                     // --- CODE MỚI: Logic Auto Thu Hoạch (Có kiểm tra Pet bận) ---
+                     
+                     // Điều kiện: Pet đã nở (isIceDragonEvolved) VÀ Không đang bận nâng cấp (incubationFinishTime === 0)
+                     if (isIceDragonEvolved && incubationFinishTime === 0) {
+                         const harvesterName = (hatchedPetType === 'than_chet') ? "💀 Thần Chết" : "👼 Thiên Thần";
+                         btnHarvest.innerHTML = `${harvesterName} Thu Hoạch (Auto)`;
+                         btnHarvest.className = "btn-buy";
+                         btnHarvest.style.background = 'linear-gradient(45deg, #2196F3, #00BCD4)';
+                         
+                         btnHarvest.onclick = () => {
+                            if (isHarvesting) return; 
+                            isHarvesting = true; 
+                            closeInteractionPopup(); 
+                            
+                            // Hiệu ứng Pet bay
+                            const angelImg = document.getElementById('ice-egg-img');
+                            if (angelImg) { angelImg.classList.add('angel-harvesting'); }
+                            
+                            setTimeout(() => {
+                                let hasHarvested = false; 
+                                farmSlots.forEach((sData, sIdx) => {
+                                    if (sData && sData.stage === PLANT_STAGES.length - 1) {
+                                        const hSeedValue = sData.value; 
+                                        const slotId = FARM_IDS[sIdx];
+                                        const sPotType = sData.potType || 'so_dua'; 
+                                        const sPotDef = POT_DEFINITIONS[sPotType];
+                                        const sBonus = sPotDef ? (sPotDef.expBonus || 0) : 0; 
+                                        const hExp = 10 + sBonus; 
+                                        exp += hExp; 
+                                        spawnFloatingReward(slotId, `+${hExp} XP`, 0, "float-exp");
+                                        const hReturnAmount = 2; 
+                                        if (ownedSeeds[hSeedValue] === undefined) ownedSeeds[hSeedValue] = 0;
+                                        ownedSeeds[hSeedValue] += hReturnAmount;
+                                        
+                                        if (HARVEST_DROPS[hSeedValue]) {
+                                            const dropInfo = HARVEST_DROPS[hSeedValue];
+                                            if (!ownedArtifacts[dropInfo.id]) ownedArtifacts[dropInfo.id] = 0;
+                                            ownedArtifacts[dropInfo.id]++;
+                                            spawnFloatingReward(slotId, `<img src="${dropInfo.img}" style="width:25px; height:25px; object-fit:contain;"> +1`, 200, "float-item");
+                                        }
+                                        farmSlots[sIdx] = null; 
+                                        hasHarvested = true;
+                                    }
+                                });
+                                if (angelImg) angelImg.classList.remove('angel-harvesting');
+                                if (hasHarvested) {
+                                    updateDisplay(); checkLevelUp(); updateSeedShop(); saveGame(); 
+                                } else { 
+                                    showToast("Chưa có cây nào chín cả!", "⚠️", "Pet Báo Cáo");
+                                }
+                                isHarvesting = false; 
+                            }, 2000); 
+                         };
+                     } 
+                     // Logic Thu Hoạch Thủ Công (Chạy khi chưa có Pet HOẶC Pet đang bận nâng cấp)
+                     else {
+                         // HIỆN CẢNH BÁO NẾU PET ĐANG BẬN
+                         if (isIceDragonEvolved && incubationFinishTime > 0) {
+                            interactionText.innerHTML += `<div style="font-size:0.85em; color:#d32f2f; margin-top:5px; font-weight:bold; background:#ffebee; padding:5px; border-radius:5px; border:1px dashed #ef5350;">(Pet đang bận nâng cấp, hãy tự thu hoạch nhé!)</div>`;
+                         }
 
-    // Đóng popup ngay
-    closeInteractionPopup(); 
-    
-    // Hiệu ứng Pet bay
-    const angelImg = document.getElementById('ice-egg-img');
-    if (angelImg) { angelImg.classList.add('angel-harvesting'); }
-    
-    // Xử lý sau 2 giây
-    setTimeout(() => {
-        let hasHarvested = false; 
-        
-        farmSlots.forEach((sData, sIdx) => {
-            // ... (Logic tính toán EXP và Item giữ nguyên như cũ) ...
-            // Chỉ thu hoạch cây đã chín
-            if (sData && sData.stage === PLANT_STAGES.length - 1) {
-                const hSeedValue = sData.value; 
-                const slotId = FARM_IDS[sIdx];
-
-                // Tính EXP
-                const sPotType = sData.potType || 'so_dua'; 
-                const sPotDef = POT_DEFINITIONS[sPotType];
-                const sBonus = sPotDef ? (sPotDef.expBonus || 0) : 0; 
-                const hExp = 10 + sBonus; 
-                exp += hExp; 
-
-                spawnFloatingReward(slotId, `+${hExp} XP`, 0, "float-exp");
-
-                // Cộng hạt giống
-                const hReturnAmount = 2; 
-                if (ownedSeeds[hSeedValue] === undefined) ownedSeeds[hSeedValue] = 0;
-                ownedSeeds[hSeedValue] += hReturnAmount;
-                
-                // Rớt đồ & Hiệu ứng
-                if (HARVEST_DROPS[hSeedValue]) {
-                    const dropInfo = HARVEST_DROPS[hSeedValue];
-                    if (!ownedArtifacts[dropInfo.id]) ownedArtifacts[dropInfo.id] = 0;
-                    ownedArtifacts[dropInfo.id]++;
-                    
-                    spawnFloatingReward(slotId, 
-                        `<img src="${dropInfo.img}" style="width:25px; height:25px; object-fit:contain;"> +1`, 
-                        200, "float-item"
-                    );
-                }
-                
-                farmSlots[sIdx] = null; // Xóa cây
-                hasHarvested = true;
-            }
-        });
-        
-        // Tắt hiệu ứng bay
-        if (angelImg) angelImg.classList.remove('angel-harvesting');
-        
-        // Cập nhật game
-        if (hasHarvested) {
-            updateDisplay(); 
-            checkLevelUp(); 
-            updateSeedShop();
-            saveGame(); 
-        } else { 
-            showToast("Chưa có cây nào chín cả!", "⚠️", "Pet Báo Cáo");
-        }
-
-        // 3. MỞ KHÓA: Cho phép thu hoạch tiếp (Quan trọng!)
-        isHarvesting = false; 
-
-    }, 2000); 
-};
-                         } 
-                         // Logic Thu Hoạch Thủ Công
-                         else {
-                             const harvestedSeedValue = slotData.value; const returnAmount = 2; 
-                             let baseExp = 10; let finalExp = baseExp + potBonus;
-                             let msgButton = potBonus > 0 ? `🌾 Thu hoạch (+${finalExp} Exp)` : `🌾 Thu hoạch (Nhận ${returnAmount} Hạt + ${finalExp} Exp)`;
-                             btnHarvest.innerHTML = msgButton;
-                             btnHarvest.className = "btn-buy";
-                             btnHarvest.style.background = '#FF9800';
-                             
-                             btnHarvest.onclick = () => {
-                             // 1. Lấy ID của ô đất để icon bay lên đúng chỗ
+                         const harvestedSeedValue = slotData.value; const returnAmount = 2; 
+                         let baseExp = 10; let finalExp = baseExp + potBonus;
+                         let msgButton = potBonus > 0 ? `🌾 Thu hoạch (+${finalExp} Exp)` : `🌾 Thu hoạch (Nhận ${returnAmount} Hạt + ${finalExp} Exp)`;
+                         btnHarvest.innerHTML = msgButton;
+                         btnHarvest.className = "btn-buy";
+                         btnHarvest.style.background = '#FF9800';
+                         
+                         btnHarvest.onclick = () => {
                              const slotId = FARM_IDS[slotIndex]; 
-
-                             // 2. Cộng EXP & Hiệu ứng bay EXP
                              exp += finalExp; 
                              spawnFloatingReward(slotId, `+${finalExp} XP`, 0, "float-exp");
-
-                             // 3. Cộng Hạt Giống vào kho
                              if (ownedSeeds[harvestedSeedValue] !== undefined) ownedSeeds[harvestedSeedValue] += returnAmount;
                              else ownedSeeds[harvestedSeedValue] = returnAmount;
-
-                             // 4. Xử lý Rớt Đồ (Artifacts) & Hiệu ứng bay Vật phẩm
                              if (HARVEST_DROPS[harvestedSeedValue]) {
                                  const dropInfo = HARVEST_DROPS[harvestedSeedValue];
-                                 
-                                 // Cộng vào kho
                                  if (!ownedArtifacts[dropInfo.id]) ownedArtifacts[dropInfo.id] = 0;
                                  ownedArtifacts[dropInfo.id]++;
-                                 
-                                 // Tạo hiệu ứng bay lên (trễ 200ms để không đè lên chữ XP)
-                                 spawnFloatingReward(slotId, 
-                                     `<img src="${dropInfo.img}" style="width:25px; height:25px; object-fit:contain;"> +1`, 
-                                     200, "float-item"
-                                 );
+                                 spawnFloatingReward(slotId, `<img src="${dropInfo.img}" style="width:25px; height:25px; object-fit:contain;"> +1`, 200, "float-item");
                              }
-
-                             // 5. Xóa cây khỏi ô đất
                              farmSlots[slotIndex] = null; 
-                             
-                             // 6. Cập nhật giao diện và đóng bảng
                              closeInteractionPopup(); 
                              updateDisplay(); 
                              checkLevelUp(); 
                              updateSeedShop(); 
-                             saveGame(); // Lưu game ngay để tránh mất đồ
+                             saveGame(); 
                          };
-                         }
+                     }
                          interactionControls.appendChild(btnHarvest);
                      }
                      
-                     // TRƯỜNG HỢP B: ĐANG LỚN (HIỆN ĐỒNG HỒ) - ĐÂY LÀ PHẦN BỊ THIẾU
+                     // TRƯỜNG HỢP B: ĐANG LỚN (HIỆN ĐỒNG HỒ)
                      else {
                          const updatePlantTimer = () => {
                              if (!farmSlots[slotIndex]) return;
@@ -2859,16 +3660,14 @@ potSlots.forEach(slot => {
                                  requiredDuration -= reductionAmount;
                                  if (requiredDuration < 0) requiredDuration = 0;
                              }
-                             // ------------------------------------------
 
                              const finishTime = slotData.plantedAt + requiredDuration;
                              const timeLeft = finishTime - now;
 
                              if (timeLeft <= 0) {
-                                 // Hết giờ -> Render lại để hiện nút thu hoạch
                                  if(activePopupInterval) clearInterval(activePopupInterval);
-                                 updateFarmState(); // Cập nhật state
-                                 renderSlotStatus(); // Gọi lại hàm render
+                                 updateFarmState(); 
+                                 renderSlotStatus(); 
                                  return;
                              }
                              
@@ -2878,7 +3677,7 @@ potSlots.forEach(slot => {
                                 </div>`;
                          };
                          
-                         updatePlantTimer(); // Chạy ngay 1 lần
+                         updatePlantTimer(); 
                          if(activePopupInterval) clearInterval(activePopupInterval);
                          activePopupInterval = setInterval(updatePlantTimer, 1000);
                      }
@@ -3051,91 +3850,145 @@ function showBlacksmithPopup() {
     interactionTitle.innerHTML = "🔨 Thợ Rèn Chaos";
     interactionText.style.display = 'none';
     interactionControls.innerHTML = "";
-        // --- CODE THÊM: HIỂN THỊ TÀI NGUYÊN HIỆN CÓ ---
+
+    // 1. HEADER TÀI NGUYÊN (Giữ nguyên phần hiển thị đẹp)
     const resourceHeader = document.createElement("div");
-    resourceHeader.style.cssText = "display:flex; justify-content:space-around; background:#fff3e0; padding:10px; border-radius:8px; margin-bottom:10px; font-size:0.9em; border:1px solid #ffe0b2;";
+    resourceHeader.style.cssText = "display:flex; justify-content:space-around; background:#FFF3E0; padding:10px; border-radius:12px; margin-bottom:12px; font-size:0.9em; border:2px solid #FFE0B2; box-shadow: inset 0 0 5px rgba(0,0,0,0.05);";
     resourceHeader.innerHTML = `
-        <div>🫘 Đậu: <b style="color:#795548">${dau.toLocaleString()}</b></div>
-        <div>🔩 Kim Loại: <b style="color:#546E7A">${(ownedArtifacts['manh_kim_loai']||0).toLocaleString()}</b></div>
+        <div style="display:flex; align-items:center; gap:5px;">
+            <span style="font-size:1.2em;">🫘</span> 
+            <div>
+                <div style="font-size:0.7em; color:#795548; font-weight:bold; text-transform:uppercase;">Đậu</div>
+                <b style="color:#5D4037; font-size:1.1em;">${dau.toLocaleString()}</b>
+            </div>
+        </div>
+        <div style="width:1px; background:#FFCC80;"></div>
+        <div style="display:flex; align-items:center; gap:5px;">
+            <img src="1000000136.png" style="width:20px; height:20px;">
+            <div>
+                <div style="font-size:0.7em; color:#546E7A; font-weight:bold; text-transform:uppercase;">Mảnh K.Loại</div>
+                <b style="color:#37474F; font-size:1.1em;">${(ownedArtifacts['manh_kim_loai']||0).toLocaleString()}</b>
+            </div>
+        </div>
     `;
     interactionControls.appendChild(resourceHeader);
-    // ------------------------------------------------
     
-    const container = document.createElement("div");
-    container.style.cssText = 'max-height: 400px; overflow-y: auto; padding: 2px;';
+    // 2. CONTAINER CHÍNH
+    const scrollContainer = document.createElement("div");
+    scrollContainer.style.cssText = 'max-height: 400px; overflow-y: auto; padding: 2px;';
     
+    // 3. DANH SÁCH HÀNG CHỜ (QUEUE)
     const queueContainer = document.createElement("div");
     queueContainer.id = "crafting-queue-list";
-    container.appendChild(queueContainer);
+    scrollContainer.appendChild(queueContainer);
     
-    const table = document.createElement('table');
-    table.className = 'blacksmith-table';
-    table.innerHTML = `<tbody id="blacksmith-recipes-body"></tbody>`;
-    container.appendChild(table);
+    // 4. DANH SÁCH CÔNG THỨC (Dùng thẻ DIV thay vì TABLE)
+    const listContainer = document.createElement('div');
+    listContainer.className = 'blacksmith-list';
     
-    const tbody = table.querySelector('#blacksmith-recipes-body');
-
     const isSmithBusy = craftingQueue.length > 0;
 
     CRAFTING_RECIPES.forEach(recipe => {
+        // Kiểm tra điều kiện Đậu
         const hasDau = dau >= (recipe.cost.dau || 0);
         
-        let materialsHtml = '';
+        let reqHtml = '';
         let canCraftMaterials = true;
 
+        // Xử lý hiển thị nguyên liệu
         Object.keys(recipe.materials).forEach(matKey => {
             const reqQty = recipe.materials[matKey];
-            let hasItem = false;
             let currentAmt = 0;
             let matName = matKey;
 
-            // --- SỬA: KIỂM TRA MÃNH KIM LOẠI TRONG KHO ARTIFACTS ---
+            // Lấy tên và số lượng hiện có
             if (matKey === 'manh_kim_loai') {
                  currentAmt = ownedArtifacts['manh_kim_loai'] || 0;
-                 matName = "Mãnh Kim Loại";
+                 matName = "Mảnh KL"; // Viết tắt cho gọn
             } else if (POT_DEFINITIONS[matKey]) {
                  currentAmt = ownedPots[matKey] || 0;
                  matName = POT_DEFINITIONS[matKey].name;
+            } else if (matKey === 'so_dua') { // Fallback tên Sọ Dừa
+                 currentAmt = ownedPots['so_dua'] || 0;
+                 matName = "Sọ Dừa";
             }
 
-            hasItem = currentAmt >= reqQty;
+            const hasItem = currentAmt >= reqQty;
             if (!hasItem) canCraftMaterials = false;
             
-            materialsHtml += `<div class="${hasItem?'req-status-ok':'req-status-fail'}">${hasItem?'✓':'✗'} ${matName}: ${reqQty}</div>`;
+            // Dòng nguyên liệu nhỏ gọn
+            reqHtml += `
+                <div class="req-line ${hasItem ? 'req-ok' : 'req-miss'}">
+                    <span style="font-size:0.8em;">${hasItem ? '●' : '○'}</span> 
+                    <span>${matName}: ${currentAmt}/${reqQty}</span>
+                </div>`;
         });
         
-        materialsHtml += `<div class="${hasDau?'req-status-ok':'req-status-fail'}">${hasDau?'✓':'✗'} Đậu: ${recipe.cost.dau}</div>`;
+        // Dòng yêu cầu Đậu
+        reqHtml += `
+            <div class="req-line ${hasDau ? 'req-ok' : 'req-miss'}">
+                <span style="font-size:0.8em;">${hasDau ? '●' : '○'}</span>
+                <span>Đậu: ${recipe.cost.dau.toLocaleString()}</span>
+            </div>`;
 
+        // Logic nút bấm
         let isBlockedByBusy = (recipe.duration > 0 && isSmithBusy);
-
         const canCraft = hasDau && canCraftMaterials && !isBlockedByBusy;
-        const btnText = recipe.duration === 0 ? "Mua" : (isBlockedByBusy ? "Đang Bận" : "Rèn");
         
-        const newRow = tbody.insertRow();
-        newRow.innerHTML = `
-            <td>
-                <div class="blacksmith-recipe">
-                    <img src="${recipe.icon}" style="width:40px;height:40px;object-fit:contain;">
-                    <div style="font-weight:bold;">${recipe.name}</div>
+        let btnText = "Rèn";
+        let btnBg = "var(--accent)";
+        
+        if (recipe.duration === 0) {
+            btnText = "Mua";
+            btnBg = "#4CAF50"; // Màu xanh lá cho nút Mua
+        } else if (isBlockedByBusy) {
+            btnText = "Bận";
+            btnBg = "#9E9E9E";
+        }
+
+        // TẠO GIAO DIỆN HÀNG (ROW)
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'blacksmith-row';
+        rowDiv.innerHTML = `
+            <div class="bs-info">
+                <div class="bs-icon-box">
+                    <img src="${recipe.icon}" alt="${recipe.name}">
                 </div>
-            </td>
-            <td>
-                ${materialsHtml}
-            </td>
-            <td>
-                <button id="btn-craft-${recipe.id}" class="btn-crafting" style="width:auto; padding:8px 15px; background:${canCraft?'var(--accent)':'#999'};" ${canCraft?'':'disabled'}>
+                <div class="bs-name">${recipe.name}</div>
+            </div>
+
+            <div class="bs-req">
+                ${reqHtml}
+            </div>
+
+            <div class="bs-action">
+                <button id="btn-craft-${recipe.id}" class="btn-crafting" 
+                    style="
+                        width: auto; 
+                        padding: 8px 16px; 
+                        background: ${canCraft ? btnBg : '#ccc'}; 
+                        cursor: ${canCraft ? 'pointer' : 'not-allowed'};
+                        box-shadow: ${canCraft ? '0 2px 0 rgba(0,0,0,0.2)' : 'none'};
+                    " 
+                    ${canCraft ? '' : 'disabled'}>
                     ${btnText}
                 </button>
-            </td>
+            </div>
         `;
-        
+
+        // Gán sự kiện click (giữ nguyên logic cũ)
         setTimeout(() => {
-            const btn = document.getElementById(`btn-craft-${recipe.id}`);
+            const btn = rowDiv.querySelector(`#btn-craft-${recipe.id}`);
             if(btn) btn.onclick = () => startCrafting(recipe);
         }, 0);
+
+        listContainer.appendChild(rowDiv);
     });
 
-    interactionControls.appendChild(container); 
+    scrollContainer.appendChild(listContainer);
+    interactionControls.appendChild(scrollContainer); 
+
+    // Render hàng chờ và kích hoạt interval
     renderCraftingQueue();
     showPopup('interaction-popup');
     
@@ -3153,7 +4006,7 @@ function startCrafting(recipe) {
     
     for (const [matKey, matQty] of Object.entries(recipe.materials)) {
         let currentAmt = 0;
-        // --- SỬA: KIỂM TRA KHO MÃNH ---
+        // --- SỬA: KIỂM TRA KHO MẢNH ---
         if (matKey === 'manh_kim_loai') currentAmt = ownedArtifacts['manh_kim_loai'] || 0;
         else if (ownedPots[matKey] !== undefined) currentAmt = ownedPots[matKey] || 0;
         
@@ -3169,7 +4022,7 @@ function startCrafting(recipe) {
         dau -= (recipe.cost.dau || 0);
         
         for (const [matKey, matQty] of Object.entries(recipe.materials)) {
-            // --- SỬA: TRỪ NGUYÊN LIỆU MÃNH ---
+            // --- SỬA: TRỪ NGUYÊN LIỆU MẢNH ---
             if (matKey === 'manh_kim_loai') {
                  ownedArtifacts['manh_kim_loai'] -= matQty;
             } else if (ownedPots[matKey] !== undefined) {
@@ -3300,71 +4153,51 @@ function initGrasshopperEvents() {
         }
     }
 }
-function initializeGame(){
-    // 1. Tải dữ liệu cũ
-    loadGame(); 
-    
-    // 2. Cài đặt giao diện (Dark mode & Scale)
-    const isDarkMode = localStorage.getItem('darkMode') === 'true';
-    if(isDarkMode) document.body.classList.add('dark-mode');
-    adjustAppWrapperScale(); 
-    
-    // 3. Cập nhật hiển thị các thành phần
-    updateDisplay(); 
-    updateControlButtons(); 
-    updateShop(); 
-    updateBlacksmithVisuals(); 
-    
-    // 4. Khởi tạo sự kiện click
-    initVineEvents();        // Sự kiện dây leo
-    initGrasshopperEvents(); // Sự kiện châu chấu/đồ treo
-    
-    // 5. Bắt đầu hiệu ứng khói (QUAN TRỌNG: Để khói chạy ngay khi vào game)
-    if(typeof startSmokeEffect === 'function') startSmokeEffect(); 
-}
-
-// --- GAME LOOP: TỐI ƯU HÓA ---
-// Gộp 3 hàm kiểm tra vào chung 1 nhịp (1 giây/lần) giúp game mượt hơn
-setInterval(() => {
-    updateFarmState();        // Kiểm tra cây lớn
-    checkGlobalCrafting();    // Kiểm tra thợ rèn
-    checkIncubationState();   // Kiểm tra trứng nở
-}, 1000);
-
-// --- TỰ ĐỘNG LƯU ---
-// Chạy riêng 60 giây/lần
-setInterval(autoSave, 60000);
-
-// --- KHỞI CHẠY GAME ---
-// Dòng này giúp game chạy ngay khi tải xong, dù dòng cũ có hay không thì thêm ở đây vẫn an toàn
-window.onload = initializeGame;
-// --- HÀM KIỂM TRA TRỨNG NỞ (CHẠY TỰ ĐỘNG) ---
+// --- SỬA LẠI LOGIC KIỂM TRA TRỨNG NỞ ---
 function checkIncubationState() {
-    // Chỉ chạy khi đang có thời gian ấp (lớn hơn 0)
     if (incubationFinishTime > 0) {
         const now = Date.now();
-        
-        // Nếu thời gian hiện tại đã vượt qua thời gian nở
         if (now >= incubationFinishTime) {
-            incubationFinishTime = 0; // Reset về 0
-            hasIceEgg = false; 
-            isIceDragonHatched = true;
-            isIceDragonEvolved = true; 
+            incubationFinishTime = 0; // Xóa thời gian chờ
 
-            // Thêm pet vào kho
-            const petValue = (hatchedPetType === 'than_chet' ? "1000000104.gif" : "1000000127.gif");
-            const petData = shopItems.find(i => i.value === petValue);
-            const petNameDisplay = petData ? petData.name : (hatchedPetType === 'than_chet' ? "Thần Chết" : "Thiên Thần");
+            // TRƯỜNG HỢP 1: ẤP NỞ THÀNH CÔNG
+            if (hasIceEgg) {
+                hasIceEgg = false; // Mất trứng
+                isIceDragonHatched = true; 
+                isIceDragonEvolved = true; 
+
+                // Reset level về 1
+                petLevels[hatchedPetType] = 1;
+                petStarLevel = 1; 
+
+                // --- SỬA Ở ĐÂY: Thêm trường hợp Bi Gai ---
+                let petName = "Bi Gai";
+                if (hatchedPetType === 'thien_than') petName = "Thiên Thần";
+                if (hatchedPetType === 'than_chet') petName = "Thần Chết";
+                // -----------------------------------------
+
+                if(typeof showToast === 'function') {
+                    showToast(`Nở thành công: ${petName}`, "🐣", "Chúc Mừng");
+                } else {
+                    alert(`🎉 CHÚC MỪNG! Trứng đã nở thành: ${petName}!`);
+                }
+            } 
             
-            if(petData && !isPetOwned(petData.value)) ownedPets.push(petData.value);
-            
-            // Hiện thông báo
-            alert(`🎉 CHÚC MỪNG! Trứng đã nở thành: ${petNameDisplay}!\nĐã mở khóa tính năng Auto Thu Hoạch.`);
-            
-            // Cập nhật giao diện
+            // TRƯỜNG HỢP 2: NÂNG CẤP THÀNH CÔNG
+            else if (isIceDragonHatched) {
+                if (!petLevels[hatchedPetType]) petLevels[hatchedPetType] = 1;
+                if (petLevels[hatchedPetType] < 5) {
+                    petLevels[hatchedPetType]++; 
+                    petStarLevel = petLevels[hatchedPetType]; 
+                    
+                    if(typeof showToast === 'function') {
+                        showToast(`Lên cấp thành công!`, "🌟");
+                    }
+                }
+            } 
+
             updateDisplay();
-            
-            // Nếu người chơi đang mở popup xem trứng thì đóng lại cho nó cập nhật
+            saveGame();
             if(document.getElementById('interaction-popup').classList.contains('popup-active')) {
                 hidePopup('interaction-popup');
             }
@@ -3602,9 +4435,9 @@ if (eventCloud) {
         if (level === 0) { alert("Bạn cần tạo nông trại trước!"); return; }
         
         const myCrowns = ownedArtifacts['vuong_mien'] || 0;
-        const MAX_EXCHANGE = 5; // Giới hạn tối đa 5 cái mỗi loại
+        const MAX_EXCHANGE = 5; 
 
-        // --- 1. HEADER SỰ KIỆN ĐẸP MẮT ---
+        // --- 1. HEADER SỰ KIỆN ---
         interactionTitle.innerHTML = "🎉 Shop Sự Kiện";
         interactionText.style.display = 'block';
         interactionText.innerHTML = `
@@ -3628,7 +4461,7 @@ if (eventCloud) {
         
         interactionControls.innerHTML = '';
         
-        // --- 2. CONTAINER DẠNG LƯỚI (GRID 2 CỘT) ---
+        // --- 2. CONTAINER DẠNG LƯỚI ---
         const shopContainer = document.createElement('div');
         shopContainer.style.cssText = `
             display: grid; 
@@ -3641,11 +4474,12 @@ if (eventCloud) {
 
         HANGING_ITEMS_CONFIG.forEach(item => {
             const currentOwned = ownedDecorations[item.id] || 0;
-            const isMaxed = currentOwned >= MAX_EXCHANGE; // Đã đổi tối đa
-            const canAfford = myCrowns >= item.price;     // Đủ tiền
+            const isMaxed = currentOwned >= MAX_EXCHANGE; 
+            const canAfford = myCrowns >= item.price;     
 
-            // Tạo Card cho từng món
+            // Tạo Card
             const itemCard = document.createElement('div');
+            // Thêm min-height để các ô bằng nhau tăm tắp
             itemCard.style.cssText = `
                 background: white;
                 border: 1px solid ${isMaxed ? '#eee' : '#f8bbd0'};
@@ -3659,10 +4493,11 @@ if (eventCloud) {
                 position: relative;
                 overflow: hidden;
                 transition: transform 0.1s;
+                height: 200px; /* CỐ ĐỊNH CHIỀU CAO CARD */
             `;
             if(isMaxed) itemCard.style.opacity = "0.7";
 
-            // Hiệu ứng giảm giờ (Badge)
+            // Badge giảm giờ
             const speedUpItems = ['chau_chau', 'treo_con_ca', 'treo_long_den', 'treo_trai_chau', 'treo_chong_chong'];
             let badgeHTML = "";
             if (speedUpItems.includes(item.id)) {
@@ -3670,13 +4505,12 @@ if (eventCloud) {
                     position: absolute; top: 0; left: 0; 
                     background: #E3F2FD; color: #1565C0; 
                     font-size: 0.65em; font-weight: bold; 
-                    padding: 3px 8px; border-bottom-right-radius: 8px;
+                    padding: 3px 8px; border-bottom-right-radius: 8px; z-index:2;
                 ">⚡ -1 Giờ</div>`;
             }
 
-            // Trạng thái nút bấm & Màu sắc
             let btnText = "Đổi Ngay";
-            let btnBg = "linear-gradient(45deg, #EC407A, #D81B60)"; // Màu hồng đậm
+            let btnBg = "linear-gradient(45deg, #EC407A, #D81B60)";
             let btnCursor = "pointer";
             let btnDisabled = false;
 
@@ -3687,26 +4521,45 @@ if (eventCloud) {
                 btnDisabled = true;
             } else if (!canAfford) {
                 btnText = "Thiếu Tiền";
-                btnBg = "#cfd8dc"; // Xám nhạt
+                btnBg = "#cfd8dc"; 
                 btnCursor = "not-allowed";
                 btnDisabled = true;
             }
 
-            // Nội dung Card
+            // --- PHẦN SỬA CHÍNH Ở ĐÂY ---
             itemCard.innerHTML = `
                 ${badgeHTML}
-                <div style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; margin-top: 10px;">
-                    <img src="${item.img}" style="max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 3px 3px rgba(0,0,0,0.2));">
+                
+                <div style="
+                    width: 100%; 
+                    height: 80px; 
+                    display: flex; 
+                    align-items: center; 
+                    justify-content: center; 
+                    margin-top: 5px;
+                    margin-bottom: 5px;
+                ">
+                    <img src="${item.img}" style="
+                        max-width: 100%; 
+                        max-height: 100%; 
+                        object-fit: contain; 
+                        filter: drop-shadow(0 4px 4px rgba(0,0,0,0.15));
+                    ">
                 </div>
                 
-                <div style="text-align: center; width: 100%; margin: 8px 0;">
-                    <div style="font-weight: 700; color: #3e2723; font-size: 0.9em; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                <div style="text-align: center; width: 100%; flex: 1; display: flex; flex-direction: column; justify-content: center;">
+                    <div style="
+                        font-weight: 700; color: #3e2723; font-size: 0.9em; 
+                        margin-bottom: 2px;
+                        overflow: hidden; text-overflow: ellipsis; 
+                        display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical;
+                    ">
                         ${item.name}
                     </div>
                     <div style="color: #C2185B; font-weight: bold; font-size: 0.95em;">
                         👑 ${item.price}
                     </div>
-                    <div style="font-size: 0.75em; color: #757575; margin-top: 2px;">
+                    <div style="font-size: 0.75em; color: #757575;">
                         Đã có: <b>${currentOwned}/${MAX_EXCHANGE}</b>
                     </div>
                 </div>
@@ -3724,6 +4577,7 @@ if (eventCloud) {
                         cursor: ${btnCursor};
                         box-shadow: ${btnDisabled ? 'none' : '0 3px 0 #880E4F'};
                         transition: transform 0.1s;
+                        margin-top: auto; /* Đẩy nút xuống đáy */
                     ">
                     ${btnText}
                 </button>
@@ -3734,7 +4588,7 @@ if (eventCloud) {
 
         interactionControls.appendChild(shopContainer);
         
-        // --- 3. XỬ LÝ CLICK ĐỔI ĐỒ (LOGIC GIỮ NGUYÊN) ---
+        // --- 3. XỬ LÝ CLICK ĐỔI ĐỒ (Giữ nguyên logic) ---
         const buttons = shopContainer.querySelectorAll('.btn-exchange-event');
         buttons.forEach(btn => {
             btn.onclick = (e) => {
@@ -3742,31 +4596,21 @@ if (eventCloud) {
                 const itemData = HANGING_ITEMS_CONFIG.find(i => i.id === itemId);
                 const currentOwned = ownedDecorations[itemId] || 0;
 
-                // 1. Kiểm tra giới hạn
-                if (currentOwned >= MAX_EXCHANGE) return; // Nút đã disabled nhưng check lại cho chắc
+                if (currentOwned >= MAX_EXCHANGE) return; 
 
-                // 2. Kiểm tra tiền
                 if (ownedArtifacts['vuong_mien'] >= itemData.price) {
-                    // Hiệu ứng bấm nút
                     e.target.style.transform = "translateY(3px)";
                     e.target.style.boxShadow = "none";
                     setTimeout(() => {
                          if (confirm(`Đổi ${itemData.price} Vương Miện lấy 1 ${itemData.name}?`)) {
-                            // Trừ tiền
                             ownedArtifacts['vuong_mien'] -= itemData.price;
-                            
-                            // Cộng đồ
                             if (!ownedDecorations[itemId]) ownedDecorations[itemId] = 0;
                             ownedDecorations[itemId]++;
                             
-                            // Lưu game
                             saveGame();
                             updateDisplay();
-                            
-                            // Reload lại popup để cập nhật giao diện (số lượng, nút bấm...)
                             eventCloud.click(); 
                         } else {
-                            // Nếu hủy thì trả lại hiệu ứng nút
                             e.target.style.transform = "translateY(0)";
                             e.target.style.boxShadow = "0 3px 0 #880E4F";
                         }
@@ -3778,53 +4622,86 @@ if (eventCloud) {
         showPopup('interaction-popup');
     });
 }
-/* --- CHỨC NĂNG 3 LÔ (INVENTORY) --- */
-
-// Hàm mở kho đồ
+// --- HÀM MỞ 3 LÔ (PHIÊN BẢN GRID ĐẸP) ---
 function openInventory() {
-    // Thêm kiểm tra level để đồng bộ với các icon khác
+    // 1. Kiểm tra nếu chưa tạo game thì chặn lại
     if (level === 0) { 
         alert("Bạn cần tạo nông trại trước!"); 
         return; 
     }
 
-    // 1. Cập nhật số Đậu và Lá hiện tại lên giao diện 3 Lô
+    // 2. Cập nhật số Đậu và Lá trên đầu bảng
     const invDauEl = document.getElementById('inv-dau');
     const invLaEl = document.getElementById('inv-la');
     
     if (invDauEl) invDauEl.innerText = dau.toLocaleString('vi-VN');
     if (invLaEl) invLaEl.innerText = la.toLocaleString('vi-VN');
 
-    // 2. Định nghĩa danh sách vật phẩm cần hiển thị
+    // 3. Đảm bảo biến kho đồ tồn tại
     if (typeof ownedArtifacts === 'undefined') { window.ownedArtifacts = {}; }
 
+    // 4. DANH SÁCH CÁC VẬT PHẨM SẼ HIỂN THỊ
+    // (Bạn có thể thêm món mới vào danh sách này sau này)
     const itemsToShow = [
-        { id: 'manh_nguyen_to', name: 'Mãnh Nguyên Tố', img: '1000000135.png' },
-        { id: 'manh_kim_loai', name: 'Mãnh Kim Loại', img: '1000000136.png' },
-        { id: 'vuong_mien',    name: 'Vương Miện',    img: '1000000137.png' }
+        // --- Nguyên liệu ---
+        { id: 'manh_nguyen_to', name: 'Mảnh Ng.Tố',   img: '1000000135.png' },
+        { id: 'manh_kim_loai', name: 'Mảnh Kim Loại',img: '1000000136.png' },
+        { id: 'vuong_mien',    name: 'Vương Miện',    img: '1000000137.png' },
+        { id: 'nhong_ong',     name: 'Nhộng Ong',     img: '1000000145.png' },
+        // --- Các loại cá ---
+        { id: 'ca_tre',        name: 'Cá Trê',        img: '1000000148.png' },
+        { id: 'ca_do',         name: 'Cá Dồ',         img: '1000000146.png' },
+        { id: 'ca_tai_tuong',  name: 'Cá Tai Tượng',  img: '1000000147.png' }
     ];
 
-    // 3. Tạo danh sách hiển thị
+    // 5. Tìm khung hiển thị và xóa nội dung cũ
     const listContainer = document.getElementById('inventory-list');
     if (listContainer) {
         listContainer.innerHTML = ''; 
+        
+        // Quan trọng: Đặt lại display grid để chia cột
+        listContainer.style.display = 'grid'; 
 
+        let hasItem = false; 
+
+        // 6. Duyệt qua từng món, nếu có số lượng > 0 thì vẽ ra
         itemsToShow.forEach(item => {
             let qty = ownedArtifacts[item.id] || 0;
-            let div = document.createElement('div');
-            div.className = 'inventory-item';
-            div.innerHTML = `
-                <img src="${item.img}" style="width:40px; height:40px; margin-right:10px; object-fit:contain;">
-                <div style="flex:1;">
-                    <div style="font-weight:bold; color:#3e2723;">${item.name}</div>
-                    <div style="font-size:12px; color:#795548;">Số lượng: <b style="color:#D84315;">${qty}</b></div>
+            
+            if (qty > 0) {
+                hasItem = true;
+                let div = document.createElement('div');
+                div.className = 'inventory-item';
+                
+                // Vẽ HTML cho từng ô (Ảnh + Tên + Số lượng)
+                div.innerHTML = `
+                    <div class="inventory-img-box">
+                        <img src="${item.img}" alt="${item.name}">
+                    </div>
+                    <div class="inventory-name">
+                        ${item.name}
+                    </div>
+                    <div class="inventory-qty">
+                        x${qty.toLocaleString('vi-VN')}
+                    </div>
+                `;
+                listContainer.appendChild(div);
+            }
+        });
+
+        // 7. Nếu túi rỗng (không có món nào > 0)
+        if (!hasItem) {
+            listContainer.style.display = 'block'; // Chuyển về block để căn giữa thông báo
+            listContainer.innerHTML = `
+                <div style="text-align:center; padding:50px 20px; color:#bdbdbd;">
+                    <div style="font-size:3em; margin-bottom:10px; opacity:0.5;">🎒</div>
+                    <div>Chưa có vật phẩm nào.</div>
                 </div>
             `;
-            listContainer.appendChild(div);
-        });
+        }
     }
 
-    // 4. Hiển thị Popup
+    // 8. Hiện Popup lên
     showPopup('inventory-box');
 }
 // --- CHỨC NĂNG GIFTCODE (ĐÃ TỐI ƯU) ---
@@ -3950,20 +4827,426 @@ function startSmokeEffect() {
     }, 150);
 }
 
+// Chỉ giữ lại 1 dòng onload duy nhất
+// ======================================================
+// --- TÍNH NĂNG: THỌC ONG NÙI GIẺ ---
+// ======================================================
+
+// 1. Hàm kiểm tra: Hiện hoặc Ẩn tổ ong theo ngày
+function checkBeeHiveSpawn() {
+    const beeGuard = document.getElementById('bee-guard');
+    if (!beeGuard) return;
+
+    // Nếu chưa tạo game (level 0) thì cứ hiện để người chơi thấy
+    if (level === 0) {
+        beeGuard.style.display = 'block';
+        return;
+    }
+
+    const now = new Date();
+    const last = new Date(lastBeePokeTime);
+    
+    // Kiểm tra xem hôm nay đã thọc chưa (so sánh ngày/tháng/năm)
+    const isSameDay = now.getDate() === last.getDate() && 
+                      now.getMonth() === last.getMonth() && 
+                      now.getFullYear() === last.getFullYear();
+
+    if (isSameDay) {
+        // Đã thọc hôm nay -> Ẩn đi
+        beeGuard.style.display = 'none';
+    } else {
+        // Qua ngày mới -> Hiện lại
+        beeGuard.style.display = 'block';
+    }
+}
+
+// 2. Hàm hiển thị Popup khi bấm vào ong
+function showBeePopup() {
+    if (level === 0) { alert("Bạn cần tạo nông trại trước!"); return; }
+
+    interactionTitle.innerHTML = "🐝 Tổ Ong Nùi Giẻ";
+    interactionText.style.display = 'block';
+    
+    // Nội dung giới thiệu
+    interactionText.innerHTML = `
+        <div style="text-align:center;">
+            <img src="1000000144.gif" style="width:80px; height:auto; margin-bottom:10px;">
+            <div style="color:#5D4037; font-weight:bold;">Phát hiện một tổ ong lạ!</div>
+            <div style="font-size:0.9em; color:#795548;">
+                Bên trong có vẻ chứa <b>Nhộng Ong</b> quý hiếm.
+                <br>Bạn có muốn lấy nó không?
+            </div>
+        </div>
+    `;
+
+    interactionControls.innerHTML = '';
+
+    // Tạo nút "Thọc Ong"
+    const btnPoke = document.createElement('button');
+    btnPoke.className = 'btn-buy'; 
+    btnPoke.style.background = 'linear-gradient(45deg, #FFC107, #FF9800)'; // Màu vàng cam
+    btnPoke.style.color = '#3e2723';
+    btnPoke.style.border = '2px solid #fff';
+    btnPoke.style.boxShadow = '0 4px 0 #F57C00';
+    btnPoke.style.fontSize = '1.2em';
+    btnPoke.style.padding = '12px';
+    btnPoke.style.marginTop = '15px';
+    btnPoke.innerHTML = "👉 <b>Thọc Ong</b>";
+
+    // Sự kiện khi bấm nút Thọc
+    btnPoke.onclick = () => {
+        // 1. Cộng 5 Nhộng Ong vào kho
+        if (!ownedArtifacts['nhong_ong']) ownedArtifacts['nhong_ong'] = 0;
+        ownedArtifacts['nhong_ong'] += 5;
+
+        // 2. Cập nhật thời gian đã thọc (để tính 24h)
+        lastBeePokeTime = Date.now();
+
+        // 3. Đóng popup
+        hidePopup('interaction-popup');
+
+        // 4. Tạo hiệu ứng vật phẩm bay lên
+        const beeGuard = document.getElementById('bee-guard');
+        if(beeGuard) {
+             const floater = document.createElement("div");
+             floater.className = "floating-reward float-item";
+             // Sử dụng đúng tên file ảnh bạn cung cấp
+             floater.innerHTML = `<img src="1000000145.png" style="width:35px; height:35px;"> +5 Nhộng`;
+             
+             // Căn vị trí bay từ con ong
+             floater.style.top = (beeGuard.offsetTop) + "px";
+             floater.style.left = (beeGuard.offsetLeft) + "px";
+             floater.style.zIndex = "100";
+             
+             document.querySelector("main").appendChild(floater);
+             
+             // Xóa hiệu ứng sau 1.2 giây
+             setTimeout(() => floater.remove(), 1200);
+        }
+
+        // 5. Thông báo
+        if(typeof showToast === 'function') {
+            showToast("Đã nhận 5 Nhộng Ong!", "🐛", "Thành Công");
+        } else {
+            alert("Bạn nhận được 5 Nhộng Ong! Đã chuyển vào 3 Lô.");
+        }
+
+        // 6. Ẩn con ong đi và Lưu game
+        checkBeeHiveSpawn(); // Hàm này sẽ tự ẩn ong vì lastBeePokeTime vừa cập nhật
+        saveGame();
+    };
+
+    interactionControls.appendChild(btnPoke);
+    showPopup('interaction-popup');
+}
+// --- LOGIC CÂU CÁ (PRO VERSION) ---
+let fishingInterval = null;
+let fishingTimerInterval = null;
+let fishingWaitInterval = null;
+
+// Biến Vật Lý Người Chơi (ĐÃ CHỈNH DỄ HƠN)
+let bobberPos = 10;      
+let bobberVelocity = 0;  
+const GRAVITY = 0.15;    // Rơi chậm hơn
+const JUMP_FORCE = 2.5;  // Nảy nhẹ hơn
+
+// Biến Vật Lý Mục Tiêu (ĐÃ CỐ ĐỊNH)
+let targetPos = 35;      // Đứng im ở vị trí 35%
+let targetDirection = 0; 
+let targetSpeed = 0;     
+let changeDirCounter = 0; 
+
+let catchProgress = 30;   // Tiến độ bắt (30% khởi điểm)
+let gameTimeLeft = 15;    // Thời gian chơi tăng lên 15s
+
+// Danh sách Cá & Tỉ lệ (Giữ nguyên)
+const FISH_TYPES = [
+    { id: 'ca_tre', name: 'Cá Trê', img: '1000000148.png', rate: 0.5 },
+    { id: 'ca_do', name: 'Cá Dồ', img: '1000000146.png', rate: 0.8 }, 
+    { id: 'ca_tai_tuong', name: 'Cá Tai Tượng', img: '1000000147.png', rate: 1.0 }
+];
+
+// 1. Mở bảng chuẩn bị
+function showFishingPrePopup() {
+    if (level === 0) { alert("Bạn cần tạo nông trại trước!"); return; }
+    
+    // Reset HTML sạch sẽ cho lần chơi mới
+    document.getElementById('fishing-game-area').innerHTML = `
+        <div id="fishing-bar-container">
+            <div id="zone-green"></div>
+            <div id="fishing-bobber"></div>
+        </div>
+        
+        <div style="display:flex; flex-direction:column; align-items:center;">
+            <div style="font-size:0.7em; font-weight:bold; color:#0277BD; margin-bottom:5px;">TIẾN ĐỘ</div>
+            <div id="catch-progress-container">
+                <div id="catch-progress-fill"></div>
+            </div>
+        </div>
+        
+        <div id="fishing-timer">15s</div>
+    `;
+
+    document.getElementById('fishing-waiting').style.display = 'block';
+    document.getElementById('fishing-start-ui').style.display = 'block';
+    document.getElementById('fishing-waiting-anim').style.display = 'none';
+    document.getElementById('fishing-game-area').style.display = 'none';
+    document.getElementById('fishing-guide-text').style.display = 'none';
+    
+    const btnStart = document.getElementById('btn-start-fishing');
+    if (typeof ownedArtifacts === 'undefined') ownedArtifacts = {};
+    const nhongQty = ownedArtifacts['nhong_ong'] || 0;
+    
+    if (nhongQty > 0) {
+        btnStart.innerHTML = `Quăng Cần (Có: ${nhongQty})`;
+        btnStart.disabled = false;
+        btnStart.style.background = "#29B6F6";
+        btnStart.style.cursor = "pointer";
+        btnStart.onclick = startFishingWait;
+    } else {
+        btnStart.innerHTML = `Thiếu Nhộng Ong!`;
+        btnStart.disabled = true;
+        btnStart.style.background = "#bdbdbd";
+        btnStart.style.cursor = "not-allowed";
+    }
+
+    showPopup('fishing-popup');
+}
+// --- HÀM SỬA LỖI: NÚT THOÁT CÂU CÁ ---
+function closeFishingPopup() {
+    // 1. Dừng mọi bộ đếm giờ (để game không chạy ngầm)
+    if (fishingInterval) clearInterval(fishingInterval);
+    if (fishingTimerInterval) clearInterval(fishingTimerInterval);
+    if (fishingWaitInterval) clearInterval(fishingWaitInterval);
+
+    // 2. Gỡ bỏ sự kiện click/tap (để không bị lỗi khi bấm ra ngoài)
+    document.removeEventListener('mousedown', fishingTap);
+    document.removeEventListener('touchstart', fishingTap);
+
+    // 3. Đóng Popup
+    hidePopup('fishing-popup');
+
+    // 4. Reset lại giao diện chờ (để lần sau mở lại đẹp hơn)
+    const guideText = document.getElementById('fishing-guide-text');
+    if(guideText) guideText.style.display = 'none';
+}
+// 2. Giai đoạn đợi 3 giây (Giảm xuống 3s cho nhanh)
+function startFishingWait() {
+    if (!ownedArtifacts['nhong_ong']) ownedArtifacts['nhong_ong'] = 0;
+    ownedArtifacts['nhong_ong']--;
+    saveGame();
+    
+    document.getElementById('fishing-start-ui').style.display = 'none';
+    document.getElementById('fishing-waiting-anim').style.display = 'block';
+    
+    let count = 3; // Giảm thời gian chờ
+    const countEl = document.getElementById('fishing-countdown');
+    countEl.innerText = count;
+    
+    if (fishingWaitInterval) clearInterval(fishingWaitInterval);
+
+    fishingWaitInterval = setInterval(() => {
+        count--;
+        countEl.innerText = count;
+        if (count <= 0) {
+            clearInterval(fishingWaitInterval);
+            fishingWaitInterval = null;
+            startFishingMinigame();
+        }
+    }, 1000);
+}
+
+// 3. Bắt đầu Minigame
+function startFishingMinigame() {
+    document.getElementById('fishing-waiting').style.display = 'none';
+    document.getElementById('fishing-game-area').style.display = 'flex';
+    document.getElementById('fishing-guide-text').style.display = 'block';
+    document.getElementById('fishing-guide-text').innerHTML = "👆 <b>NHẤP LIÊN TỤC</b> để giữ thanh cam nằm trong vùng xanh!";
+    
+    // Reset thông số game
+    bobberPos = 20;
+    bobberVelocity = 0;
+    targetPos = 40; // Vùng xanh bắt đầu ở giữa
+    catchProgress = 25; // Thanh tiến độ bắt đầu thấp
+    gameTimeLeft = 15;
+    
+    document.addEventListener('mousedown', fishingTap);
+    document.addEventListener('touchstart', fishingTap, {passive: false});
+    
+    if (fishingInterval) clearInterval(fishingInterval);
+    fishingInterval = setInterval(gameLoop, 16); // 60 FPS
+    
+    if (fishingTimerInterval) clearInterval(fishingTimerInterval);
+    fishingTimerInterval = setInterval(() => {
+        gameTimeLeft--;
+        const timerEl = document.getElementById('fishing-timer');
+        if(timerEl) timerEl.innerText = gameTimeLeft + "s";
+        
+        if (gameTimeLeft <= 0) {
+            endFishingGame(false); // Hết giờ mà chưa đầy thanh -> Thua
+        }
+    }, 1000);
+}
+
+// Xử lý cú đẩy (Tap)
+function fishingTap(e) {
+    if(e.type === 'touchstart') e.preventDefault();
+    // Mỗi lần tap, vận tốc tăng lên (bay lên)
+    bobberVelocity = JUMP_FORCE; 
+}
+
+// Logic di chuyển Vùng Xanh (ĐÃ CỐ ĐỊNH)
+function updateTargetPosition() {
+    // Luôn giữ vùng xanh ở vị trí 35%
+    targetPos = 35; 
+
+    const zoneEl = document.getElementById('zone-green');
+    if(zoneEl) zoneEl.style.bottom = targetPos + "%";
+}
+
+// Vòng lặp chính xử lý vật lý
+function gameLoop() {
+    // A. Xử lý Vùng Xanh (Cá chạy)
+    updateTargetPosition();
+
+    // B. Xử lý Thanh Cam (Người chơi)
+    bobberVelocity -= GRAVITY; // Trọng lực kéo xuống
+    bobberPos += bobberVelocity;
+    
+    // Giới hạn thanh cam trong ống
+    if (bobberPos < 0) { bobberPos = 0; bobberVelocity = 0; } // Chạm đáy nảy nhẹ hoặc dừng
+    if (bobberPos > 92) { bobberPos = 92; bobberVelocity = 0; } // Chạm đỉnh
+    
+    const bobberEl = document.getElementById('fishing-bobber');
+    if(bobberEl) bobberEl.style.bottom = bobberPos + "%";
+    
+    // C. Kiểm tra va chạm (Thanh Cam có nằm trong Vùng Xanh không?)
+    // Vùng xanh cao khoảng 25% (80px/300px), Bobber cao khoảng 6%
+    // Logic: Kiểm tra bottom của 2 thằng
+    // targetPos là bottom của vùng xanh. Vùng xanh cao ~25%.
+    // bobberPos là bottom của thanh cam.
+    
+    // Điều kiện nằm trong vùng: Bobber cao hơn đáy vùng xanh VÀ thấp hơn đỉnh vùng xanh
+    // Đỉnh vùng xanh = targetPos + 25
+    // Đáy bobber = bobberPos
+    // Đỉnh bobber = bobberPos + 6
+    
+    const zoneBottom = targetPos;
+    const zoneTop = targetPos + 25;
+    const bobberBottom = bobberPos;
+    const bobberTop = bobberPos + 6;
+
+    // Kiểm tra giao nhau
+    const isOverlapping = (bobberTop > zoneBottom && bobberBottom < zoneTop);
+    
+    if (isOverlapping) {
+        // TRÚNG: Thanh xanh sáng lên, tăng tiến độ
+        const zoneEl = document.getElementById('zone-green');
+        if(zoneEl) {
+            zoneEl.style.background = "rgba(118, 255, 3, 0.8)";
+            zoneEl.style.boxShadow = "0 0 15px #76FF03";
+        }
+        catchProgress += 0.4; // Tăng chậm để game dài hơn xíu
+    } else {
+        // TRƯỢT: Thanh xanh mờ đi, giảm tiến độ
+        const zoneEl = document.getElementById('zone-green');
+        if(zoneEl) {
+            zoneEl.style.background = "rgba(118, 255, 3, 0.3)";
+            zoneEl.style.boxShadow = "none";
+        }
+        catchProgress -= 0.3; // Giảm phạt
+    }
+    
+    // Giới hạn thanh tiến độ
+    if (catchProgress < 0) catchProgress = 0;
+    if (catchProgress > 100) catchProgress = 100;
+    
+    // Cập nhật giao diện thanh tiến độ
+    const progressFill = document.getElementById('catch-progress-fill');
+    if(progressFill) {
+        progressFill.style.height = catchProgress + "%";
+        
+        // Đổi màu theo mức độ nguy hiểm
+        if(catchProgress < 30) progressFill.style.background = "#F44336"; // Đỏ (Nguy hiểm)
+        else if(catchProgress < 70) progressFill.style.background = "#FF9800"; // Cam
+        else progressFill.style.background = "#4CAF50"; // Xanh (Tốt)
+    }
+
+    // D. Kiểm tra Thắng/Thua
+    if (catchProgress >= 100) {
+        endFishingGame(true);
+    } else if (catchProgress <= 0 && gameTimeLeft < 13) {
+        // Chỉ thua nếu thanh tuột về 0 SAU 2 giây đầu tiên (để tránh vừa vào game đã thua)
+        endFishingGame(false);
+    }
+}
+
+// 4. Kết thúc game
+function endFishingGame(isWin) {
+    clearInterval(fishingInterval);
+    clearInterval(fishingTimerInterval);
+    document.removeEventListener('mousedown', fishingTap);
+    document.removeEventListener('touchstart', fishingTap);
+    
+    const gameArea = document.getElementById('fishing-game-area');
+    const guideText = document.getElementById('fishing-guide-text');
+    if(guideText) guideText.style.display = 'none';
+
+    if (isWin) {
+        // Random cá (Tỉ lệ xịn hơn)
+        const rand = Math.random();
+        let fish = null;
+        let starRating = "";
+        
+        if (rand < 0.5) { fish = FISH_TYPES[0]; starRating = "⭐"; }      
+        else if (rand < 0.85) { fish = FISH_TYPES[1]; starRating = "⭐⭐"; } 
+        else { fish = FISH_TYPES[2]; starRating = "⭐⭐⭐"; }                
+        
+        if (!ownedArtifacts[fish.id]) ownedArtifacts[fish.id] = 0;
+        ownedArtifacts[fish.id]++;
+        saveGame();
+        
+        gameArea.innerHTML = `
+            <div style="text-align:center; animation:popInReward 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+                <div style="font-size:3em; margin-bottom:5px;">🎣</div>
+                <h2 style="color:#2E7D32; margin:0; text-transform:uppercase;">Dính cá rồi!</h2>
+                <div style="background:radial-gradient(circle, #fff, #B2DFDB); padding:10px; border-radius:50%; width:100px; height:100px; display:flex; align-items:center; justify-content:center; margin:10px auto; border:3px solid #009688;">
+                    <img src="${fish.img}" style="width:80%; height:auto; filter:drop-shadow(0 5px 5px rgba(0,0,0,0.3));">
+                </div>
+                <div style="font-size:1.3em; font-weight:900; color:#006064;">${fish.name}</div>
+                <div style="color:#FFC107; font-size:1.2em; letter-spacing:2px; margin-bottom:5px;">${starRating}</div>
+                <button onclick="showFishingPrePopup()" class="btn-buy" style="margin-top:10px; width:auto; padding:10px 25px; box-shadow:0 4px 0 rgba(0,0,0,0.2);">Câu Tiếp</button>
+            </div>
+        `;
+    } else {
+        gameArea.innerHTML = `
+            <div style="text-align:center; animation:shake 0.5s;">
+                <div style="font-size:4em; margin:10px 0; opacity:0.7;">🌊</div>
+                <h2 style="color:#c62828; margin:0;">SẨY MẤT RỒI!</h2>
+                <p style="color:#546E7A; font-weight:bold;">Cá quá mạnh...</p>
+                <div style="width:100%; height:2px; background:#cfd8dc; margin:15px 0;"></div>
+                <button onclick="showFishingPrePopup()" class="btn-buy" style="width:auto; padding:10px 25px; background:#FF5722; box-shadow:0 4px 0 #D84315;">Thử Lại Ngay</button>
+            </div>
+            <style>@keyframes shake {0% { transform: translate(1px, 1px) rotate(0deg); } 10% { transform: translate(-1px, -2px) rotate(-1deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 30% { transform: translate(3px, 2px) rotate(0deg); } 40% { transform: translate(1px, -1px) rotate(1deg); } 50% { transform: translate(-1px, 2px) rotate(-1deg); } 60% { transform: translate(-3px, 1px) rotate(0deg); } 70% { transform: translate(3px, 1px) rotate(-1deg); } 80% { transform: translate(-1px, -1px) rotate(1deg); } 90% { transform: translate(1px, 2px) rotate(0deg); } 100% { transform: translate(1px, -2px) rotate(-1deg); }}</style>
+        `;
+    }
+}
+
 function initializeGame(){
-    loadGame(); // 1. Tải save
+    // 1. Tải dữ liệu
+    loadGame(); 
     
     // 2. Cài đặt giao diện
     const isDarkMode = localStorage.getItem('darkMode') === 'true';
     if(isDarkMode) document.body.classList.add('dark-mode');
     adjustAppWrapperScale(); 
     
-    // 3. Tính toán logic game NGAY LẬP TỨC (Sửa lỗi cây bị delay 1s)
+    // 3. Cập nhật logic game
     updateFarmState(); 
     checkGlobalCrafting();
     checkIncubationState();
 
-    // 4. Cập nhật hiển thị
+    // 4. Hiển thị
     updateDisplay(); 
     updateControlButtons(); 
     updateShop(); 
@@ -3972,19 +5255,28 @@ function initializeGame(){
     // 5. Khởi tạo sự kiện
     initVineEvents();        
     initGrasshopperEvents(); 
-    updateGiftcodeBoxState(); 
+    
+    // 6. KIỂM TRA SỰ KIỆN ĐẶC BIỆT (QUAN TRỌNG)
+    updateGiftcodeBoxState(); // Kiểm tra hòm thính
+    checkBeeHiveSpawn();      // <--- BỔ SUNG: Gọi ong ngay khi vào game
+    
+    // Bật khói nếu hòm thính đang hiện
+    const giftBox = document.getElementById('giftcode-supply-drop');
+    if(giftBox && giftBox.style.display !== 'none') {
+        startSmokeEffect();
+    }
 }
 
-// --- GAME LOOP ---
+// --- VÒNG LẶP GAME (Chạy mỗi giây) ---
 setInterval(() => {
-    updateFarmState();        
-    checkGlobalCrafting();    
-    checkIncubationState();   
+    updateFarmState();        // Cây lớn
+    checkGlobalCrafting();    // Thợ rèn
+    checkIncubationState();   // Trứng nở
+    checkBeeHiveSpawn();      // <--- BỔ SUNG: Kiểm tra ong liên tục mỗi giây
 }, 1000);
 
+// --- TỰ ĐỘNG LƯU (Mỗi 60 giây) ---
 setInterval(autoSave, 60000);
-
-// Chỉ giữ lại 1 dòng onload duy nhất
 window.onload = initializeGame;
 </script>
 </body>
