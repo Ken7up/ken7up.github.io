@@ -78,12 +78,14 @@
     background: var(--dark-bg-gradient);
     color: var(--dark-text);
   }
+  /* ĐÃ SỬA: Thêm #inventory-box vào danh sách dưới đây */
   body.dark-mode .card-panel, 
   body.dark-mode #shop-box, 
   body.dark-mode #online-box, 
   body.dark-mode #pet-house-box, 
   body.dark-mode #interaction-popup, 
-  body.dark-mode #seed-box {
+  body.dark-mode #seed-box,
+  body.dark-mode #inventory-box {  /* <--- DÒNG MỚI THÊM */
       background: var(--dark-card-bg);
       color: var(--dark-text);
       border: 1px solid rgba(255,255,255,0.1);
@@ -1213,6 +1215,57 @@
     font-size: 1.8em; font-weight: 900; color: #0277BD;
     text-shadow: 2px 2px 0px white;
 }
+/* --- CSS MỚI CHO Ô CHỨA ẢNH --- */
+
+/* 1. Class chuẩn cho nền ô ảnh (Dùng chung cho tất cả) */
+.icon-box-bg {
+    background: #f5f5f5;         /* Màu nền sáng mặc định */
+    border: 1px solid #e0e0e0;   /* Viền sáng mặc định */
+    transition: background 0.3s, border-color 0.3s;
+}
+
+/* 2. Khi bật Chế độ Tối (Dark Mode) -> Đổi màu nền thành xám đen */
+body.dark-mode .icon-box-bg, 
+body.dark-mode .inventory-img-box { /* Áp dụng cho cả 3 Lô (Balo) */
+    background: #3a3a45 !important; 
+    border-color: #555 !important;
+}
+
+/* 3. Chỉnh màu nền cho các Thẻ bao bên ngoài (Card) khi tối */
+body.dark-mode .shop-item, 
+body.dark-mode .pet-shop-item,
+body.dark-mode .inventory-item {
+    background: #2c2c35 !important;
+    border-color: #444 !important;
+    color: #e0e0e0 !important;
+}
+
+/* 4. Chỉnh màu chữ phụ (giá tiền, số lượng) cho dễ đọc khi tối */
+body.dark-mode .shop-item div[style*="color:var(--text-muted)"],
+body.dark-mode .shop-item div[style*="color: var(--text-muted)"],
+body.dark-mode .inventory-qty {
+    color: #bdbdbd !important;
+}
+/* --- FIX LỖI HIỂN THỊ BALO KHI DARK MODE --- */
+
+/* 1. Chuyển màu thanh hiển thị tiền (đang bị cứng màu #FFF3E0) sang màu tối */
+body.dark-mode #inventory-box div[style*="background: #FFF3E0"],
+body.dark-mode #inventory-box div[style*="background:#FFF3E0"] {
+    background: #2c2c35 !important;
+    border-color: #555 !important;
+}
+
+/* 2. Chuyển màu chữ Đậu/Lá bên trong thanh đó cho dễ đọc */
+body.dark-mode #inventory-box div[style*="color:#795548"],
+body.dark-mode #inventory-box div[style*="color:#E65100"] {
+    color: #bdbdbd !important;
+}
+
+/* 3. Chuyển màu tiêu đề "3 Lô" */
+body.dark-mode #inventory-box h3 {
+    color: #81c784 !important;
+    border-bottom-color: #555 !important;
+}
 </style>
 </head>
 <body>
@@ -2261,10 +2314,10 @@ function switchShopTab(tabName) {
     showShopPopup();
 }
 
-// --- CODE MỚI: renderShopItems (ĐÃ CÂN ĐỐI ẢNH HẠT GIỐNG) ---
+// --- CODE MỚI: renderShopItems ---
 function renderShopItems(container) {
   container.innerHTML = "";
-  // SỬA: Luôn lọc theo 'hat_may' để chỉ hiển thị hạt giống
+  // Chỉ hiển thị hạt giống trong tab này
   const itemsToRender = shopItems.filter(item => item.category === 'hat_may');
 
   itemsToRender.forEach(item => { 
@@ -2274,21 +2327,20 @@ function renderShopItems(container) {
       const currencyIcon = item.currency === "dau" ? '🫘' : '🍂';
       const currencyColor = item.currency === "dau" ? '#795548' : '#E65100'; 
       
+      // SỬA: Thêm class "icon-box-bg" và xóa style background cứng
       itemDiv.innerHTML = `
-        <div style="
+        <div class="icon-box-bg" style="
             width: 60px; 
             height: 60px; 
-            background: #f5f5f5; 
-            border-radius: 50%; 
+            border-radius: 50%;      
             display: flex; 
             align-items: center; 
             justify-content: center; 
             margin-bottom: 8px;
-            border: 1px solid #eee;
         ">
             <img src="${item.icon}" alt="${item.name}" style="
-                width: 65%; 
-                height: 65%; 
+                width: 75%; 
+                height: 75%; 
                 object-fit: contain; 
                 filter: drop-shadow(0 2px 3px rgba(0,0,0,0.15));
             " />
@@ -2318,60 +2370,39 @@ function updateShop(){
 function updatePetShop() {
     if (!petShopItemsContainer) return;
     petShopItemsContainer.innerHTML = "";
-    
-    // Chuyển sang hiển thị dạng khối
     petShopItemsContainer.style.display = "block"; 
 
-    // 1. Phân loại Pet
     const cloudPets = shopItems.filter(i => i.name === "Thiên Thần" || i.name === "Thần Chết" || i.name === "Bi Gai");
-    const lamePets = petShopItems; // Các con Choco, Pug...
+    const lamePets = petShopItems;
 
-    // 2. TẠO THANH TAB NGANG
     const tabContainer = document.createElement("div");
     tabContainer.className = "tab-container"; 
     tabContainer.innerHTML = `
-        <button class="tab-btn ${currentPetTab === 'cloud' ? 'active' : ''}" id="btn-tab-cloud">
-            ☁️ Pet Mây
-        </button>
-        <button class="tab-btn ${currentPetTab === 'lame' ? 'active' : ''}" id="btn-tab-lame">
-            🐕 Pet Lỏ
-        </button>
+        <button class="tab-btn ${currentPetTab === 'cloud' ? 'active' : ''}" id="btn-tab-cloud">☁️ Pet Mây</button>
+        <button class="tab-btn ${currentPetTab === 'lame' ? 'active' : ''}" id="btn-tab-lame">🐕 Pet Lỏ</button>
     `;
     petShopItemsContainer.appendChild(tabContainer);
 
-    // Gán sự kiện chuyển Tab
-    tabContainer.querySelector("#btn-tab-cloud").onclick = () => {
-        currentPetTab = 'cloud';
-        updatePetShop(); 
-    };
-    tabContainer.querySelector("#btn-tab-lame").onclick = () => {
-        currentPetTab = 'lame';
-        updatePetShop(); 
-    };
+    tabContainer.querySelector("#btn-tab-cloud").onclick = () => { currentPetTab = 'cloud'; updatePetShop(); };
+    tabContainer.querySelector("#btn-tab-lame").onclick = () => { currentPetTab = 'lame'; updatePetShop(); };
 
-    // 3. Hàm tạo HTML cho từng con Pet
     const createPetHTML = (item, isCloudPet) => {
         const owned = isPetOwned(item.value); 
         let isActive = false;
-        let starDisplay = ""; // <--- Tên biến đúng là starDisplay
+        let starDisplay = ""; 
         let guardianType = "";
 
         if (isCloudPet) {
             if (item.name === "Thiên Thần") guardianType = 'thien_than';
             else if (item.name === "Thần Chết") guardianType = 'than_chet';
             else if (item.name === "Bi Gai") guardianType = 'bi_gai';
-            
             isActive = (hatchedPetType === guardianType);
             
             if (owned) {
                 const pLevel = petLevels[guardianType] || 1;
-                // --- ĐÃ SỬA LỖI TẠI DÒNG NÀY (starsDisplay -> starDisplay) ---
                 for(let i=0; i<pLevel; i++) starDisplay += "⭐"; 
-                // -------------------------------------------------------------
                 starDisplay = `<div style="color:#FF9800; font-size:0.7em; margin-bottom:3px; height:15px;">${starDisplay}</div>`;
-            } else {
-                 starDisplay = `<div style="height:15px;"></div>`; 
-            }
+            } else { starDisplay = `<div style="height:15px;"></div>`; }
         } else {
             isActive = (item.value === activePet);
             starDisplay = `<div style="height:15px;"></div>`; 
@@ -2393,77 +2424,47 @@ function updatePetShop() {
 
         const itemDiv = document.createElement("div");
         itemDiv.className = "pet-shop-item";
-        itemDiv.style.cssText = "background: white; border: 1px solid #eee; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.05); min-height: 180px;";
-
+        
+        // SỬA: Thêm class "icon-box-bg" vào thẻ div chứa ảnh
         itemDiv.innerHTML = `
-            <div style="width: 100%; height: 70px; display: flex; align-items: center; justify-content: center; margin-bottom: 5px;">
-                <img src="${item.icon}" alt="${item.name}" style="max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 3px 3px rgba(0,0,0,0.1));" />
+            <div class="icon-box-bg" style="width: 100%; height: 70px; display: flex; align-items: center; justify-content: center; margin-bottom: 5px; border-radius: 8px;">
+                <img src="${item.icon}" alt="${item.name}" style="max-width: 80%; max-height: 80%; object-fit: contain; filter: drop-shadow(0 3px 3px rgba(0,0,0,0.1));" />
             </div>
             
-            <div style="font-weight:700; font-size:0.95em; margin: 2px 0; color:#333; text-align:center; height: 20px; display: flex; align-items: center; justify-content: center;">
+            <div style="font-weight:700; font-size:0.95em; margin: 2px 0; color:var(--text-main); text-align:center; height: 20px; display: flex; align-items: center; justify-content: center;">
                 ${item.name}
             </div>
-            
             ${starDisplay}
-            
             <div style="font-size:0.8em; margin-bottom:8px; height: 20px; display:flex; align-items:center;">
                 ${owned ? '<span style="color:#4CAF50; font-weight:bold;">Đã sở hữu</span>' : priceDisplay}
             </div>
-            
             <div style="width:100%; margin-top: auto;">${buttonHTML}</div>
         `;
         return itemDiv;
     };
 
-    // 4. VẼ DANH SÁCH
     const gridContainer = document.createElement("div");
     gridContainer.style.cssText = "display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;";
 
     if (currentPetTab === 'cloud') {
-        const note = document.createElement("div");
-        note.innerHTML = "(Hộ Vệ: Bảo vệ nông trại & Auto thu hoạch)";
-        note.style.cssText = "grid-column: span 2; font-size: 0.8em; color: #1976D2; text-align: center; margin-bottom: 5px;";
-        gridContainer.appendChild(note);
-
-        cloudPets.forEach(pet => {
-            gridContainer.appendChild(createPetHTML(pet, true));
-        });
+        gridContainer.appendChild(Object.assign(document.createElement("div"), {innerHTML: "(Hộ Vệ: Bảo vệ nông trại & Auto thu hoạch)", style: "grid-column: span 2; font-size: 0.8em; color: #1976D2; text-align: center; margin-bottom: 5px;"}));
+        cloudPets.forEach(pet => gridContainer.appendChild(createPetHTML(pet, true)));
     } else {
-        const note = document.createElement("div");
-        note.innerHTML = "(Đi Dạo: Chạy lon ton cho vui & Tặng quà)";
-        note.style.cssText = "grid-column: span 2; font-size: 0.8em; color: #E65100; text-align: center; margin-bottom: 5px;";
-        gridContainer.appendChild(note);
-
-        lamePets.forEach(pet => {
-            gridContainer.appendChild(createPetHTML(pet, false));
-        });
+        gridContainer.appendChild(Object.assign(document.createElement("div"), {innerHTML: "(Đi Dạo: Chạy lon ton cho vui & Tặng quà)", style: "grid-column: span 2; font-size: 0.8em; color: #E65100; text-align: center; margin-bottom: 5px;"}));
+        lamePets.forEach(pet => gridContainer.appendChild(createPetHTML(pet, false)));
     }
 
     petShopItemsContainer.appendChild(gridContainer);
-
-    // 5. Gán sự kiện click
-    petShopItemsContainer.querySelectorAll(".btn-buy-pet").forEach(btn => { 
-        btn.addEventListener("click", handleBuy); 
-    });
-    
+    petShopItemsContainer.querySelectorAll(".btn-buy-pet").forEach(btn => btn.addEventListener("click", handleBuy));
     petShopItemsContainer.querySelectorAll(".btn-activate-pet").forEach(btn => {
         btn.addEventListener("click", (e) => { 
             const val = e.target.getAttribute("data-value");
             const gType = e.target.getAttribute("data-guardian");
-
             if (gType) {
-                hatchedPetType = gType;
-                petStarLevel = petLevels[gType] || 1; 
-                let showName = "Bi Gai";
-                if(gType === 'thien_than') showName = "Thiên Thần";
-                if(gType === 'than_chet') showName = "Thần Chết";
-
+                hatchedPetType = gType; petStarLevel = petLevels[gType] || 1; 
                 saveGame(); updateDisplay(); updatePetShop(); 
-                if(typeof showToast === 'function') showToast(`Đã đổi Hộ Vệ: ${showName}`, "🛡️");
-            } else {
-                activatePet(val); 
-                updatePetShop(); 
-            }
+                if(typeof showToast === 'function') showToast("Đã đổi Hộ Vệ", "🛡️");
+            } else { activatePet(val); updatePetShop(); }
         });
     });
 }
@@ -2952,7 +2953,7 @@ function switchTab(tabName, slotNum, slotIndex) {
     showSeedSelectionPopup(slotNum, slotIndex);
 }
 
-// --- 3. CẬP NHẬT RENDER POT LIST (CÓ BÁN SỌ DỪA) ---
+// --- 3. CẬP NHẬT RENDER POT LIST (KHUNG VUÔNG GIỐNG THỢ RÈN) ---
 function renderPotList(container, slotNum, slotIndex) {
     let hasItem = false;
     const currentSlotPot = equippedPots[slotIndex] || 'so_dua';
@@ -2960,220 +2961,158 @@ function renderPotList(container, slotNum, slotIndex) {
     Object.keys(ownedPots).forEach(potKey => {
         const amount = ownedPots[potKey] || 0;
         const potDef = POT_DEFINITIONS[potKey];
-        // SỬA: Kiểm tra nếu đang dùng thì vẫn hiện ra dù kho = 0
         const isEquipped = (currentSlotPot === potKey);
 
-        // ĐIỀU KIỆN MỚI: (Có trong kho HOẶC Đang dùng) VÀ (Dữ liệu hợp lệ)
         if ((amount > 0 || isEquipped) && potDef) {
             hasItem = true;
             const card = document.createElement('div');
             card.className = "shop-item";
 
-            // Hiển thị dòng Bonus Exp
             let bonusText = "";
             if (potDef.expBonus > 0) {
-                bonusText = `<div style="color:#4CAF50; font-size:0.8em; font-weight:bold;">+${potDef.expBonus} Exp/lần</div>`;
+                bonusText = `<div style="color:#4CAF50; font-size:0.8em; font-weight:bold; margin-bottom:2px;">+${potDef.expBonus} Exp/lần</div>`;
             }
 
+            // SỬA: Thêm class "icon-box-bg"
             let htmlContent = `
-                <img src="${potDef.img}" style="width: 40px; height: 40px; object-fit: contain;">
-                <div style="font-weight: bold; font-size: 0.9em; margin-top:5px;">${potDef.name}</div>
+                <div class="icon-box-bg" style="
+                    width: 60px; height: 60px;
+                    border-radius: 12px; 
+                    display: flex; align-items: center; justify-content: center;
+                    margin-bottom: 8px;
+                ">
+                    <img src="${potDef.img}" style="
+                        width: 70%; height: 70%; 
+                        object-fit: contain; 
+                        filter: drop-shadow(0 3px 3px rgba(0,0,0,0.15));
+                    ">
+                </div>
+                
+                <div style="font-weight: 700; font-size: 0.95em; color: var(--text-main); margin-bottom: 2px;">
+                    ${potDef.name}
+                </div>
                 ${bonusText}
-                <div style="color: var(--text-muted); font-size: 0.8em; margin:3px 0 5px 0;">Có: ${amount}</div>
+                <div style="color: var(--text-muted); font-size: 0.8em; margin-bottom: 8px;">
+                    Kho: <b>${amount}</b>
+                </div>
             `;
 
-            // Nút bấm: Nếu đang dùng thì hiện màu Xám, chưa dùng thì màu Xanh
             const btnEquipHTML = `
-                <button class="btn-equip-pot" style="background:${isEquipped ? 'grey' : '#2196F3'}; border-radius:6px; cursor:${isEquipped ? 'default' : 'pointer'}; width: 100%;">
+                <button class="btn-equip-pot" style="background:${isEquipped ? 'grey' : '#2196F3'}; border-radius:8px; padding:6px; font-size:11px; font-weight:bold; color:white; border:none; cursor:${isEquipped ? 'default' : 'pointer'}; width: 100%; box-shadow: 0 2px 0 rgba(0,0,0,0.2);">
                     ${isEquipped ? 'Đang dùng' : 'Thay Chậu'}
                 </button>
             `;
 
-            // Nếu là Sọ Dừa -> Thêm nút Bán
             if (potKey === 'so_dua') {
-                htmlContent += `
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; width:100%; margin-top:5px;">
-                        ${btnEquipHTML}
-                        <button class="btn-sell-pot" style="width:100%; border:none; border-radius:6px; padding:6px; font-weight:700; font-size:11px; color:white; cursor:pointer; background:#FF5722; box-shadow: 0 2px 0 #E64A19;">💰 Bán</button>
-                    </div>
-                `;
+                htmlContent += `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; width:100%; margin-top:auto;">${btnEquipHTML}<button class="btn-sell-pot" style="width:100%; border:none; border-radius:8px; padding:6px; font-weight:700; font-size:11px; color:white; cursor:pointer; background:#FF5722; box-shadow: 0 2px 0 #E64A19;">💰 Bán</button></div>`;
             } else {
-                htmlContent += `<div style="width:100%; margin-top:5px;">${btnEquipHTML}</div>`;
+                htmlContent += `<div style="width:100%; margin-top:auto;">${btnEquipHTML}</div>`;
             }
 
             card.innerHTML = htmlContent;
 
-            // --- SỰ KIỆN: THAY CHẬU ---
             const btnEquip = card.querySelector('.btn-equip-pot');
             if (btnEquip) {
                 btnEquip.onclick = () => {
-                    if (isEquipped) return; // Đang dùng thì không làm gì
-                    if (farmSlots[slotIndex]) {
-                        alert("Hãy thu hoạch cây trước!");
-                        return;
-                    }
-
-                    const oldPot = currentSlotPot;
-                    const newPot = potKey;
-
-                    // Kiểm tra kỹ lại xem kho còn hàng để thay không
+                    if (isEquipped) return; 
+                    if (farmSlots[slotIndex]) { alert("Hãy thu hoạch cây trước!"); return; }
+                    const oldPot = currentSlotPot; const newPot = potKey;
                     if (ownedPots[newPot] > 0) {
-                        ownedPots[newPot]--; // Trừ cái mới
-                        ownedPots[oldPot] = (ownedPots[oldPot] || 0) + 1; // Trả cái cũ về kho
-                        equippedPots[slotIndex] = newPot; // Gán vào ô đất
-
+                        ownedPots[newPot]--; ownedPots[oldPot] = (ownedPots[oldPot] || 0) + 1; equippedPots[slotIndex] = newPot; 
                         alert(`Đã thay sang ${potDef.name} (Bonus +${potDef.expBonus} Exp)!`);
-                        updateDisplay();
-                        closeInteractionPopup();
-                    } else {
-                        alert("Lỗi: Không tìm thấy chậu này trong kho!");
-                    }
+                        updateDisplay(); closeInteractionPopup();
+                    } else { alert("Lỗi: Không tìm thấy chậu này trong kho!"); }
                 };
             }
-
-            // --- SỰ KIỆN: BÁN SỌ DỪA ---
             const btnSell = card.querySelector('.btn-sell-pot');
             if (btnSell && potKey === 'so_dua') {
                 btnSell.onclick = () => {
-                    // Chỉ bán số lượng đang RẢNH (không tính cái đang trồng)
                     const sellableAmount = amount;
-
-                    if (sellableAmount <= 0) {
-                        alert(`Bạn không còn Sọ Dừa dư nào trong kho để bán!\n(Các chậu đang trồng cây không thể bán).`);
-                        return;
-                    }
-
-                    const sellPrice = 500;
-                    let sellQtyStr = prompt(`Giá bán lại: ${sellPrice.toLocaleString()} Đậu/chậu.\nTrong kho đang có: ${sellableAmount} cái.\nNhập số lượng muốn bán:`, "1");
-
+                    if (sellableAmount <= 0) { alert(`Bạn không còn Sọ Dừa dư nào!`); return; }
+                    let sellQtyStr = prompt(`Giá bán: 500 Đậu/chậu. Kho: ${sellableAmount}. Nhập SL bán:`, "1");
                     if (sellQtyStr === null) return;
                     let sellQty = parseInt(sellQtyStr);
-
-                    if (!Number.isInteger(sellQty) || sellQty <= 0) {
-                        alert("Vui lòng nhập số nguyên dương hợp lệ!");
-                        return;
-                    }
-                    if (sellQty > sellableAmount) {
-                        alert(`Bạn chỉ có ${sellableAmount} cái trong kho!`);
-                        return;
-                    }
-
-                    const totalValue = sellQty * sellPrice;
-                    if (confirm(`Bán ${sellQty}x Sọ Dừa để nhận ${totalValue.toLocaleString()} Đậu?`)) {
-                        ownedPots['so_dua'] -= sellQty;
-                        dau += totalValue;
-                        alert(`Đã bán thành công! Nhận được ${totalValue.toLocaleString()} Đậu.`);
-
-                        updateDisplay();
-                        // Render lại để cập nhật số lượng ngay lập tức
-                        container.innerHTML = "";
-                        renderPotList(container, slotNum, slotIndex);
+                    if (!Number.isInteger(sellQty) || sellQty <= 0) return;
+                    if (sellQty > sellableAmount) { alert(`Chỉ có ${sellableAmount} cái!`); return; }
+                    if (confirm(`Bán ${sellQty}x Sọ Dừa để nhận ${(sellQty*500).toLocaleString()} Đậu?`)) {
+                        ownedPots['so_dua'] -= sellQty; dau += sellQty*500;
+                        alert(`Đã bán!`); updateDisplay(); container.innerHTML = ""; renderPotList(container, slotNum, slotIndex);
                     }
                 };
             }
-
             container.appendChild(card);
         }
     });
 
-    // Thông báo cuối danh sách
-    if (farmSlots[slotIndex]) {
-        container.innerHTML = `<div style="grid-column: span 2; text-align:center; padding:10px; color:#ef5350; font-weight:bold;">⚠️ Thu hoạch cây trước khi thay chậu!</div>` + container.innerHTML;
-    } else if (!hasItem) {
-        container.innerHTML = `<div style="grid-column: span 2; text-align:center; padding:10px; color:var(--text-muted);">Không có chậu nào khác!</div>`;
-    }
+    if (farmSlots[slotIndex]) container.innerHTML = `<div style="grid-column: span 2; text-align:center; padding:10px; color:#ef5350; font-weight:bold;">⚠️ Thu hoạch cây trước khi thay chậu!</div>` + container.innerHTML;
+    else if (!hasItem) container.innerHTML = `<div style="grid-column: span 2; text-align:center; padding:10px; color:var(--text-muted);">Không có chậu nào khác!</div>`;
 }
 
+// --- 4. CẬP NHẬT RENDER SEED LIST ---
 function renderSeedList(container, slotNum, slotIndex) {
     const seedMap = new Map();
-    // Lấy thông tin hạt giống từ shopItems để biết giá
     shopItems.filter(item => item.type === 'seed').forEach(item => seedMap.set(item.value, item));
     let seedFound = false;
     
     seedMap.forEach((seedData, seedValue) => {
         const amount = ownedSeeds[seedValue] || 0;
         
-        // Chỉ hiện nếu có số lượng > 0 và dữ liệu hợp lệ
         if (amount > 0 && seedData) {
             seedFound = true;
             const card = document.createElement('div');
             card.className = "shop-item";
             
-            // Cập nhật HTML: Thêm nút Bán bên cạnh nút Trồng
+            // SỬA: Thêm class "icon-box-bg"
             card.innerHTML = `
-                <img src="${seedData.icon}" style="width: 40px; height: 40px; object-fit: contain;" />
-                <div style="font-size: 0.85em; font-weight: 700; margin:5px 0;">${seedData.name}</div>
-                <div style="font-size: 0.75em; color: var(--text-muted);">SL: <b>${amount}</b></div>
+                <div class="icon-box-bg" style="
+                    width: 60px; height: 60px;
+                    border-radius: 50%; /* Bo tròn */
+                    display: flex; align-items: center; justify-content: center;
+                    margin-bottom: 8px;
+                ">
+                    <img src="${seedData.icon}" style="
+                        width: 65%; height: 65%; 
+                        object-fit: contain; 
+                        filter: drop-shadow(0 2px 3px rgba(0,0,0,0.15));
+                    ">
+                </div>
                 
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; width:100%; margin-top:5px;">
-                    <button class="btn-plant-now" style="width:100%; margin-top:0;">🌱 Trồng</button>
-                    <button class="btn-sell-seed" style="
-                        width:100%; border:none; border-radius:8px; 
-                        padding:6px; font-weight:700; font-size:11px; 
-                        color:white; cursor:pointer; 
-                        background:#FF5722; box-shadow: 0 2px 0 #E64A19;
-                        transition: all 0.1s;
-                    ">💰 Bán</button>
+                <div style="font-size: 0.95em; font-weight: 700; color:var(--text-main); margin-bottom: 2px;">
+                    ${seedData.name}
+                </div>
+                <div style="font-size: 0.8em; color: var(--text-muted); margin-bottom: 8px;">
+                    SL: <b>${amount}</b>
+                </div>
+                
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; width:100%; margin-top:auto;">
+                    <button class="btn-plant-now" style="width:100%; border-radius:8px; padding:6px; font-size:11px; margin-top:0;">🌱 Trồng</button>
+                    <button class="btn-sell-seed" style="width:100%; border:none; border-radius:8px; padding:6px; font-weight:700; font-size:11px; color:white; cursor:pointer; background:#FF5722; box-shadow: 0 2px 0 #E64A19; transition: all 0.1s;">💰 Bán</button>
                 </div>
             `;
             
-            // --- Logic Nút Trồng ---
             card.querySelector('.btn-plant-now').onclick = () => {
                 ownedSeeds[seedValue] -= 1;
                 const currentPot = equippedPots[slotIndex] || 'so_dua';
-                farmSlots[slotIndex] = { 
-                    name: seedData.name, icon: PLANT_STAGES[0].icon, value: seedValue, 
-                    stage: 0, plantedAt: Date.now(), potType: currentPot 
-                };
+                farmSlots[slotIndex] = { name: seedData.name, icon: PLANT_STAGES[0].icon, value: seedValue, stage: 0, plantedAt: Date.now(), potType: currentPot };
                 updateDisplay(); updateSeedShop(); closeInteractionPopup();
             };
 
-            // --- Logic Nút Bán (MỚI) ---
-card.querySelector('.btn-sell-seed').onclick = () => {
-    // Hỏi người chơi số lượng muốn bán
-    let sellQtyStr = prompt(`Giá bán lại: ${seedData.price} Đậu/hạt.\nBạn muốn bán bao nhiêu ${seedData.name}?`, "1");
-    if (sellQtyStr === null) return; // Người chơi ấn Hủy
-
-    // --- BẮT ĐẦU ĐOẠN VỪA SỬA ---
-    let sellQty = Number(sellQtyStr);
-    
-    // Kiểm tra tính hợp lệ chặt chẽ
-    if (!Number.isInteger(sellQty) || sellQty <= 0) {
-        alert("Vui lòng nhập số nguyên dương hợp lệ (Không nhập số âm hoặc số thập phân)!");
-        return;
-    }
-
-    if (sellQty > amount) {
-        alert(`Bạn chỉ có ${amount} hạt, không thể bán ${sellQty}!`);
-        return;
-    }
-
-    // Thực hiện giao dịch
-    const totalValue = sellQty * seedData.price;
-    
-    if(confirm(`Bán ${sellQty}x ${seedData.name} để nhận ${totalValue.toLocaleString()} Đậu?`)) {
-        ownedSeeds[seedValue] -= sellQty;
-        dau += totalValue;
-        
-        alert(`Đã bán thành công! Nhận được ${totalValue.toLocaleString()} Đậu.`);
-        
-        // Cập nhật lại giao diện
-        updateDisplay();
-        updateSeedShop();
-        
-        // Render lại danh sách này để cập nhật số lượng hiển thị ngay lập tức
-        container.innerHTML = ""; 
-        renderSeedList(container, slotNum, slotIndex);
-    }
-};
-
+            card.querySelector('.btn-sell-seed').onclick = () => {
+                let sellQtyStr = prompt(`Giá bán: ${seedData.price} Đậu/hạt. Bạn muốn bán bao nhiêu?`, "1");
+                if (sellQtyStr === null) return; 
+                let sellQty = Number(sellQtyStr);
+                if (!Number.isInteger(sellQty) || sellQty <= 0) { alert("Số lượng sai!"); return; }
+                if (sellQty > amount) { alert("Không đủ hàng!"); return; }
+                if(confirm(`Bán ${sellQty}x ${seedData.name} nhận ${sellQty * seedData.price} Đậu?`)) {
+                    ownedSeeds[seedValue] -= sellQty; dau += sellQty * seedData.price;
+                    alert(`Đã bán!`); updateDisplay(); updateSeedShop(); container.innerHTML = ""; renderSeedList(container, slotNum, slotIndex);
+                }
+            };
             container.appendChild(card);
         }
     });
 
-    if (!seedFound) {
-         container.innerHTML = `<div style="grid-column: span 2; text-align: center; margin: 15px 0; color: #666;">Hết hạt giống.</div>`;
-    }
+    if (!seedFound) container.innerHTML = `<div style="grid-column: span 2; text-align: center; margin: 15px 0; color: #666;">Hết hạt giống.</div>`;
 }
 // --- HÀM TẠO HIỆU ỨNG BAY ---
 function spawnFloatingReward(slotId, htmlContent, delay = 0, typeClass = "float-exp") {
@@ -4242,7 +4181,6 @@ function showVinePopup(index) {
     let comboHTML = "";
     
     if (isFullSet) {
-        // Giao diện khi ĐÃ kích hoạt Combo
         comboHTML = `
         <div style="
             background: linear-gradient(135deg, #fff9c4 0%, #fff176 100%);
@@ -4252,25 +4190,25 @@ function showVinePopup(index) {
             margin-bottom: 15px;
             text-align: center;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            color: #5d4037;
         ">
             <div style="font-size:1.2em; margin-bottom:5px;">⚡⚡⚡</div>
             <strong style="color:#f57f17; font-size:1em;">ĐÃ KÍCH HOẠT COMBO!</strong>
-            <div style="font-size:0.85em; color:#5d4037; margin-top:2px;">Toàn bộ cây trồng được giảm <b>2 giờ</b> trưởng thành.</div>
+            <div style="font-size:0.85em; margin-top:2px;">Toàn bộ cây trồng được giảm <b>2 giờ</b> trưởng thành.</div>
         </div>`;
     } else {
-        // Giao diện khi CHƯA kích hoạt Combo
         const missingCount = vineDecorations.filter(x => x === null).length;
         comboHTML = `
         <div style="
-            background: #f5f5f5;
+            background: rgba(0,0,0,0.05); /* Sửa: nền bán trong suốt để đẹp cả khi tối/sáng */
             border: 1px dashed #bdbdbd;
             border-radius: 12px;
             padding: 10px;
             margin-bottom: 15px;
             text-align: center;
         ">
-            <strong style="color:#757575;">Chưa kích hoạt Combo</strong>
-            <div style="font-size:0.85em; color:#9e9e9e; margin-top:2px;">
+            <strong style="color:var(--text-muted);">Chưa kích hoạt Combo</strong>
+            <div style="font-size:0.85em; color:var(--text-muted); margin-top:2px;">
                 Cần treo thêm <b>${missingCount}</b> món nữa để giảm <b>2 giờ</b> (Hiện tại chỉ giảm 1h/món).
             </div>
         </div>`;
@@ -4279,7 +4217,7 @@ function showVinePopup(index) {
     interactionText.innerHTML = comboHTML;
     interactionControls.innerHTML = '';
 
-    // 2. TẠO DANH SÁCH VẬT PHẨM (Clean List Style)
+    // 2. TẠO DANH SÁCH VẬT PHẨM
     const listContainer = document.createElement('div');
     listContainer.style.cssText = `
         max-height: 280px; 
@@ -4297,23 +4235,27 @@ function showVinePopup(index) {
         const ownedAmount = ownedDecorations[item.id] || 0;
         const isEquippedHere = (currentDecoID === item.id);
         
-        // Chỉ hiển thị những món mình CÓ hoặc ĐANG TREO (hoặc hiển thị mờ nếu muốn khoe vật phẩm)
-        // Ở đây mình sẽ hiển thị TẤT CẢ để người chơi biết game có những gì
-        
         const itemRow = document.createElement('div');
-        // Style cho từng dòng
+        // SỬA: Thêm class 'shop-item' để tự động đổi màu nền khi Dark Mode
+        itemRow.className = 'shop-item';
+        
+        // Ghi đè CSS flex để xếp ngang (mặc định shop-item xếp dọc)
         itemRow.style.cssText = `
             display: flex; 
+            flex-direction: row; 
             align-items: center; 
             justify-content: space-between;
-            background: white;
-            border: 1px solid ${isEquippedHere ? '#4CAF50' : '#eee'};
-            border-radius: 10px;
             padding: 10px;
+            border-radius: 10px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.03);
             transition: transform 0.1s;
         `;
-        if(isEquippedHere) itemRow.style.background = "#e8f5e9"; // Màu xanh nhạt nếu đang treo
+        
+        // Nếu đang treo thì đổi màu nền đặc biệt (Vẫn giữ logic cũ nhưng dùng màu RGBA để hợp Dark mode)
+        if(isEquippedHere) {
+             itemRow.style.border = "1px solid #4CAF50";
+             itemRow.style.background = "rgba(76, 175, 80, 0.1)"; // Xanh nhạt trong suốt
+        }
 
         // Logic xác định tác dụng
         const speedUpItems = ['chau_chau', 'treo_con_ca', 'treo_long_den', 'treo_trai_chau', 'treo_chong_chong'];
@@ -4325,14 +4267,12 @@ function showVinePopup(index) {
         // Logic Nút Bấm
         let btnHtml = '';
         if (isEquippedHere) {
-            // Đang treo tại ô này
             btnHtml = `<button disabled style="
                 background:transparent; color:#2E7D32; border: 2px solid #2E7D32; 
                 border-radius:20px; padding:5px 10px; font-weight:bold; font-size: 0.8em; opacity: 0.7;">
                 ✔ Đang dùng
             </button>`;
         } else if (ownedAmount > 0) {
-            // Có hàng -> Cho phép treo
             btnHtml = `<button class="btn-equip-item" data-id="${item.id}" style="
                 background:var(--primary); color:white; border:none; 
                 border-radius:20px; padding:6px 15px; cursor:pointer; font-weight:bold; font-size: 0.85em; 
@@ -4340,24 +4280,28 @@ function showVinePopup(index) {
                 Treo
             </button>`;
         } else {
-            // Hết hàng -> Nút Tìm/Mua
             btnHtml = `<button onclick="document.getElementById('event-cloud').click()" style="
-                background:#f5f5f5; color:#999; border:1px solid #ddd; 
+                background: rgba(0,0,0,0.1); color: var(--text-muted); border:1px solid #ddd; 
                 border-radius:20px; padding:5px 10px; cursor:pointer; font-size: 0.8em;">
                 🔍 Tìm
             </button>`;
         }
 
+        // SỬA: Dùng class "icon-box-bg" cho ô chứa ảnh
         itemRow.innerHTML = `
             <div style="display:flex; align-items:center; gap: 12px;">
-                <div style="width:45px; height:45px; background:#f9f9f9; border-radius:8px; display:flex; align-items:center; justify-content:center; border:1px solid #eee;">
+                <div class="icon-box-bg" style="
+                    width:45px; height:45px; 
+                    border-radius:8px; 
+                    display:flex; align-items:center; justify-content:center;
+                ">
                     <img src="${item.img}" style="width:80%; height:80%; object-fit:contain;">
                 </div>
                 <div style="text-align:left;">
-                    <div style="font-weight:700; color:#3e2723; font-size: 0.95em;">${item.name}</div>
+                    <div style="font-weight:700; color:var(--text-main); font-size: 0.95em;">${item.name}</div>
                     <div style="display:flex; align-items:center; gap:5px; margin-top:2px;">
                         ${effectBadge}
-                        <span style="font-size:0.75em; color:#795548;">Kho: <b>${ownedAmount}</b></span>
+                        <span style="font-size:0.75em; color:var(--text-muted);">Kho: <b>${ownedAmount}</b></span>
                     </div>
                 </div>
             </div>
@@ -4378,20 +4322,13 @@ function showVinePopup(index) {
 
         const removeBtn = document.createElement('button');
         removeBtn.innerHTML = "❌ Gỡ vật phẩm này xuống";
-        
-        // --- THAY ĐỔI Ở ĐÂY: Gán class CSS mới tạo ---
         removeBtn.className = "btn-remove-vines"; 
-        // ---------------------------------------------
         
         removeBtn.onclick = () => {
             if(confirm("Bạn muốn gỡ vật phẩm này về kho?")) {
-                // Trả lại kho
                 if (!ownedDecorations[currentDecoID]) ownedDecorations[currentDecoID] = 0;
                 ownedDecorations[currentDecoID]++;
-                
-                // Xóa khỏi dây
-                vineDecorations[index] = null;
-                
+                vineDecorations[index] = null; // Xóa khỏi dây
                 saveGame(); updateDisplay(); closeInteractionPopup();
             }
         };
@@ -4406,21 +4343,15 @@ function showVinePopup(index) {
             const itemId = e.target.getAttribute('data-id');
             const itemData = HANGING_ITEMS_CONFIG.find(i => i.id === itemId);
 
-            // Logic thay thế:
-            // 1. Nếu đang treo cái cũ -> Tháo cái cũ trả về kho
             if (currentDecoID) {
                 if (!ownedDecorations[currentDecoID]) ownedDecorations[currentDecoID] = 0;
                 ownedDecorations[currentDecoID]++;
             }
 
-            // 2. Lấy cái mới từ kho ra treo -> Trừ kho
             if (ownedDecorations[itemId] > 0) {
                 ownedDecorations[itemId]--;
                 vineDecorations[index] = itemId;
-
-                // Hiệu ứng phản hồi nhỏ
                 alert(`Đã treo ${itemData.name}!\n(Hiệu ứng: Giảm 1h trưởng thành)`);
-                
                 saveGame(); updateDisplay(); closeInteractionPopup();
             }
         };
@@ -4428,7 +4359,7 @@ function showVinePopup(index) {
 
     showPopup('interaction-popup');
 }
-// --- SỰ KIỆN CLICK MÂY ĐEN (SHOP ĐỔI ĐỒ TREO) ---
+// --- SỰ KIỆN CLICK MÂY ĐEN (SHOP ĐỔI ĐỒ TREO - GIAO DIỆN GIỐNG THỢ RÈN) ---
 const eventCloud = document.getElementById("event-cloud");
 if (eventCloud) {
     eventCloud.addEventListener("click", () => {
@@ -4437,159 +4368,117 @@ if (eventCloud) {
         const myCrowns = ownedArtifacts['vuong_mien'] || 0;
         const MAX_EXCHANGE = 5; 
 
-        // --- 1. HEADER SỰ KIỆN ---
+        // --- 1. HEADER SỰ KIỆN (Style giống thanh tài nguyên Thợ Rèn) ---
         interactionTitle.innerHTML = "🎉 Shop Sự Kiện";
-        interactionText.style.display = 'block';
-        interactionText.innerHTML = `
-            <div style="
-                background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%); 
-                padding: 12px; 
-                border-radius: 15px; 
-                margin-bottom: 15px; 
-                text-align: center; 
-                border: 2px solid #f48fb1;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            ">
-                <div style="color: #880E4F; font-size: 0.85em; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; font-weight:bold;">
-                    👑 Vương Miện Của Bạn
-                </div>
-                <div style="font-size: 2em; font-weight: 800; color: #C2185B; text-shadow: 1px 1px 0px rgba(255,255,255,0.5);">
-                    ${myCrowns.toLocaleString('vi-VN')}
+        
+        // --- SỬA TẠI ĐÂY: Ẩn khung text đi để loại bỏ khoảng trống 50px ---
+        interactionText.style.display = 'none'; 
+        interactionText.innerHTML = ""; 
+        // ------------------------------------------------------------------
+
+        // Tạo thanh hiển thị tài nguyên
+        const resourceHeader = document.createElement("div");
+        // Đã giảm margin-bottom từ 12px xuống 5px cho gọn hơn nữa
+        resourceHeader.style.cssText = "display:flex; justify-content:center; align-items:center; background:#FCE4EC; padding:10px; border-radius:12px; margin-bottom:5px; font-size:0.9em; border:2px solid #F8BBD0; box-shadow: inset 0 0 5px rgba(0,0,0,0.05); gap: 15px;";
+        resourceHeader.innerHTML = `
+            <div style="display:flex; align-items:center; gap:8px;">
+                <img src="1000000137.png" style="width:25px; height:25px; filter:drop-shadow(0 2px 2px rgba(0,0,0,0.2));">
+                <div>
+                    <div style="font-size:0.7em; color:#880E4F; font-weight:bold; text-transform:uppercase;">Vương Miện</div>
+                    <b style="color:#C2185B; font-size:1.2em;">${myCrowns.toLocaleString('vi-VN')}</b>
                 </div>
             </div>
         `;
-        
         interactionControls.innerHTML = '';
+        interactionControls.appendChild(resourceHeader);
         
-        // --- 2. CONTAINER DẠNG LƯỚI ---
-        const shopContainer = document.createElement('div');
-        shopContainer.style.cssText = `
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 12px; 
-            max-height: 380px; 
-            overflow-y: auto; 
-            padding: 4px;
-        `;
+        // --- 2. CONTAINER DANH SÁCH (Dùng class blacksmith-list) ---
+        const listContainer = document.createElement('div');
+        listContainer.className = 'blacksmith-list'; // Tái sử dụng class CSS của Thợ Rèn
+        listContainer.style.maxHeight = "350px";
+        listContainer.style.overflowY = "auto";
 
         HANGING_ITEMS_CONFIG.forEach(item => {
             const currentOwned = ownedDecorations[item.id] || 0;
             const isMaxed = currentOwned >= MAX_EXCHANGE; 
             const canAfford = myCrowns >= item.price;     
 
-            // Tạo Card
-            const itemCard = document.createElement('div');
-            // Thêm min-height để các ô bằng nhau tăm tắp
-            itemCard.style.cssText = `
-                background: white;
-                border: 1px solid ${isMaxed ? '#eee' : '#f8bbd0'};
-                border-radius: 12px;
-                padding: 10px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: space-between;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-                position: relative;
-                overflow: hidden;
-                transition: transform 0.1s;
-                height: 200px; /* CỐ ĐỊNH CHIỀU CAO CARD */
-            `;
-            if(isMaxed) itemCard.style.opacity = "0.7";
-
-            // Badge giảm giờ
+            // Huy hiệu hiệu ứng
             const speedUpItems = ['chau_chau', 'treo_con_ca', 'treo_long_den', 'treo_trai_chau', 'treo_chong_chong'];
             let badgeHTML = "";
             if (speedUpItems.includes(item.id)) {
-                badgeHTML = `<div style="
-                    position: absolute; top: 0; left: 0; 
-                    background: #E3F2FD; color: #1565C0; 
-                    font-size: 0.65em; font-weight: bold; 
-                    padding: 3px 8px; border-bottom-right-radius: 8px; z-index:2;
-                ">⚡ -1 Giờ</div>`;
+                badgeHTML = `<div style="font-size:0.7em; color:#1565C0; background:#E3F2FD; padding:2px 5px; border-radius:4px; display:inline-block; margin-top:3px; font-weight:bold;">⚡ -1h</div>`;
             }
 
-            let btnText = "Đổi Ngay";
-            let btnBg = "linear-gradient(45deg, #EC407A, #D81B60)";
+            // Trạng thái nút bấm
+            let btnText = "Đổi";
+            let btnBg = "linear-gradient(45deg, #EC407A, #D81B60)"; // Màu hồng đậm
             let btnCursor = "pointer";
             let btnDisabled = false;
 
             if (isMaxed) {
-                btnText = "Đã Max";
+                btnText = "Max";
                 btnBg = "#9E9E9E"; 
                 btnCursor = "default";
                 btnDisabled = true;
             } else if (!canAfford) {
-                btnText = "Thiếu Tiền";
+                btnText = "Thiếu"; 
                 btnBg = "#cfd8dc"; 
                 btnCursor = "not-allowed";
                 btnDisabled = true;
             }
 
-            // --- PHẦN SỬA CHÍNH Ở ĐÂY ---
-            itemCard.innerHTML = `
-                ${badgeHTML}
-                
-                <div style="
-                    width: 100%; 
-                    height: 80px; 
-                    display: flex; 
-                    align-items: center; 
-                    justify-content: center; 
-                    margin-top: 5px;
-                    margin-bottom: 5px;
-                ">
-                    <img src="${item.img}" style="
-                        max-width: 100%; 
-                        max-height: 100%; 
-                        object-fit: contain; 
-                        filter: drop-shadow(0 4px 4px rgba(0,0,0,0.15));
-                    ">
-                </div>
-                
-                <div style="text-align: center; width: 100%; flex: 1; display: flex; flex-direction: column; justify-content: center;">
-                    <div style="
-                        font-weight: 700; color: #3e2723; font-size: 0.9em; 
-                        margin-bottom: 2px;
-                        overflow: hidden; text-overflow: ellipsis; 
-                        display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical;
-                    ">
+            // Tạo hàng (Row) dùng class blacksmith-row
+            const rowDiv = document.createElement('div');
+            rowDiv.className = 'blacksmith-row'; // Tái sử dụng class CSS Row
+            
+            // Nếu đã Max thì làm mờ đi chút
+            if(isMaxed) rowDiv.style.opacity = "0.7";
+
+            // --- [ĐÃ SỬA TẠI ĐÂY] ---
+            // 1. Xóa style="border-color:#f8bbd0;" ở bs-icon-box
+            // 2. Xóa style="border-color:#f8bbd0;" ở bs-req
+            rowDiv.innerHTML = `
+                <div class="bs-info">
+                    <div class="bs-icon-box"> <img src="${item.img}" alt="${item.name}">
+                    </div>
+                    <div class="bs-name">
                         ${item.name}
-                    </div>
-                    <div style="color: #C2185B; font-weight: bold; font-size: 0.95em;">
-                        👑 ${item.price}
-                    </div>
-                    <div style="font-size: 0.75em; color: #757575;">
-                        Đã có: <b>${currentOwned}/${MAX_EXCHANGE}</b>
+                        ${badgeHTML}
                     </div>
                 </div>
 
-                <button class="btn-exchange-event" data-id="${item.id}" ${btnDisabled ? 'disabled' : ''}
-                    style="
-                        width: 100%;
-                        background: ${btnBg}; 
-                        color: white; 
-                        border: none; 
-                        padding: 8px 0; 
-                        border-radius: 8px; 
-                        font-weight: bold; 
-                        font-size: 0.85em;
-                        cursor: ${btnCursor};
-                        box-shadow: ${btnDisabled ? 'none' : '0 3px 0 #880E4F'};
-                        transition: transform 0.1s;
-                        margin-top: auto; /* Đẩy nút xuống đáy */
-                    ">
-                    ${btnText}
-                </button>
+                <div class="bs-req"> <div class="req-line ${canAfford ? 'req-ok' : 'req-miss'}">
+                        <span>👑 ${item.price}</span>
+                    </div>
+                    <div class="req-line" style="color:#555;">
+                        <span style="font-size:0.8em;">Kho: </span> <b>${currentOwned}/${MAX_EXCHANGE}</b>
+                    </div>
+                </div>
+
+                <div class="bs-action">
+                    <button class="btn-exchange-event" data-id="${item.id}" ${btnDisabled ? 'disabled' : ''}
+                        style="
+                            width: auto; 
+                            padding: 6px 14px; 
+                            background: ${btnBg}; 
+                            color: white; border: none; border-radius: 8px; 
+                            font-weight: 700; font-size: 11px;
+                            cursor: ${btnCursor};
+                            box-shadow: ${btnDisabled ? 'none' : '0 2px 0 rgba(0,0,0,0.2)'};
+                        ">
+                        ${btnText}
+                    </button>
+                </div>
             `;
             
-            shopContainer.appendChild(itemCard);
+            listContainer.appendChild(rowDiv);
         });
 
-        interactionControls.appendChild(shopContainer);
+        interactionControls.appendChild(listContainer);
         
-        // --- 3. XỬ LÝ CLICK ĐỔI ĐỒ (Giữ nguyên logic) ---
-        const buttons = shopContainer.querySelectorAll('.btn-exchange-event');
+        // --- 3. XỬ LÝ CLICK ĐỔI ĐỒ ---
+        const buttons = listContainer.querySelectorAll('.btn-exchange-event');
         buttons.forEach(btn => {
             btn.onclick = (e) => {
                 const itemId = e.target.getAttribute('data-id');
@@ -4599,8 +4488,7 @@ if (eventCloud) {
                 if (currentOwned >= MAX_EXCHANGE) return; 
 
                 if (ownedArtifacts['vuong_mien'] >= itemData.price) {
-                    e.target.style.transform = "translateY(3px)";
-                    e.target.style.boxShadow = "none";
+                    e.target.style.transform = "scale(0.95)";
                     setTimeout(() => {
                          if (confirm(`Đổi ${itemData.price} Vương Miện lấy 1 ${itemData.name}?`)) {
                             ownedArtifacts['vuong_mien'] -= itemData.price;
@@ -4609,10 +4497,9 @@ if (eventCloud) {
                             
                             saveGame();
                             updateDisplay();
-                            eventCloud.click(); 
+                            eventCloud.click(); // Load lại popup để cập nhật số lượng
                         } else {
-                            e.target.style.transform = "translateY(0)";
-                            e.target.style.boxShadow = "0 3px 0 #880E4F";
+                            e.target.style.transform = "scale(1)";
                         }
                     }, 100);
                 }
