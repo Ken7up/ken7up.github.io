@@ -1266,6 +1266,27 @@ body.dark-mode #inventory-box h3 {
     color: #81c784 !important;
     border-bottom-color: #555 !important;
 }
+  /* --- BẢO MẬT: CHỐNG TẢI ẢNH (CSS) --- */
+  img {
+      /* Ngăn người dùng kéo ảnh thả ra ngoài (Kéo thả) */
+      -webkit-user-drag: none;
+      user-drag: none;
+      
+      /* Ngăn hiện menu khi nhấn giữ lâu trên iPhone/Android */
+      -webkit-touch-callout: none;
+      
+      /* Ngăn bôi đen (chọn) ảnh */
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+  }
+
+  /* Áp dụng cho toàn bộ trang web để không bôi đen chữ lung tung */
+  body {
+      user-select: none;
+      -webkit-user-select: none;
+  }
 </style>
 </head>
 <body>
@@ -5165,6 +5186,39 @@ setInterval(() => {
 // --- TỰ ĐỘNG LƯU (Mỗi 60 giây) ---
 setInterval(autoSave, 60000);
 window.onload = initializeGame;
+// ======================================================
+// --- BẢO MẬT NÂNG CAO: CHẶN THAO TÁC NGƯỜI DÙNG ---
+// ======================================================
+
+// 1. Chặn Menu Chuột Phải (Right Click)
+document.addEventListener("contextmenu", function(e){
+    e.preventDefault(); // Hủy menu mặc định
+    return false;
+}, false);
+
+// 2. Chặn Kéo Thả Ảnh (Drag & Drop)
+// Ngăn người dùng cầm ảnh kéo sang tab khác để tải
+document.addEventListener("dragstart", function(e){
+    if (e.target.nodeName === "IMG") {
+        e.preventDefault();
+        return false;
+    }
+}, false);
+
+// 3. Chặn phím tắt F12 (Developer Tools) và Ctrl+U (Xem nguồn)
+// Lưu ý: Chỉ chặn được người dùng phổ thông
+document.addEventListener("keydown", function(e) {
+    // F12
+    if (e.keyCode === 123) { 
+        e.preventDefault(); 
+        return false; 
+    }
+    // Ctrl+U (Xem source), Ctrl+S (Lưu trang), Ctrl+Shift+I (DevTools)
+    if (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 83 || (e.shiftKey && e.keyCode === 73))) {
+        e.preventDefault();
+        return false;
+    }
+}, false);
 </script>
 </body>
 </html>
