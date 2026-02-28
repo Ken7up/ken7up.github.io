@@ -3,17 +3,3788 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Khu Vườn Trên Mây - Clone</title>
-    <link rel="stylesheet" href="css/style.css">
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js"></script>
-    
-    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-    <script>eruda.init();</script>
+    <title>RPG Stickman - Pencil Edition</title>
+
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+
+<style>
+body {
+    margin: 0;            /* Xóa lề mặc định của trình duyệt */
+    padding: 0;           /* Xóa khoảng đệm */
+    width: 100%;          /* Chiều rộng 100% màn hình */
+    height: 100%;         /* Chiều cao 100% màn hình */
+    background-color: #000; /* Màu nền đen (để che những chỗ game chưa load) */
+    overflow: hidden;     /* QUAN TRỌNG: Ẩn thanh cuộn để không bị trượt lung tung */
+    touch-action: none;   /* Chặn hành động zoom/kéo của trình duyệt trên điện thoại */
+    user-select: none;    /* Không cho bôi đen văn bản */
+    -webkit-user-select: none;
+}
+/* Hiệu ứng nút TẠO phát sáng (Nhấp nháy vàng kim) */
+@keyframes pulse-gold {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7);
+        transform: scale(1);
+        border-color: #ffd700;
+        color: #ffd700;
+    }
+    50% {
+        box-shadow: 0 0 15px 10px rgba(255, 215, 0, 0);
+        transform: scale(1.05); /* Phóng to nhẹ */
+        border-color: #fff;
+        color: #fff;
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 215, 0, 0);
+        transform: scale(1);
+        border-color: #ffd700;
+        color: #ffd700;
+    }
+}
+
+/* Class này sẽ được thêm vào nút TẠO bằng Javascript */
+.btn-highlight {
+    animation: pulse-gold 1.5s infinite; /* Chạy liên tục */
+    font-weight: bold !important;
+    background-color: rgba(255, 215, 0, 0.1) !important; /* Nền vàng mờ */
+}
+
+/* 2. Giao diện Thông báo (Toast) bay lên */
+#toast-notification {
+    visibility: hidden; /* Mặc định ẩn */
+    min-width: 250px;
+    background-color: rgba(20, 30, 35, 0.95); /* Nền tối */
+    color: #46c846; /* Chữ xanh lá */
+    text-align: center;
+    border-radius: 50px; /* Bo tròn */
+    border: 1px solid #46c846;
+    padding: 12px 20px;
+    position: fixed;
+    z-index: 9999; /* Nằm trên cùng mọi thứ */
+    left: 50%;
+    bottom: 30px; /* Vị trí bắt đầu */
+    transform: translateX(-50%);
+    font-size: 16px;
+    font-weight: bold;
+    box-shadow: 0 0 20px rgba(70, 200, 70, 0.4);
+    opacity: 0;
+    transition: opacity 0.5s, bottom 0.5s; /* Hiệu ứng mượt */
+}
+
+/* Khi hiện lên thì thêm class này */
+#toast-notification.show {
+    visibility: visible;
+    opacity: 1;
+    bottom: 80px; /* Bay lên cao hơn */
+}
+</style>
 </head>
 <body>
-    <div id="game-container"></div>
 
-    <script type="module" src="js/main.js"></script>
+<div id="avatarMenu" style="display: none; position: fixed; top: 70px; left: 15px; width: 100px; background: rgba(20, 30, 35, 0.95); border: 1px solid #78b4b4; border-radius: 8px; z-index: 3000; box-shadow: 0 4px 10px rgba(0,0,0,0.5); overflow: hidden; transition: all 0.3s ease;">
+    
+    <button id="btnCreate" onclick="actionCreate()" style="width: 100%; padding: 12px 0; background: transparent; border: none; border-bottom: 1px solid #3c5a5a; color: #888; font-weight: bold; cursor: pointer; transition: 0.2s;">
+        TẠO
+    </button>
+    
+    <button id="btnDelete" onclick="actionDelete()" style="width: 100%; padding: 12px 0; background: transparent; border: none; border-bottom: 1px solid #3c5a5a; color: #ff4444; font-weight: bold; cursor: pointer; transition: 0.2s;">
+        XOÁ
+    </button>
+    
+    <button id="btnSaveManual" onclick="actionSaveManual()" style="width: 100%; padding: 12px 0; background: transparent; border: none; color: #ffd700; font-weight: bold; cursor: pointer; transition: 0.2s;">
+        LƯU
+    </button>
+</div>
+
+<div id="interactBtn" onclick="openShop()" style="display: none; position: fixed; bottom: 150px; right: 120px; width: 60px; height: 60px; background: rgba(255, 215, 0, 0.9); border: 2px solid #fff; border-radius: 50%; z-index: 1000; color: #000; font-weight: bold; font-size: 14px; text-align: center; line-height: 60px; box-shadow: 0 0 15px #ffd700; cursor: pointer;">
+    MUA
+</div>
+
+<div id="shopModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(20, 30, 35, 0.98); border: 2px solid #5aaab4; padding: 15px; border-radius: 10px; color: #fff; z-index: 2000; width: 300px; box-shadow: 0 0 20px rgba(90, 170, 180, 0.5); font-family: Arial, sans-serif;">
+    <h2 style="text-align: center; margin: 0 0 15px 0; color: #ffd700; border-bottom: 1px solid #555; padding-bottom: 10px;">🏪 Dược Sĩ</h2>
+    
+    <div id="shopItems">
+        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.1); margin-bottom: 10px; padding: 8px; border-radius: 5px;">
+            <img src="1008.png" style="width: 32px; height: 32px; margin-right: 10px;">
+            <div style="flex-grow: 1;">
+                <div style="font-weight: bold; font-size: 14px;">Bình Máu</div>
+                <div style="color: #ffd700; font-size: 12px;">100 🥜</div>
+            </div>
+            <button onclick="buyItem('HP_POTION', 100, 'Bình Máu', '1008')" style="background: #28a745; border: none; color: white; padding: 5px 10px; border-radius: 4px; font-weight: bold;">Mua</button>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.1); margin-bottom: 10px; padding: 8px; border-radius: 5px;">
+            <img src="1009.png" style="width: 32px; height: 32px; margin-right: 10px;">
+            <div style="flex-grow: 1;">
+                <div style="font-weight: bold; font-size: 14px;">Bình Mana</div>
+                <div style="color: #ffd700; font-size: 12px;">100 🥜</div>
+            </div>
+            <button onclick="buyItem('MP_POTION', 100, 'Bình Mana', '1009')" style="background: #28a745; border: none; color: white; padding: 5px 10px; border-radius: 4px; font-weight: bold;">Mua</button>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.1); margin-bottom: 10px; padding: 8px; border-radius: 5px;">
+            <img src="1010.png" style="width: 32px; height: 32px; margin-right: 10px;">
+            <div style="flex-grow: 1;">
+                <div style="font-weight: bold; font-size: 14px;">Bình Hỗn Hợp</div>
+                <div style="color: #ffd700; font-size: 12px;">200 🥜</div>
+            </div>
+            <button onclick="buyItem('DUAL_POTION', 200, 'Bình Hỗn Hợp', '1010')" style="background: #28a745; border: none; color: white; padding: 5px 10px; border-radius: 4px; font-weight: bold;">Mua</button>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.1); margin-bottom: 10px; padding: 8px; border-radius: 5px;">
+            <img src="1011.png" style="width: 32px; height: 32px; margin-right: 10px;">
+            <div style="flex-grow: 1;">
+                <div style="font-weight: bold; font-size: 14px;">Bình Thể Lực</div>
+                <div style="color: #ffd700; font-size: 12px;">300 🥜</div>
+            </div>
+            <button onclick="buyItem('STAMINA_POTION', 300, 'Bình Thể Lực', '1011')" style="background: #28a745; border: none; color: white; padding: 5px 10px; border-radius: 4px; font-weight: bold;">Mua</button>
+        </div>
+    </div>
+    
+    <button onclick="closeShop()" style="width: 100%; padding: 10px; background: #dc3545; color: white; border: none; border-radius: 5px; margin-top: 10px; font-weight: bold;">Đóng Cửa Hàng</button>
+</div>
+<div id="nameModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(20, 30, 35, 0.98); border: 2px solid #5aaab4; padding: 20px; border-radius: 10px; z-index: 4000; width: 280px; box-shadow: 0 0 20px rgba(90, 170, 180, 0.5); text-align: center; font-family: Arial, sans-serif;">
+    <h3 style="color: #ffd700; margin: 0 0 15px 0; border-bottom: 1px solid #555; padding-bottom: 10px;">NHẬP TÊN NHÂN VẬT</h3>
+    
+    <input type="text" id="playerNameInput" maxlength="10" placeholder="Tên của bạn..." style="width: 80%; padding: 10px; margin-bottom: 20px; border-radius: 5px; border: 1px solid #78b4b4; background: #0f1e23; color: white; font-weight: bold; text-align: center; font-size: 16px; outline: none;">
+    
+    <div style="display: flex; justify-content: space-between;">
+        <button onclick="closeNameModal()" style="flex: 1; background: #dc3545; color: white; padding: 10px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; margin-right: 5px;">HỦY</button>
+        <button onclick="confirmCreate()" style="flex: 1; background: #28a745; color: white; padding: 10px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; margin-left: 5px;">XÁC NHẬN</button>
+    </div>
+</div>
+
+<div id="toast-notification">✅ Đã lưu dữ liệu thành công!</div>
+<script>
+// --- CẤU HÌNH PHASER ---
+const config = {
+    type: Phaser.AUTO,
+    width: window.innerWidth,
+    height: window.innerHeight,
+    backgroundColor: '#f5f5f0',
+    parent: document.body,
+    scale: {
+        mode: Phaser.Scale.RESIZE,
+        autoCenter: Phaser.Scale.CENTER_BOTH
+    },
+    scene: {
+        preload: preload,
+        create: create,
+        update: update
+    }
+};
+
+function preload() {
+    // Tải toàn bộ ảnh
+    this.load.image("1003", "1003.png");
+    this.load.image("1004", "1004.png");
+    this.load.image("1005", "1005.png");
+    this.load.image("1006", "1006.png");
+    this.load.image("1007", "1007.png");
+    this.load.image("1008", "1008.png");
+    this.load.image("1009", "1009.png");
+    this.load.image("1012", "1012.png");
+    this.load.image("1013", "1013.png");
+    this.load.image("1017", "1017.png");
+    this.load.image("1018", "1018.png");
+    this.load.image("1019", "1019.png");
+    this.load.image("1020", "1020.png");
+    this.load.image("1024", "1024.png");
+    this.load.image("1025", "1025.png");
+
+    let loadingText = this.add.text(window.innerWidth / 2, window.innerHeight / 2, 'Đang tải...', { fontSize: '20px', fill: '#000' });
+    loadingText.setOrigin(0.5);
+    
+    this.load.on('complete', function () {
+        loadingText.destroy();
+        console.log(">>> Phaser đã tải xong ảnh!");
+    });
+}
+
+function create() {
+    // 1. NẠP ẢNH TỪ PHASER SANG LOGIC CŨ
+    const keys = ["1003", "1004", "1005", "1006", "1007", "1008", "1009", "1012", "1013", "1017", "1018", "1019", "1020", "1024", "1025"];
+    
+    keys.forEach(key => {
+        if (this.textures.exists(key)) {
+            // Lưu ảnh vào biến toàn cục 'images' để code cũ vẽ được
+            images[key] = this.textures.get(key).getSourceImage();
+        }
+    });
+
+    // 2. TẠO LỚP GAME CHÍNH (Đất & Nhân vật)
+    this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+
+    // Tạo Canvas Texture (Lớp vẽ trong suốt nằm đè lên Background)
+    canvasTexture = this.textures.createCanvas('gameLayer', SCREEN_WIDTH, SCREEN_HEIGHT);
+    
+    let gameLayerImage = this.add.image(0, 0, 'gameLayer');
+    gameLayerImage.setOrigin(0);
+    gameLayerImage.setScrollFactor(0);
+    gameLayerImage.setDepth(0); // Nằm trên Background 1001
+
+    // Gán context để code cũ vẽ vào đây
+    ctx = canvasTexture.context;
+    
+    this.scale.on('resize', function (gameSize) {
+        SCREEN_WIDTH = gameSize.width;
+        SCREEN_HEIGHT = gameSize.height;
+
+        // Cập nhật lại kích thước của lớp vẽ ảo (CanvasTexture)
+        if (canvasTexture) {
+            canvasTexture.canvas.width = SCREEN_WIDTH;
+            canvasTexture.canvas.height = SCREEN_HEIGHT;
+            canvasTexture.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+        }
+    });
+
+    // 3. THIẾT LẬP INPUT VÀ LOGIC GAME
+    this.input.addPointer(2); 
+    
+    this.input.on('pointerdown', function (pointer) {
+        handleStart(pointer.x, pointer.y, pointer.id);
+    });
+
+    this.input.on('pointermove', function (pointer) {
+        handleMove(pointer.x, pointer.y, pointer.id);
+    });
+
+    this.input.on('pointerup', function (pointer) {
+        handleEnd(pointer.id);
+    });
+
+    // Kiểm tra Save game
+    if (loadGame(player, inventory)) {
+        console.log(">>> Phaser: Tải lại game cũ thành công!");
+        isGameActive = true; 
+    } else {
+        console.log(">>> Phaser: Chưa có save, chờ tạo mới.");
+        isGameActive = false; 
+        player.x = -9999; 
+        
+        setTimeout(() => {
+            if (typeof toggleAvatarMenu === "function") {
+                toggleAvatarMenu();
+            }
+        }, 500);
+    }
+    
+    console.log(">>> Đã kết nối Logic cũ vào Phaser!");
+}
+
+function update(time, delta) {
+    if (!ctx) return;
+
+    // --- 1. XỬ LÝ ZOOM (KÉO 2 NGÓN TAY) ---
+    // Kiểm tra nếu có 2 ngón tay cùng chạm vào màn hình
+    if (this.input.pointer1.isDown && this.input.pointer2.isDown) {
+        // Tính khoảng cách giữa 2 ngón tay
+        let dist = Phaser.Math.Distance.Between(
+            this.input.pointer1.x, this.input.pointer1.y,
+            this.input.pointer2.x, this.input.pointer2.y
+        );
+
+        if (initialPinchDist === 0) {
+            // Nếu mới bắt đầu chạm 2 ngón -> Lưu lại khoảng cách gốc
+            initialPinchDist = dist;
+            startZoom = gameZoom;
+        } else {
+            // Nếu đang kéo -> Tính tỷ lệ thay đổi
+            let scale = dist / initialPinchDist;
+            // Giới hạn zoom: Nhỏ nhất 0.6 (xa) - Lớn nhất 1.5 (gần)
+            gameZoom = Phaser.Math.Clamp(startZoom * scale, 0.6, 1.5);
+        }
+    } else {
+        // Khi nhả tay ra -> Reset lại để chờ lần kéo sau
+        initialPinchDist = 0;
+    }
+
+    // --- 2. XÓA MÀN HÌNH ---
+    ctx.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    // --- 3. CẬP NHẬT LOGIC GAME (Không vẽ, chỉ tính toán) ---
+    if (player) {
+        this.cameras.main.startFollow(player, true, 0.1, 0.1);
+    }
+    // Lấy tọa độ Camera
+    let camX = this.cameras.main.scrollX;
+    let camY = this.cameras.main.scrollY;
+
+    if (isGameActive) {
+        player.update(joystick.vector.x, joystick.vector.y);
+        
+        if (player.hasSlime && !activePet) activePet = new PetSlime(player);
+        if (activePet) activePet.update();
+        
+        updateNPCInteraction();
+    }
+    
+    // Update đạn & chữ bay
+    for (let i = bullets.length - 1; i >= 0; i--) {
+        bullets[i].update();
+        if (bullets[i].life <= 0) bullets.splice(i, 1);
+    }
+    for (let i = floatingTexts.length - 1; i >= 0; i--) {
+        floatingTexts[i].update();
+        if (floatingTexts[i].life <= 0) floatingTexts.splice(i, 1);
+    }
+
+    // [BẮT ĐẦU VÙNG ZOOM] - Mọi thứ vẽ trong này sẽ bị phóng to/thu nhỏ
+    ctx.save(); 
+
+    // Dịch chuyển tâm về giữa màn hình để Zoom từ trung tâm tỏa ra
+    ctx.translate(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+    ctx.scale(gameZoom, gameZoom);
+    ctx.translate(-SCREEN_WIDTH / 2, -SCREEN_HEIGHT / 2);
+
+    // --- VẼ NỀN MẶT BÀN VÀ TỜ GIẤY ---
+    ctx.save(); 
+    ctx.translate(-camX, -camY); 
+    
+    // Đổ màu mặt bàn (Màu xám tối) xung quanh tờ giấy
+    ctx.fillStyle = "#1e1e24"; 
+    ctx.fillRect(-4000, -4000, WORLD_WIDTH + 8000, WORLD_HEIGHT + 8000);
+    
+    // Vẽ tờ giấy trắng ngà (Bị giới hạn đúng bằng WORLD_WIDTH và WORLD_HEIGHT)
+    ctx.fillStyle = "#fdfdfb"; 
+    ctx.fillRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+
+    // Vẽ lưới ô ly trực tiếp lên tờ giấy
+    drawGridLinesOnly();
+    
+    ctx.restore();
+
+    // 2. Vẽ NPC & Vật cản
+    drawDoraemon(camX, camY);
+    drawPharmacist(camX, camY);
+    drawBlacksmith(camX, camY);
+    drawObstacles(camX, camY);
+
+    // 3. Vẽ Player & Pet
+    if (isGameActive) {
+        player.draw(camX, camY);
+        if (activePet) activePet.draw(ctx, camX, camY);
+    }
+
+    // 4. Vẽ Đạn & Effect (Lưu ý: Đạn cần trừ camX, camY vì nó dùng toạ độ thế giới)
+    ctx.save();
+    ctx.translate(-camX, -camY); 
+    bullets.forEach(b => b.draw(ctx));
+    ctx.restore();
+
+    floatingTexts.forEach(t => t.draw(ctx));
+
+    // Kết thúc vùng Zoom -> Trả lại trạng thái bình thường
+    ctx.restore();
+
+    // --- 4. VẼ GIAO DIỆN (UI) --- 
+    // (Vẽ sau lệnh restore() để nút bấm KHÔNG bị phóng to theo game)
+    if (isGameActive) {
+        drawTopLeftHUD(player);
+        hud.draw(player);
+        joystick.draw();
+        attackBtn.draw();
+        dashButton.draw();
+        sitButton.draw();
+        miniMap.draw(ctx, player, [], camX, camY);
+    } else {
+        // Màn hình chờ
+        let realName = player.name;
+        player.name = "MENU";
+        drawTopLeftHUD(player);
+        player.name = realName;
+        drawStartScreenGuide();
+    }
+    
+    // Vẽ các bảng Popup
+    if (charPanel.visible) charPanel.draw(player);
+    if (inventory.visible) inventory.draw();
+    if (skillPanel.visible) skillPanel.draw();
+
+    // Lệnh bắt buộc của Phaser để cập nhật Texture
+    canvasTexture.refresh();
+}
+
+// --- HÀM VẼ LƯỚI PHỤ TRỢ (Thêm hàm này xuống dưới cùng file hoặc dưới update) ---
+function drawGridLogic(camera) {
+    let camX = camera.scrollX;
+    let camY = camera.scrollY;
+    
+    // Vẽ nền trắng đục nhẹ
+    ctx.fillStyle = "#f5f5f0";
+    ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    // Vẽ lưới
+    let gridW = 40; 
+    let sx = -(camX % gridW); 
+    let sy = -(camY % gridW);
+
+    ctx.beginPath();
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "#b4c8ff"; // Màu xanh phấn
+
+    // Dọc
+    for (let x = sx; x < SCREEN_WIDTH; x += gridW) { 
+        ctx.moveTo(x, 0); ctx.lineTo(x, SCREEN_HEIGHT); 
+    }
+    // Ngang
+    for (let y = sy; y < SCREEN_HEIGHT; y += gridW) { 
+        ctx.moveTo(0, y); ctx.lineTo(SCREEN_WIDTH, y); 
+    }
+    ctx.stroke();
+    
+    // Vẽ lề đỏ (Safe Zone)
+    let marginScreenX = 300 - camX;
+    if (marginScreenX > -50 && marginScreenX < SCREEN_WIDTH + 50) {
+        ctx.beginPath();
+        ctx.moveTo(marginScreenX, 0);
+        ctx.lineTo(marginScreenX, SCREEN_HEIGHT);
+        ctx.strokeStyle = "#eb3c3c";
+        ctx.lineWidth = 2.5; 
+        ctx.stroke();
+    }
+}
+
+// --- CẤU HÌNH ---
+let SCREEN_WIDTH = window.innerWidth;
+let SCREEN_HEIGHT = window.innerHeight;
+const images = {};
+let gameZoom = 1.0;       // Độ phóng to hiện tại
+let initialPinchDist = 0; // Khoảng cách 2 ngón tay lúc bắt đầu chạm
+let startZoom = 1.0;      // Lưu độ zoom gốc khi bắt đầu kéo
+// Biến chứa Texture đặc biệt của Phaser
+let canvasTexture; 
+// Để ctx là null ban đầu, ta sẽ gán nó sau trong hàm create()
+let ctx = null; 
+
+const FPS = 60;
+const AUTOSAVE_INTERVAL = 2000;
+const WORLD_WIDTH = 1600; 
+const WORLD_HEIGHT = 2400; // Tăng chiều dọc lên gấp rưỡi
+// MÀU SẮC
+const COLORS = {
+    BG: "#f5f5f0",
+    GRID: "#b4c8ff",
+    JOYSTICK_OUT: "rgba(200, 200, 200, 0.5)",
+    JOYSTICK_IN: "rgba(100, 100, 100, 0.8)",
+    PAPER_RED: "#eb3c3c",
+    INK_BLACK: "#141414",
+    THEME_JADE_BG: "#193c41",
+    THEME_JADE_BORDER: "#78b4b4",
+    THEME_SLOT_BG: "#0f1e23",
+    THEME_SLOT_BORDER: "#3c5a5a",
+    THEME_GOLD_ACTIVE: "#dcbe8c",
+    THEME_TEXT_WHITE: "#f0f5f5",
+    THEME_TEXT_DARK: "#28190a",
+    BTN_USE_BG: "#ffcc00",
+    BTN_USE_BORDER: "#ffaa00",
+    BTN_USE_TEXT: "#5c4008"
+};
+// --- CẤU HÌNH NPC & VỊ TRÍ ---
+
+const NPC_PHARMACIST = { x: 150, y: 500, interactDist: 100 };
+const NPC_DORAEMON   = { x: 150, y: 1000, interactDist: 100 };
+const NPC_BLACKSMITH = { x: 150, y: 1500, interactDist: 100 };
+// --- 1. DANH SÁCH VẬT CẢN (OBSTACLES) ---
+const OBSTACLES = [
+    // Một cái hồ nước
+    { x: 1200, y: 1200, w: 200, h: 150, type: 'RECT', color: "#0099ff" }
+];
+
+// Kích thước vùng va chạm của NPC (để không đi xuyên qua họ)
+const NPC_HITBOX_SIZE = 40;
+
+// VÙNG AN TOÀN (Safe Zone)
+const SAFE_ZONE_X = 300;
+// --- HÀM LƯU GAME "AN TOÀN NÂNG CẤP" ---
+function saveGame(player, inventory, silent = true) {
+  if (!isGameActive) return;
+    // 1. Kiểm tra xem nhân vật và túi đồ có tồn tại không
+    if (!player || !inventory) return; 
+
+    // 2. Lấy vị trí Slot (0, 1 hoặc 2) từ bộ nhớ
+    let slotIdxStr = localStorage.getItem("rpg_current_slot_index");
+
+// Nếu game bị mất dấu Slot (thường do Acode đổi cổng làm mất localStorage)
+    if (slotIdxStr === null || slotIdxStr === undefined) {
+        if (!silent) {
+            alert("⚠️ Cảnh báo: Kết nối dữ liệu bị gián đoạn!\nHệ thống sẽ tự động lưu vào [Slot 1] để cứu dữ liệu.");
+        }
+        console.warn("Mất dấu Slot! Tự động gán về 0 (Slot 1).");
+        
+        // Cưỡng ép gán về Slot 1 để không bị lỗi code
+        slotIdxStr = "0"; 
+        localStorage.setItem("rpg_current_slot_index", "0");
+    }
+
+    const slotIdx = parseInt(slotIdxStr);
+    
+    // 3. Đóng gói dữ liệu hiện tại vào biến
+    const currentData = {
+        player: player.toDict(),
+        inventory: inventory.toDict()
+    };
+    
+    try {
+        // Lưu một bản dự phòng riêng lẻ (phòng hờ file tổng bị hỏng)
+        localStorage.setItem("rpg_pencil_backup_last_ss", JSON.stringify(currentData));
+        
+        // 4. Đọc dữ liệu tổng (cả 3 slot) từ bộ nhớ
+        let slotsData = localStorage.getItem("rpg_pencil_slots");
+        let slots = [null, null, null]; 
+
+        if (slotsData) {
+            try {
+                let parsed = JSON.parse(slotsData);
+                // Nếu đọc được mảng cũ thì dùng, không thì tạo mới
+                if (Array.isArray(parsed)) {
+                    slots = parsed;
+                }
+            } catch(e) {
+                console.warn("File tổng bị lỗi, đang khởi tạo lại...", e);
+            }
+        }
+
+        // Đảm bảo luôn có đủ 3 chỗ trống
+        if (!Array.isArray(slots)) slots = [null, null, null];
+        while(slots.length < 3) slots.push(null);
+
+        // 5. GHI ĐÈ DỮ LIỆU MỚI VÀO ĐÚNG SLOT ĐANG CHƠI
+        slots[slotIdx] = currentData; 
+        
+        // Chuyển thành chuỗi văn bản để lưu xuống ổ cứng
+        const jsonToSave = JSON.stringify(slots);
+        
+        // Kiểm tra an toàn: Chỉ lưu nếu dữ liệu đủ dài (tránh lưu đè file rỗng)
+        if (jsonToSave.length > 50) {
+            localStorage.setItem("rpg_pencil_slots", jsonToSave);
+            if (!silent) console.log(`>>> Đã lưu Game an toàn vào Slot ${slotIdx + 1}`);
+        } else {
+            console.error("Dữ liệu quá ngắn, hủy lưu để tránh hỏng file.");
+        }
+
+    } catch (e) { 
+        console.error("LỖI NGHIÊM TRỌNG KHI LƯU:", e); 
+        if (!silent) alert("Lỗi bộ nhớ đầy hoặc bị chặn! Hãy thử xóa bớt dữ liệu web.");
+    }
+}
+
+function loadGame(player, inventory) {
+    let slotIdxStr = localStorage.getItem("rpg_current_slot_index");
+    let slotIdx = slotIdxStr ? parseInt(slotIdxStr) : 0;
+    
+    let slotsData = localStorage.getItem("rpg_pencil_slots");
+    if (!slotsData) return false; 
+
+    try {
+        let slots = JSON.parse(slotsData);
+        if (!Array.isArray(slots) || !slots[slotIdx]) return false;
+
+        let data = slots[slotIdx]; 
+
+        if (data.player) player.fromDict(data.player);
+        if (data.inventory) inventory.fromDict(data.inventory);
+        
+        // KIỂM TRA TỌA ĐỘ SAU KHI LOAD
+        // Nếu nhân vật bị kẹt ở tọa độ âm (do lỗi save lúc nãy), hãy reset về giữa map
+        if (player.x < 0 || player.y < 0) {
+            console.warn("Phát hiện lỗi Save (nhân vật bị ẩn). Đang reset vị trí...");
+            player.x = WORLD_WIDTH / 2;
+            player.y = WORLD_HEIGHT / 2;
+        }
+
+        return true; 
+    } catch (e) {
+        console.error("Lỗi khi tải game:", e);
+        return false; 
+    }
+}
+// --- CÁC HÀM VẼ HỖ TRỢ ---
+function drawLine(x1, y1, x2, y2, color, width=1) {
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.stroke();
+}
+
+function drawCircle(x, y, radius, color, isFilled=true, lineWidth=1) {
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    if (isFilled) { ctx.fillStyle = color; ctx.fill(); } 
+    else { ctx.strokeStyle = color; ctx.lineWidth = lineWidth; ctx.stroke(); }
+}
+
+function drawRect(x, y, w, h, color, isFilled=true, radius=0, lineWidth=1) {
+    ctx.beginPath();
+    if (radius > 0) {
+        if (ctx.roundRect) ctx.roundRect(x, y, w, h, radius);
+        else ctx.rect(x, y, w, h);
+    } else { ctx.rect(x, y, w, h); }
+    if (isFilled) { ctx.fillStyle = color; ctx.fill(); } 
+    else { ctx.strokeStyle = color; ctx.lineWidth = lineWidth; ctx.stroke(); }
+}
+
+function drawText(text, x, y, size, color, align="left", bold=true) {
+    ctx.font = `${bold ? "bold " : ""}${size}px Arial`;
+    ctx.fillStyle = color;
+    ctx.textAlign = align;
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, x, y);
+    return ctx.measureText(text).width;
+}
+
+function drawLimb(start, end, length, color, bendDir=1, width=3) {
+    let [x1, y1] = start; let [x2, y2] = end;
+    let dist = Math.sqrt((x2 - x1)**2 + (y2 - y1)**2);
+    dist = Math.min(dist, length);
+    let midX = (x1 + x2) / 2; let midY = (y1 + y2) / 2;
+    let bendAmount = 0;
+    if (length > dist) bendAmount = Math.sqrt((length/2)**2 - (dist/2)**2);
+    let dx = x2 - x1; let dy = y2 - y1;
+    let perpX = -dy / dist; let perpY = dx / dist;
+    let jointX = midX + perpX * bendAmount * bendDir;
+    let jointY = midY + perpY * bendAmount * bendDir;
+
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(jointX, jointY); ctx.lineTo(x2, y2);
+    ctx.strokeStyle = color; ctx.lineWidth = width;
+    ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.stroke();
+}
+// --- QUẢN LÝ SỐ SÁT THƯƠNG BAY LÊN ---
+const floatingTexts = [];
+const bullets = [];
+
+class FloatingText {
+    constructor(x, y, text, color) {
+        this.x = x; this.y = y;
+        this.text = text; this.color = color;
+        this.life = 60; 
+        this.vy = -2;   
+    }
+    update() {
+        this.x += (Math.random() - 0.5) * 1; 
+        this.y += this.vy;
+        this.vy *= 0.9; 
+        this.life--;
+    }
+    draw(ctx) {
+        ctx.globalAlpha = Math.max(0, this.life / 60);
+        ctx.shadowColor = "black"; ctx.shadowBlur = 2;
+        drawText(this.text, this.x, this.y, 20, this.color, "center", true);
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 1.0;
+    }
+}
+// --- CLASS: VIÊN ĐẠN MỰC BÚT XÓA ---
+class Bullet {
+    constructor(x, y, isRight) {
+        this.x = x; 
+        this.y = y;
+        this.speed = 12;
+        this.vx = isRight ? this.speed : -this.speed;
+        this.life = 60; // Đạn tồn tại 60 frame (1 giây)
+        this.size = 8;
+    }
+    update() {
+        this.x += this.vx;
+        this.life--;
+    }
+    draw(ctx) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = "#ffffff"; // Màu trắng bút xóa
+        ctx.fill();
+        
+        // Viền xanh cho nổi bật
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#0096aa"; 
+        ctx.stroke();
+        
+        // Hiệu ứng vệt đuôi
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(this.x - this.vx * 3, this.y); // Vệt dài ngược hướng bay
+        ctx.strokeStyle = "rgba(255,255,255,0.5)";
+        ctx.stroke();
+        ctx.restore();
+    }
+}
+// --- CLASS: NÚT TẤN CÔNG ---
+class AttackButton {
+    constructor() {
+        this.radius = 20; // <--- Giảm từ 40 xuống 20 cho nút nhỏ gọn hơn
+        this.x = 0; this.y = 0;
+        this.pressed = false;
+        this.cooldown = 0;
+    }
+
+    updatePos() {
+        // Đẩy nút sát vào góc hơn một chút vì nút đã nhỏ lại
+        this.x = SCREEN_WIDTH - 60;  // Trái, Phải
+        this.y = SCREEN_HEIGHT - 100; // Lên, Xuống
+    }
+
+    checkClick(x, y) {
+        let dist = Math.sqrt((x - this.x)**2 + (y - this.y)**2);
+        if (dist <= this.radius) {
+            this.triggerAttack();
+            return true;
+        }
+        return false;
+    }
+
+    triggerAttack() {
+        // 1. Kiểm tra hồi chiêu
+        if (this.cooldown > 0) return;
+        
+        // 2. Kích hoạt tấn công dựa trên vũ khí
+        if (player.equippedWeapon === "PENCIL") {
+            // Bút Chì: Đánh nhanh (30 frame hồi chiêu)
+            this.cooldown = 30; 
+            player.startAttack(); // Mặc định attackTimer là 15
+        } 
+        else if (player.equippedWeapon === "RULER") {
+            // Thước Kẻ: Đánh chậm hơn nhưng đầm tay (45 frame hồi chiêu)
+            this.cooldown = 45; 
+            player.startAttack();
+            
+            // Ghi đè thời gian hoạt ảnh: Chém lâu hơn đâm (20 frame)
+            // Giúp cú chém vẽ hết vòng cung đẹp mắt
+            player.attackTimer = 20; 
+        } 
+        else if (player.equippedWeapon === "CORRECTION_PEN") {
+            this.cooldown = 50; // Bắn nhanh (15 frame = 4 viên/giây)
+            player.startAttack();
+            
+            // --- CẬP NHẬT TỌA ĐỘ CHÍNH XÁC TẠI ĐẦU NGÒI BÚT ---
+            let s = player.scale; // Lấy tỉ lệ nhân vật (0.6)
+
+            // 1. Tính độ cao (Y): 
+            // Vai nhân vật ~ -25*s. Tay cầm súng thấp hơn vai chút (-5*s).
+            // Ngòi bút nằm giữa thân bút. 
+            // -> Chỉnh về -32*s là ngay tâm ngòi.
+            let bulletY = player.y - 32 * s; 
+
+            // 2. Tính khoảng cách (X):
+            // Tay cách thân khoảng 15*s.
+            // Chiều dài bút là 130*s, tay cầm ở vị trí 75% thân bút (từ đuôi lên).
+            // => Ngòi bút cách tay cầm khoảng 55*s.
+            // => Tổng khoảng cách từ tâm người đến ngòi bút ~ 70*s.
+            let offsetDir = player.facingRight ? 1 : -1;
+            let bulletX = player.x + (70 * s * offsetDir);
+            
+            bullets.push(new Bullet(bulletX, bulletY, player.facingRight));
+        }
+        else {
+             this.cooldown = 20; // Tay không
+        }
+    }
+
+    draw() {
+        this.updatePos();
+        if (this.cooldown > 0) this.cooldown--;
+
+        // Tính kích thước ảnh dựa trên bán kính mới
+        // 30 * 2.3 = 69px (Vừa vặn với ngón tay)
+        let size = this.radius * 2.3; 
+        
+        if (this.pressed) size *= 0.9;
+
+        if (images["1012"] && images["1012"].complete) {
+            ctx.save();
+            let drawX = this.x - size / 2;
+            let drawY = this.y - size / 2;
+
+            ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+            ctx.shadowBlur = 10;
+            ctx.shadowOffsetY = 5;
+
+            if (this.cooldown > 0) {
+                ctx.globalAlpha = 0.5; 
+            }
+
+            ctx.drawImage(images["1012"], drawX, drawY, size, size);
+            
+            if (this.cooldown > 0) {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+                ctx.fill();
+            }
+
+            ctx.restore();
+        } 
+        else {
+            // Vẽ dự phòng nếu chưa có ảnh
+            let color = this.pressed ? "#cc0000" : "#ff3333";
+            if (this.cooldown > 0) color = "#550000"; 
+
+            drawCircle(this.x, this.y, this.radius, "rgba(255, 255, 255, 0.3)", true);
+            drawCircle(this.x, this.y, this.radius - 5, color, true);
+            drawCircle(this.x, this.y, this.radius - 5, "#fff", false, 2);
+            drawText("ĐÁNH", this.x, this.y, 14, "#fff", "center", true); // Giảm size chữ chút
+        }
+    }
+}
+// --- CLASS: NÚT LƯỚT (DASH) ---
+class DashButton {
+    constructor() {
+        this.radius = 12; 
+        this.x = 0; this.y = 0;
+        this.pressed = false;
+    }
+
+    updatePos() {
+        // --- VỊ TRÍ CHO XA VÀ CÂN ĐỐI ---
+        
+        // (SCREEN_HEIGHT) - Lên, Xuống
+        this.y = SCREEN_HEIGHT - 72; 
+        
+        // (SCREEN_WIDTH) - Trái, Phải
+        this.x = SCREEN_WIDTH - 115; 
+    }
+
+    checkClick(x, y, player, joystickX, joystickY) {
+        let dist = Math.sqrt((x - this.x)**2 + (y - this.y)**2);
+        if (dist <= this.radius * 1.5) { 
+            this.pressed = true;
+            player.dash(joystickX, joystickY);
+            setTimeout(() => this.pressed = false, 150);
+            return true;
+        }
+        return false;
+    }
+
+    draw() {
+        this.updatePos();
+        
+        ctx.save();
+        let scale = this.pressed ? 0.9 : 1.0;
+        
+        // Kiểm tra ảnh 1004 thay vì 1016
+        if (images["1004"] && images["1004"].complete) {
+            let iconSize = 28 * scale; 
+            
+            ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
+            ctx.shadowBlur = 4;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+
+            let img = images["1004"];
+            
+            // TÍNH TOÁN CẮT ẢNH
+            let sw = img.width / 2; // Chiều rộng 1 frame (chia đôi ảnh)
+            let sh = img.height;    // Chiều cao
+            let sx = sw;            // Bắt đầu từ giữa ảnh (Lấy hình bên PHẢI - Chạy)
+            let sy = 0;
+
+            // Vẽ ảnh đã cắt: (img, sx, sy, sw, sh, dx, dy, dw, dh)
+            ctx.drawImage(img, sx, sy, sw, sh, this.x - iconSize/2, this.y - iconSize/2, iconSize, iconSize);
+
+        } else {
+            drawText(">>>", this.x, this.y, 16, "#fff", "center", true);
+        }
+        
+        ctx.restore();
+    }
+}
+// --- CLASS: NÚT NGỒI THIỀN (ĐÃ CHỈNH SIZE CHUẨN) ---
+class SitButton {
+    constructor() {
+        this.radius = 12; // GIẢM SIZE: Bằng y hệt nút DashButton
+        this.x = 0; 
+        this.y = 0;
+        this.pressed = false;
+    }
+
+    updatePos() {
+        // Vị trí đối xứng với nút Chạy
+        // Nút Chạy: x = SCREEN_WIDTH - 115
+        // Nút Ngồi: x = 115
+        this.x = 115; 
+        
+        // Ngang hàng tuyệt đối với nút Chạy
+        this.y = SCREEN_HEIGHT - 72; 
+    }
+
+    checkClick(x, y) {
+        let dist = Math.sqrt((x - this.x)**2 + (y - this.y)**2);
+        
+        // Phạm vi bấm giống hệt nút Chạy (radius * 1.5)
+        if (dist <= this.radius * 1.5) { 
+            this.pressed = true;
+            toggleSit();
+            setTimeout(() => this.pressed = false, 150);
+            return true;
+        }
+        return false;
+    }
+
+    draw() {
+        this.updatePos();
+        
+        ctx.save();
+        let scale = this.pressed ? 0.9 : 1.0;
+        
+        if (player && player.isSitting) {
+            ctx.shadowColor = "#00ff00"; 
+            ctx.shadowBlur = 10; // Giảm độ nhòe chút cho gọn
+            scale = 1.1; 
+        } else {
+            ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
+            ctx.shadowBlur = 4;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+        }
+
+        if (images["1004"] && images["1004"].complete) {
+            let img = images["1004"];
+            
+            // GIẢM SIZE ICON: Từ 45 xuống 28 (Bằng nút Chạy)
+            let iconSize = 28 * scale; 
+
+            // Cắt ảnh (Giữ nguyên logic lấy hình bên trái)
+            let sw = img.width / 2;
+            let sh = img.height;
+            let sx = 0; 
+            let sy = 0;
+
+            ctx.drawImage(img, sx, sy, sw, sh, this.x - iconSize/2, this.y - iconSize/2, iconSize, iconSize);
+
+        } else {
+            // Vẽ dự phòng khi chưa load ảnh
+            drawCircle(this.x, this.y, this.radius, "#ffff00");
+        }
+        
+        ctx.restore();
+    }
+}
+// --- CLASS: PET SLIME ĐEN (MỚI) ---
+class PetSlime {
+    constructor(owner) {
+        this.owner = owner;
+        this.x = owner.x;
+        this.y = owner.y;
+        this.image = images["1003"]; // Dùng ảnh 1003
+        
+        // Cấu hình lưới ảnh 3 cột x 4 hàng (Chuẩn RPG Maker)
+        this.spriteCols = 3; 
+        this.spriteRows = 4; 
+        
+        this.frameW = 0;
+        this.frameH = 0;
+        
+        this.frameX = 0;
+        this.frameY = 0; // 0:Xuống, 1:Trái, 2:Phải, 3:Lên
+        
+        this.gameFrame = 0;
+        this.staggerFrames = 10; 
+        
+        this.speed = 4.0; // Tốc độ chạy theo
+        this.minDist = 60; // Khoảng cách dừng lại
+        
+        this.lastDirection = 0; 
+    }
+
+    update() {
+        if (!this.owner) return;
+        
+        // Tính lại kích thước nếu ảnh mới load xong
+        if (this.frameW === 0 && this.image && this.image.complete) {
+            this.frameW = this.image.width / this.spriteCols;
+            this.frameH = this.image.height / this.spriteRows;
+        }
+
+        const dx = this.owner.x - this.x;
+        const dy = this.owner.y - this.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+
+        // --- XỬ LÝ DI CHUYỂN ---
+        if (dist > this.minDist) {
+            const angle = Math.atan2(dy, dx);
+            this.x += Math.cos(angle) * this.speed;
+            this.y += Math.sin(angle) * this.speed;
+
+            // --- ĐỔI LẠI HƯỚNG TRÁI/PHẢI ---
+            if (Math.abs(dx) > Math.abs(dy)) {
+                if (dx < 0) {
+                    // Pet đi sang TRÁI
+                    this.frameY = 2;
+                } else {
+                    // Pet đi sang PHẢI
+                    this.frameY = 1;
+                }
+            } else {
+                if (dy < 0) this.frameY = 3; // Lên (Quay lưng)
+                else this.frameY = 0;        // Xuống (Chính diện)
+            }
+            
+            this.lastDirection = this.frameY;
+            this.staggerFrames = 8; // Chạy nhanh thì animation nhanh
+        } else {
+            // Đứng yên: Quay về hướng cũ
+            this.frameY = this.lastDirection;
+            this.staggerFrames = 15; // Thở chậm
+        }
+
+        // Animation Loop
+        this.gameFrame++;
+        if (this.gameFrame % this.staggerFrames === 0) {
+            this.frameX++;
+            if (this.frameX >= this.spriteCols) this.frameX = 0;
+        }
+    }
+
+    draw(ctx, camX, camY) {
+        if (!this.image || !this.image.complete || this.frameW === 0) return;
+        
+        let drawX = this.x - camX;
+        let drawY = this.y - camY;
+
+        let sx = this.frameX * this.frameW; 
+        let sy = this.frameY * this.frameH; 
+
+        // Tính hiển thị
+        let displaySize = 50; 
+        let ratio = this.frameW / this.frameH; 
+        let renderW = displaySize; 
+        let renderH = displaySize / ratio;
+
+        // Vẽ Bóng
+        ctx.fillStyle = "rgba(0,0,0,0.2)";
+        ctx.beginPath(); 
+        ctx.ellipse(drawX, drawY + renderH/2 - 5, 14, 6, 0, 0, Math.PI*2); 
+        ctx.fill();
+
+        // Vẽ Tên
+        drawText("Slime Đen", drawX, drawY - renderH/2 - 10, 10, "#ff5555", "center", true);
+
+        // Vẽ Slime
+        ctx.drawImage(this.image, sx, sy, this.frameW, this.frameH, drawX - renderW/2, drawY - renderH/2, renderW, renderH);
+    }
+}
+
+// --- CLASS: STICKMAN ---
+class Stickman {
+    constructor(x, y) {
+        this.x = x; this.y = y;
+        this.name = "Long Kỵ Sĩ";
+        this.speed = 3.5; // chạy bộ chậm, nhanh
+        this.animTimer = 0;
+        this.scale = 0.6; 
+        this.facingRight = true;
+        this.leanAngle = 0;
+        this.strideIntensity = 0;
+        
+        this.equippedWeapon = null; 
+        
+        // --- TRẠNG THÁI TẤN CÔNG ---
+        this.isAttacking = false;
+        this.attackTimer = 0;
+        
+        // Stats
+        this.level = 1; this.exp = 0; this.maxExp = 200;
+        this.baseHp = 1000; this.maxHp = 1000; this.hp = 1000;
+        this.mp = 1000; this.maxMp = 1000;
+        this.stamina = 100; this.maxStamina = 100;
+        this.isDashing = false;
+        this.dashTimer = 0;
+        this.dashVec = {x: 0, y: 0};
+        this.isSitting = false;    // Trạng thái ngồi
+        this.hasSlime = false;
+        this.sitTimer = 0;         // Bộ đếm thời gian ngồi
+    }
+    dash(dx, dy) {
+        // Yêu cầu: Tốn 10 thể lực và không đang lướt
+        if (this.stamina >= 10 && !this.isDashing) {
+            this.stamina -= 10;
+            this.isDashing = true;
+            this.dashTimer = 10; // Lướt trong 10 frame (khoảng 0.15s)
+            
+            // Xác định hướng lướt
+            if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1) {
+                this.dashVec = {x: dx, y: dy};
+            } else {
+                // Nếu đang đứng yên thì lướt theo hướng mặt quay
+                this.dashVec = {x: this.facingRight ? 1 : -1, y: 0};
+            }
+        }
+    }
+    startAttack() {
+        this.isAttacking = true;
+        this.attackTimer = 15; // Thời gian đâm (Frames)
+    }
+
+    takeDamage(amount) {
+        this.hp -= amount;
+        if (this.hp < 0) this.hp = 0;
+        if(typeof floatingTexts !== 'undefined') {
+            floatingTexts.push(new FloatingText(this.x, this.y - 60, "-" + amount, "#ff0000"));
+        }
+    }
+    // --- HÀM DI CHUYỂN ---
+    update(dx, dy) {
+        // --- LOGIC NGỒI THIỀN ---
+        if (this.isSitting) {
+            // A. Nếu người chơi bấm nút di chuyển -> Tự động ĐỨNG DẬY
+            if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1) {
+                this.isSitting = false;
+                this.sitTimer = 0;
+                
+                // Reset nút Ngồi về màu vàng
+                const btn = document.getElementById('sitBtn');
+                if (btn) {
+                    btn.style.borderColor = "#fff";
+                    btn.style.color = "#FFD700";
+                    btn.style.boxShadow = "0 0 5px rgba(0,0,0,0.5)";
+                }
+            }
+            else {
+                // B. Logic hồi phục khi ngồi
+                this.sitTimer += 1/60; 
+                if (this.sitTimer >= 10) {
+                    let oldHp = this.hp;
+                    this.hp = Math.min(this.hp + 100, this.maxHp);
+                    this.mp = Math.min(this.mp + 100, this.maxMp);
+                    if (this.stamina !== undefined) this.stamina = Math.min(this.stamina + 10, this.maxStamina);
+                    
+                    if (this.hp > oldHp && typeof floatingTexts !== 'undefined') {
+                        floatingTexts.push(new FloatingText(this.x, this.y - 60, "+100 HP", "#00ff00"));
+                        floatingTexts.push(new FloatingText(this.x, this.y - 80, "+10 MP", "#00ffff"));
+                    }
+                    this.sitTimer = 0; 
+                }
+                return; // Đang ngồi thì không đi
+            }
+        }
+        
+        // 1. XỬ LÝ LƯỚT (DASH)
+        if (this.isDashing) {
+            this.x += this.dashVec.x * 15;
+            this.y += this.dashVec.y * 15;
+            
+            this.x = Math.max(20, Math.min(WORLD_WIDTH - 20, this.x));
+            this.y = Math.max(20, Math.min(WORLD_HEIGHT - 20, this.y));
+            
+            this.dashTimer--;
+            if (this.dashTimer <= 0) this.isDashing = false;
+            return; 
+        }
+
+        // --- 2. LOGIC DI CHUYỂN MỚI (CÓ VA CHẠM & TRƯỢT TƯỜNG) ---
+        let stepX = dx * this.speed;
+        let stepY = dy * this.speed;
+
+        // KIỂM TRA TRỤC X
+        if (!checkCollision(this.x + stepX, this.y)) {
+            this.x += stepX; 
+        } 
+
+        // KIỂM TRA TRỤC Y
+        if (!checkCollision(this.x, this.y + stepY)) {
+            this.y += stepY; 
+        }
+
+        // Cập nhật hướng mặt
+        if (dx > 0.1) this.facingRight = true;
+        else if (dx < -0.1) this.facingRight = false;
+
+        // --- 3. ANIMATION ---
+        let isMoving = (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1);
+        let targetLean = (Math.abs(dx) > 0.1) ? dx * 12 : 0;
+        this.leanAngle += (targetLean - this.leanAngle) * 0.1;
+        
+        let targetStride = isMoving ? 1.0 : 0.0;
+        this.strideIntensity += (targetStride - this.strideIntensity) * 0.1;
+        
+        let animSpeed = isMoving ? 0.2 : 0.05;
+        this.animTimer += animSpeed;
+        
+        if (this.isAttacking) {
+            this.attackTimer--;
+            if (this.attackTimer <= 0) this.isAttacking = false;
+        }
+    }
+
+    // --- LOGIC VẼ BÚT CHÌ ---
+    drawPencil(ctx, x, y, scale, type, facingRight) {
+        if (!images["1007"] || !images["1007"].complete) return;
+        const img = images["1007"];
+        const w = 140 * scale; 
+        const h = 140 * (img.height/img.width) * scale;
+        
+        ctx.save();
+        ctx.translate(x, y); 
+
+        if (type === "BACK") {
+            // ĐEO SAU LƯNG: Xoay nghiêng 45 độ
+            ctx.rotate(-Math.PI / 4); 
+            ctx.drawImage(img, -w/2, -h/2, w, h);
+        }
+
+        else if (type === "HAND") {
+            
+            if (this.isAttacking) {
+                // === TẤN CÔNG: ĐÂM CHÉO ===
+                if (!facingRight) ctx.scale(-1, 1);
+                ctx.rotate(0); 
+                let recoil = (this.attackTimer > 10) ? 5 : 0; 
+                ctx.scale(-1, 1); // Lật bút theo trục ngang
+                
+                // --- HIỆU ỨNG VỆT GIÓ & XUNG KÍCH ---
+                ctx.save();
+                // 1. Độ mờ giảm dần theo thời gian chiêu (biến mất khi kết thúc)
+                let alpha = this.attackTimer / 15; 
+                ctx.globalAlpha = alpha;
+                ctx.lineWidth = 2 * scale;
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.9)"; // Màu trắng sáng
+                ctx.lineCap = "round";
+                
+                let tipX = -w * 0.9 + recoil; // Vị trí đầu nhọn của bút
+                let len = 60 * scale;         // Độ dài vệt gió
+
+                ctx.beginPath();
+                // Vệt giữa (dài nhất, thẳng tâm)
+                ctx.moveTo(tipX + 15*scale, 0);
+                ctx.lineTo(tipX + 15*scale + len, 0);
+                
+                // Vệt trên (ngắn hơn, lệch lên)
+                ctx.moveTo(tipX + 25*scale, -8*scale);
+                ctx.lineTo(tipX + 25*scale + len*0.6, -12*scale);
+                
+                // Vệt dưới (ngắn hơn, lệch xuống)
+                ctx.moveTo(tipX + 25*scale, 8*scale);
+                ctx.lineTo(tipX + 25*scale + len*0.6, 12*scale);
+                ctx.stroke();
+                
+                // 2. Vòng xung kích (Chỉ hiện ở những frame đầu tiên của cú đâm)
+                if (this.attackTimer > 10) {
+                     ctx.beginPath();
+                     ctx.lineWidth = 3 * scale;
+                     ctx.strokeStyle = `rgba(255, 255, 100, ${alpha})`; // Màu vàng nhạt
+                     // Vẽ cung tròn trước mũi bút
+                     ctx.arc(tipX, 0, 20*scale, -0.6, 0.6);
+                     ctx.stroke();
+                }
+
+                ctx.restore();
+                // ---------------------------------------------
+
+                // Vẽ ảnh cây bút đè lên hiệu ứng
+                ctx.drawImage(img, -w * 0.9 + recoil, -h/2, w, h);
+
+            } else {
+                // CHẠY KIỂU NARUTO (Không tấn công)
+                let angle = -Math.PI / 3; 
+                if (facingRight) { ctx.rotate(angle); } 
+                else { ctx.scale(-1, 1); ctx.rotate(angle); }
+                let holdOffsetY = -h * 0.35; 
+                ctx.drawImage(img, -w/2, -h/2 + holdOffsetY, w, h); 
+            }
+        }
+        ctx.restore();
+    }
+    // --- HÀM: VẼ THƯỚC KẺ ---
+    drawRuler(ctx, x, y, scale, type, facingRight, isMoving) {
+        if (!images["1024"] || !images["1024"].complete) return;
+        const img = images["1024"];
+        
+        const w = 140 * scale; 
+        const h = 140 * (img.height/img.width) * scale;
+        
+        ctx.save();
+        ctx.translate(x, y); // Dời gốc tọa độ về đúng vị trí tay
+
+        // Nếu quay trái thì lật ngược canvas
+        if (!facingRight) ctx.scale(-1, 1);
+
+        if (type === "BACK") {
+            // ĐEO SAU LƯNG
+            ctx.rotate(0); 
+            ctx.drawImage(img, -w/2, -h/2, w, h);
+        }
+        else if (this.isAttacking) {
+            let progress = 1 - (this.attackTimer / 20); 
+            
+            // Góc xoay: Từ -120 độ (giơ cao) chém xuống +45 độ
+            let startAngle = -Math.PI / 1.5; 
+            let endAngle = Math.PI / 4;
+            let currentAngle = startAngle + (endAngle - startAngle) * progress;
+
+            ctx.rotate(currentAngle);
+
+            // Vẽ hiệu ứng vệt chém (màu trắng mờ)
+            if (progress > 0.2 && progress < 0.8) {
+                ctx.beginPath();
+                // Vẽ cung tròn theo mũi thước
+                ctx.arc(0, -90 * scale, w * 0.80, -0.6, 0.6, false);
+                ctx.lineWidth = 15 * scale;
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+                ctx.stroke();
+            }
+
+            // --- TỌA ĐỘ VẼ QUAN TRỌNG ĐỂ KHỚP TAY ---
+            // -w * 0.15: Dời hình lùi lại một chút để cán thước nằm ngay tâm xoay (0,0)
+            // -h * 0.65: Căn chỉnh chiều dọc để thước không bị lệch khỏi tay
+            // Bạn có thể chỉnh số 0.15 và 0.65 này nếu vẫn thấy chưa vừa ý
+            ctx.drawImage(img, -w * 0.3, -h * 0.65, w, h);
+
+        } else {
+            // === DI CHUYỂN / ĐỨNG YÊN ===
+            // Xoay thước nằm ngang khi chạy
+            ctx.rotate(-Math.PI + 0.45); 
+            
+            // Vị trí vẽ khi cầm bình thường
+            ctx.drawImage(img, -w * 0.1, -h * 0.95, w, h); 
+        }
+        
+        ctx.restore();
+    }
+    // --- HÀM: VẼ BÚT XÓA (SÚNG) - ĐÃ CHỈNH GÓC XÉO HƠN ---
+    drawCorrectionPen(ctx, x, y, scale, type, facingRight, isMoving) {
+        if (!images["1025"] || !images["1025"].complete) return;
+        const img = images["1025"];
+        
+        // Ảnh gốc: Nửa trên (Mở nắp), Nửa dưới (Đóng nắp)
+        const srcH = img.height / 2; 
+        const w = 130 * scale; 
+        const h = 130 * (srcH / img.width) * scale;
+
+        ctx.save();
+        ctx.translate(x, y);
+
+        // --- TRƯỜNG HỢP 1: ĐEO SAU LƯNG (BACK) ---
+        if (type === "BACK") {
+            // Xử lý hướng quay của nhân vật
+            if (!facingRight) ctx.scale(-1, 1);
+            
+            // --- ĐIỀU CHỈNH ĐỘ NGHIÊNG TẠI ĐÂY ---
+            // scale(-1, 1): Lật ảnh để nắp quay về phía sau gáy
+            ctx.scale(-1, 1); 
+            
+            // Math.PI / 4 (45 độ): Góc nghiêng chuẩn nhất (xéo hơn mức 60 độ cũ)
+            // Giúp nắp vẫn quay lên trên nhưng thân bút nằm chéo lưng
+            ctx.rotate(Math.PI / 4); 
+            
+            // Vẽ ảnh dưới (Đóng nắp)
+            ctx.drawImage(img, 0, srcH, img.width, srcH, -w/2, -h/2, w, h);
+        }
+        
+        // --- TRƯỜNG HỢP 2: CẦM TAY (HAND) ---
+        else if (type === "HAND") {
+            // Logic cầm tay giữ nguyên như cũ vì bạn đã thấy đúng
+            if (!facingRight) {
+                ctx.scale(-1, 1);
+            }
+
+            if (isMoving || this.isAttacking) {
+                ctx.rotate(0); 
+                ctx.scale(-1, 1); // Đầu nhọn quay ra ngoài
+
+                let recoil = (this.isAttacking && this.attackTimer > 10) ? -8 * scale : 0;
+                let dx = -w * 0.75 + recoil; 
+                let dy = -h * 0.65;         
+
+                ctx.drawImage(img, 0, 0, img.width, srcH, dx, dy, w, h);
+                
+                // --- HIỆU ỨNG TIA MỰC BẮN RA (MUZZLE FLASH) ---
+                // Chỉ hiện trong 3 frame đầu tiên khi bóp cò (từ 15 xuống 12)
+                if (this.isAttacking && this.attackTimer > 12) {
+                    ctx.save();
+                    
+                    // 1. Xác định toạ độ đầu ngòi bút
+                    let tipX = dx + w; 
+                    let tipY = dy + h * 0.35; 
+
+                    // 2. Tạo hiệu ứng phát sáng (Glow) màu Xanh Cyan đặc trưng của bút xóa
+                    ctx.shadowColor = "#00FFFF"; 
+                    ctx.shadowBlur = 10;
+                    ctx.lineCap = "round"; // Đầu nét vẽ tròn trịa
+
+                    // 3. Vẽ 3 tia mực bắn ra (Thay vì vẽ hình tròn)
+                    ctx.strokeStyle = "rgba(255, 255, 255, 0.95)"; // Màu trắng sáng
+                    ctx.lineWidth = 3 * scale;
+                    
+                    ctx.beginPath();
+                    
+                    // Tia 1: Bắn thẳng
+                    ctx.moveTo(tipX, tipY);
+                    ctx.lineTo(tipX + 25 * scale, tipY);
+
+                    // Tia 2: Bắn chéo lên (Ngắn hơn chút)
+                    ctx.moveTo(tipX, tipY);
+                    ctx.lineTo(tipX + 18 * scale, tipY - 6 * scale);
+
+                    // Tia 3: Bắn chéo xuống
+                    ctx.moveTo(tipX, tipY);
+                    ctx.lineTo(tipX + 18 * scale, tipY + 6 * scale);
+                    
+                    ctx.stroke();
+
+                    // 4. Vẽ thêm một vòng mờ sương (Mist) bao quanh đầu súng
+                    // Tạo cảm giác khí nén thoát ra
+                    ctx.shadowBlur = 0; // Tắt glow cho phần này để ko bị chói
+                    let grd = ctx.createRadialGradient(tipX, tipY, 2, tipX, tipY, 15 * scale);
+                    grd.addColorStop(0, "rgba(255, 255, 255, 0.8)");   // Tâm trắng
+                    grd.addColorStop(1, "rgba(0, 255, 255, 0)");       // Ngoài cùng trong suốt
+                    
+                    ctx.fillStyle = grd;
+                    ctx.beginPath();
+                    ctx.arc(tipX, tipY, 15 * scale, 0, Math.PI*2);
+                    ctx.fill();
+
+                    ctx.restore();
+                }
+            } else {
+                // Đứng nghỉ
+                ctx.rotate(Math.PI / 4); 
+                ctx.scale(-1, 1);       
+                ctx.drawImage(img, 0, srcH, img.width, srcH, -w/2, -h/2, w, h);
+            }
+        }
+        ctx.restore();
+    }
+
+    _drawInternal(cx, cy, s, t, facingRight, leanAngle, strideIntensity) {
+        // --- [BÓNG ĐỔ] ---
+        ctx.save();
+        let shadowY = cy + 34 * s; 
+        if (this.isSitting) shadowY = cy + 25 * s;
+        ctx.translate(cx, shadowY);
+        ctx.scale(1, 0.4); 
+        ctx.beginPath(); ctx.arc(0, 0, 18 * s, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(0, 0, 0, 0.15)"; ctx.fill();
+        ctx.restore();
+
+        let walkDir = facingRight ? 1 : -1;
+        let color = COLORS.INK_BLACK;
+        
+        let isMoving = strideIntensity > 0.1; // Biến kiểm tra đang di chuyển
+        let breathY = 0;
+        
+        if (!isMoving && !this.isSitting && !this.isAttacking) {
+            let time = Date.now() / 250; 
+            breathY = Math.sin(time) * 1.5 * s; 
+        }
+
+        let runBob = (Math.sin(t)**2) * 4 * s * strideIntensity;
+        let hipX = cx; let hipY = cy + runBob;
+        let shoulderX = cx + leanAngle; 
+        let shoulderY = cy - 25 * s + runBob + breathY;
+        let headX = shoulderX + leanAngle * 0.2; let headY = shoulderY - 15 * s;
+
+        let handLX = cx, handLY = cy, handRX = cx, handRY = cy;
+        let armLen = 30 * s; 
+        let legLen = 35 * s;
+        let kneeDir = facingRight ? -1 : 1;
+
+        // TRƯỜNG HỢP 1: ĐANG NGỒI THIỀN (Giữ nguyên code cũ)
+        if (this.isSitting) {
+            // ... (Giữ nguyên đoạn code vẽ ngồi thiền của bạn ở đây) ...
+            // Copy lại đoạn logic ngồi thiền cũ vào đây
+             let sitY = cy + 20 * s; 
+            let sitHipX = cx;      
+            let sitHipY = sitY;
+            let sitShoulderX = cx;
+            let sitShoulderY = sitY - 30 * s; 
+
+            if (this.equippedWeapon === "PENCIL") {
+                 this.drawPencil(ctx, sitShoulderX, sitShoulderY + 10*s, s, "BACK", facingRight);
+            }
+            else if (this.equippedWeapon === "RULER") {
+                 this.drawRuler(ctx, sitShoulderX, sitShoulderY + 5*s, s, "BACK", facingRight, false);
+            }
+
+            drawLimb([sitHipX, sitHipY], [sitHipX - 20*s, sitHipY + 15*s], 25*s, color, 1);
+            ctx.beginPath(); ctx.moveTo(sitHipX - 20*s, sitHipY + 15*s); ctx.lineTo(sitHipX, sitHipY + 25*s); ctx.stroke();
+            drawLimb([sitHipX, sitHipY], [sitHipX + 20*s, sitHipY + 15*s], 25*s, color, -1);
+            ctx.beginPath(); ctx.moveTo(sitHipX + 20*s, sitHipY + 15*s); ctx.lineTo(sitHipX, sitHipY + 25*s); ctx.stroke();
+            drawLine(sitHipX, sitHipY, sitShoulderX, sitShoulderY, color, 3);
+            drawCircle(sitShoulderX, sitShoulderY - 13*s, 10*s, color, false, 3); 
+            ctx.beginPath(); ctx.moveTo(sitShoulderX, sitShoulderY); 
+            ctx.quadraticCurveTo(sitShoulderX - 20*s, sitShoulderY + 5*s, sitHipX - 15*s, sitHipY + 5*s); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(sitShoulderX, sitShoulderY); 
+            ctx.quadraticCurveTo(sitShoulderX + 20*s, sitShoulderY + 5*s, sitHipX + 15*s, sitHipY + 5*s); ctx.stroke();
+             if (this.sitTimer > 0) {
+                 ctx.beginPath();
+                 let auraAlpha = (Math.sin(Date.now()/200) + 1) / 2 * 0.5; 
+                 ctx.strokeStyle = `rgba(0, 255, 0, ${auraAlpha})`;
+                 ctx.lineWidth = 2;
+                 ctx.arc(sitHipX, sitHipY - 15*s, 35*s, 0, Math.PI * 2);
+                 ctx.stroke();
+                 ctx.lineWidth = 3; ctx.strokeStyle = color;
+            }
+
+        } else {
+            // TRƯỜNG HỢP 2: ĐỨNG / CHẠY BÌNH THƯỜNG
+            if (!isMoving && !this.isAttacking) {
+                if (this.equippedWeapon === "PENCIL") {
+                    this.drawPencil(ctx, shoulderX, shoulderY + 5*s, s, "BACK", facingRight);
+                }
+                else if (this.equippedWeapon === "RULER") {
+                    this.drawRuler(ctx, shoulderX, shoulderY + 5*s, s, "BACK", facingRight, false);
+                }
+                else if (this.equippedWeapon === "CORRECTION_PEN") {
+                // Vẽ dạng "BACK" (Đóng nắp, đeo chéo)
+                this.drawCorrectionPen(ctx, shoulderX, shoulderY + 5*s, s, "BACK", facingRight, false);
+            }
+            }
+
+            // Vẽ Chân & Thân
+            let strideW = Math.cos(t) * 16 * s * walkDir * strideIntensity;
+            let lift = Math.sin(t) * 8 * s * strideIntensity;
+            let footLX = cx + strideW;
+            let footLY = cy + 30 * s + (strideIntensity > 0.1 ? Math.min(0, lift) : 0);
+            let footRX = cx - strideW;
+            let footRY = cy + 30 * s + (strideIntensity > 0.1 ? Math.min(0, -lift) : 0);
+            if (strideIntensity < 0.05) {
+                footLX = cx + 12 * s; footRX = cx - 12 * s;
+                footLY = footRY = cy + 34 * s;
+            }
+
+            drawLimb([hipX, hipY], [footRX, footRY], legLen, color, kneeDir);
+            drawLimb([hipX, hipY], [footLX, footLY], legLen, color, kneeDir);
+            drawLine(hipX, hipY, shoulderX, shoulderY, color, 3);
+
+            // --- TÍNH TOÁN TAY ---
+            // TRƯỜNG HỢP 1: TẤN CÔNG BẰNG BÚT CHÌ (Đâm thẳng)
+            if (this.equippedWeapon === "PENCIL" && this.isAttacking) {
+                let angleVal = Math.PI / 4; 
+                let maxReach = 50 * s; 
+                let currentReach = maxReach;
+                // Hiệu ứng thụt tay vào rồi đâm mạnh ra
+                if (this.attackTimer <= 10) currentReach = maxReach * (0.5 + 0.5 * (this.attackTimer / 10));
+                
+                let dx = currentReach * Math.cos(angleVal); 
+                let dy = currentReach * Math.sin(angleVal); 
+                
+                if (facingRight) {
+                    handRX = shoulderX + dx; handRY = shoulderY + dy; 
+                    handLX = shoulderX - 10 * s; handLY = shoulderY + 15 * s;
+                } else {
+                    handRX = shoulderX - dx; handRY = shoulderY + dy;
+                    handLX = shoulderX + 10 * s; handLY = shoulderY + 15 * s;
+                }
+            } 
+
+            // TRƯỜNG HỢP 2: TẤN CÔNG BẰNG THƯỚC KẺ (Vung đao vòng cung)
+            else if (this.equippedWeapon === "RULER" && this.isAttacking) {
+                // 1. Tính tiến độ đòn đánh (từ 0 đến 1)
+                // attackTimer chạy từ 20 về 0.
+                let progress = 1 - (this.attackTimer / 20);
+
+                // 2. Góc vung tay: Phải khớp với góc quay của cây thước
+                // Bắt đầu từ phía sau trên cao (-120 độ) chém xuống phía trước (+45 độ)
+                let startAngle = -Math.PI / 1.5; 
+                let endAngle = Math.PI / 4;
+                
+                // Tính góc hiện tại dựa theo tiến độ
+                let curAngle = startAngle + (endAngle - startAngle) * progress;
+
+                // 3. Độ dài sải tay (Vươn ra xa để chém)
+                let reach = 45 * s; 
+
+                // 4. Tính tọa độ tay đòn (Dùng sin/cos để tay xoay tròn quanh vai)
+                let dx = Math.cos(curAngle) * reach;
+                let dy = Math.sin(curAngle) * reach;
+
+                if (facingRight) {
+                    handRX = shoulderX + dx; 
+                    handRY = shoulderY + dy;
+                    
+                    // Tay trái (tay không) vung nhẹ ra sau giữ thăng bằng
+                    handLX = shoulderX - 20 * s; 
+                    handLY = shoulderY + 20 * s;
+                } else {
+                    // Nếu quay trái, lật ngược trục X
+                    handRX = shoulderX - dx; 
+                    handRY = shoulderY + dy; 
+                    
+                    handLX = shoulderX + 20 * s;
+                    handLY = shoulderY + 20 * s;
+                }
+            }
+
+            // TRƯỜNG HỢP 3: ĐI BỘ / CHẠY / ĐỨNG YÊN (Mặc định)
+            else {
+                let armSwing = Math.cos(t) * 15 * s * strideIntensity;
+                let forwardOffset = 5 * s * walkDir * strideIntensity;
+                
+                handLX = shoulderX + armSwing + forwardOffset;
+                handLY = shoulderY + 20 * s;
+                handRX = shoulderX - armSwing + forwardOffset;
+                handRY = shoulderY + 20 * s;
+
+                // Logic cầm BÚT CHÌ khi chạy (Kiểu Naruto)
+                if (this.equippedWeapon === "PENCIL" && isMoving) {
+                    let reachBack = 30 * s; let heightBack = 5 * s;
+                    if (facingRight) {
+                        handRX = shoulderX - reachBack; handRY = shoulderY + heightBack;
+                        handLX = shoulderX + 20 * s; 
+                    } else {
+                        handRX = shoulderX + reachBack; handRY = shoulderY + heightBack;
+                        handLX = shoulderX - 20 * s;
+                    }
+                } 
+                // Logic cầm THƯỚC KẺ khi chạy (Kéo lê dưới đất)
+                else if (this.equippedWeapon === "RULER" && isMoving) {
+                    let dragReachBack = 35 * s; 
+                    let dragHeightLow = 20 * s; 
+                    
+                    if (facingRight) {
+                        handRX = shoulderX - dragReachBack; 
+                        handRY = shoulderY + dragHeightLow; 
+                        handLX = shoulderX + 20 * s; 
+                    } else {
+                        handRX = shoulderX + dragReachBack;
+                        handRY = shoulderY + dragHeightLow;
+                        handLX = shoulderX - 20 * s;
+                    }
+                }
+                else if (this.equippedWeapon === "CORRECTION_PEN" && (isMoving || this.isAttacking)) {
+                    // Tư thế vác vai:
+                    // Tay phải (RX): Đặt gần vai để bóp cò.
+                    // Tay trái (LX): Đặt xa hơn để đỡ nòng súng.
+                    if (facingRight) {
+                        handRX = shoulderX + 15 * s;  // Tay cò (Gần thân)
+                        handRY = shoulderY - 5 * s;   // Cao ngang vai
+                        
+                        handLX = shoulderX + 50 * s;  // Tay đỡ (Xa thân)
+                        handLY = shoulderY - 8 * s;   // Hơi cao hơn tay cò tí
+                    } else {
+                        // Lật ngược lại cho bên trái
+                        handRX = shoulderX - 15 * s; 
+                        handRY = shoulderY - 5 * s;
+                        
+                        handLX = shoulderX - 50 * s;
+                        handLY = shoulderY - 8 * s;
+                    }
+                }
+                else if (!isMoving) {
+                    handLX = shoulderX + 13 * s; handRX = shoulderX - 13 * s;
+                    handLY = handRY = shoulderY + 28 * s;
+                }
+            }
+
+            drawLimb([shoulderX, shoulderY], [handRX, handRY], armLen, color, -kneeDir); 
+            drawLimb([shoulderX, shoulderY], [handLX, handLY], armLen, color, -kneeDir); 
+            drawCircle(headX, headY, 10 * s, color, false, 3); 
+        }
+
+        // --- VẼ VŨ KHÍ TRÊN TAY ---
+        if (!this.isSitting) {
+            // Chỉ vẽ khi đang Di chuyển hoặc đang Tấn công
+            if (isMoving || this.isAttacking) {
+                
+                // 1. Nếu là BÚT CHÌ
+                if (this.equippedWeapon === "PENCIL") {
+                    this.drawPencil(ctx, handRX, handRY, s, "HAND", facingRight);
+                }
+                
+                // 2. Nếu là THƯỚC KẺ
+                else if (this.equippedWeapon === "RULER") {
+                    this.drawRuler(ctx, handRX, handRY, s, "HAND", facingRight, isMoving);
+                }
+                
+                // >>> 3. SÚNG BÚT XÓA
+                else if (this.equippedWeapon === "CORRECTION_PEN") {
+                    // Tham số cuối cùng là 'true' để kích hoạt chế độ bắn/vác vai
+                    this.drawCorrectionPen(ctx, handRX, handRY, s, "HAND", facingRight, true);
+                }
+            }
+        }
+    }
+
+    draw(camX, camY) {
+        let cx = this.x - camX;
+        let cy = this.y - camY;
+        this._drawInternal(cx, cy, this.scale, this.animTimer, this.facingRight, this.leanAngle, this.strideIntensity);
+    }
+
+    drawUIPreview(x, y, scale) {
+        let t = Date.now() / 500;
+        this._drawInternal(x, y, scale, t, true, 0, 0);
+    }
+    
+    // 1. Hàm đóng gói dữ liệu để Lưu game
+    toDict() {
+        return {
+            name: this.name,
+            x: this.x, 
+            y: this.y,
+            level: this.level,
+            exp: this.exp,
+            hp: this.hp,
+            mp: this.mp,
+            stamina: this.stamina,
+            equippedWeapon: this.equippedWeapon,
+            
+            hasSlime: this.hasSlime
+        };
+    }
+
+    // 2. Hàm đọc dữ liệu để Tải game (Load)
+    fromDict(data) {
+        if (!data) return;
+        if (data.name) this.name = data.name;
+        // Chỉ load vị trí nếu hợp lệ
+        if (data.x !== undefined && !isNaN(data.x)) this.x = data.x;
+        if (data.y !== undefined && !isNaN(data.y)) this.y = data.y;
+        
+        if (data.level) this.level = data.level;
+        if (data.exp !== undefined) this.exp = data.exp;
+        
+        // Cập nhật chỉ số tối đa theo Level
+        this.maxHp = 1000 + (this.level - 1) * 100;
+        this.maxMp = 1000 + (this.level - 1) * 50;
+        this.maxExp = 200 * this.level;
+
+        // Nạp HP/MP hiện tại
+        if (data.hp !== undefined) this.hp = Math.min(data.hp, this.maxHp);
+        else this.hp = this.maxHp;
+
+        if (data.mp !== undefined) this.mp = Math.min(data.mp, this.maxMp);
+        else this.mp = this.maxMp;
+
+        if (data.stamina !== undefined) this.stamina = data.stamina;
+        if (data.equippedWeapon !== undefined) this.equippedWeapon = data.equippedWeapon;
+        if (data.hasSlime !== undefined) this.hasSlime = data.hasSlime;
+    }
+}
+// --- CLASS: INVENTORY PANEL ---
+class InventoryPanel {
+    constructor() {
+        this.visible = false;
+        this.slotSize = 50; 
+        this.gap = 6;
+        this.cols = 6;
+        this.rows = 6;
+        this.w = 360; this.h = 450;
+        this.x = 0; this.y = 0;
+        
+        this.items = Array(this.rows).fill().map(() => Array(this.cols).fill(null));
+        this.gold = 9999;
+        this.selectedSlot = null;
+        
+        this._generateFakeItems();
+        
+        this.rect = {x:0, y:0, w:0, h:0};
+        this.closeBtnRect = {x:0, y:0, w:0, h:0};
+        this.useBtnRect = {x:0, y:0, w:0, h:0};
+    }
+
+    _generateFakeItems() {
+        this.items[0][0] = { type: "PENCIL", count: 1, img: "1007", name: "Bút Chì Thần" };
+        this.items[0][1] = { type: "HP_POTION", count: 10, img: "1013", name: "Bình Máu" };
+        this.items[0][2] = { type: "MP_POTION", count: 10, img: "1013", name: "Bình Mana" };
+        this.items[0][3] = { type: "DUAL_POTION", count: 5, img: "1013", name: "Bình Hỗn Hợp" };
+        this.items[0][4] = { type: "STAMINA_POTION", count: 5, img: "1013", name: "Bình Thể Lực" };
+    }
+
+    addItem(type, count, img) {
+        for(let r=0; r<this.rows; r++) {
+            for(let c=0; c<this.cols; c++) {
+                if (this.items[r][c] === null) {
+                    this.items[r][c] = { type: type, count: count, img: img };
+                    return true; 
+                }
+            }
+        }
+        console.log("Hành trang đầy!");
+        return false; 
+    }
+
+    toDict() { return {items: this.items, gold: this.gold}; }
+    fromDict(data) {
+        if (data.gold !== undefined) this.gold = data.gold;
+        if (data.items && Array.isArray(data.items)) {
+            let newItems = Array(this.rows).fill().map(() => Array(this.cols).fill(null));
+            for (let r = 0; r < this.rows; r++) {
+                if (!data.items[r]) continue; 
+                for (let c = 0; c < this.cols; c++) {
+                    let item = data.items[r][c];
+                    if (item) {
+                        if (item.type === "SWORD" || item.type === "SHIELD" || item.type === "BOOK") {
+                            item.type = "PENCIL"; item.img = "1007"; item.name = "Bút Chì Thần";
+                        }
+                        else if (item.type === "HP") { item.type = "HP_POTION"; item.img = "1008"; item.name = "Bình Máu"; } 
+                        else if (item.type === "MP") { item.type = "MP_POTION"; item.img = "1009"; item.name = "Bình Mana"; }
+                        if (!item.img) {
+                            if (item.type === "PENCIL") item.img = "1007";
+                            else if (item.type === "HP_POTION") item.img = "1008";
+                            else if (item.type === "MP_POTION") item.img = "1009";
+                            else item.img = "1010"; 
+                        }
+                        newItems[r][c] = item;
+                    } 
+                }
+            }
+            this.items = newItems;
+        }
+    }
+
+    toggle() { 
+        this.visible = !this.visible; 
+        this.selectedSlot = null;
+        if(this.visible) this.updatePos();
+    }
+
+    updatePos() {
+        this.w = Math.min(400, SCREEN_WIDTH - 40);
+        this.slotSize = Math.floor((this.w - 50) / 6);
+        this.x = (SCREEN_WIDTH - this.w) / 2;
+        this.y = (SCREEN_HEIGHT - this.h) / 2;
+        this.rect = {x: this.x, y: this.y, w: this.w, h: this.h};
+        this.closeBtnRect = {x: this.x + this.w - 30, y: this.y + 8, w: 22, h: 22};
+        
+        // --- [CHỈNH SỬA] NÚT SỬ DỤNG NHỎ LẠI & QUA PHẢI ---
+        let btnW = 100; // Giảm chiều rộng (cũ là 160)
+        let btnH = 35;  // Giảm chiều cao (cũ là 40)
+        this.useBtnRect = {
+            x: this.x + this.w - btnW - 25, // Căn phải, cách lề 25px
+            y: this.y + this.h - 55,        // Ngang hàng với tiền
+            w: btnW, h: btnH
+        };
+    }
+
+    checkClick(mx, my) {
+        if (!this.visible) return false;
+        
+        if (mx >= this.closeBtnRect.x && mx <= this.closeBtnRect.x + this.closeBtnRect.w &&
+            my >= this.closeBtnRect.y && my <= this.closeBtnRect.y + this.closeBtnRect.h) {
+            this.visible = false;
+            return true;
+        }
+
+        if (this.selectedSlot) {
+            let item = this.items[this.selectedSlot.r][this.selectedSlot.c];
+            if (item && mx >= this.useBtnRect.x && mx <= this.useBtnRect.x + this.useBtnRect.w &&
+                my >= this.useBtnRect.y && my <= this.useBtnRect.y + this.useBtnRect.h) {
+                
+                if (item.type === "PENCIL" || item.type === "RULER" || item.type === "CORRECTION_PEN") {
+                    if (player.equippedWeapon) {
+                        let oldImg = "1007"; 
+                        if (player.equippedWeapon === "RULER") oldImg = "1024";
+                        if (player.equippedWeapon === "CORRECTION_PEN") oldImg = "1025";
+                        this.addItem(player.equippedWeapon, 1, oldImg);
+                    }
+                    player.equippedWeapon = item.type;
+                    if(typeof floatingTexts !== 'undefined') floatingTexts.push(new FloatingText(player.x, player.y - 80, "Trang bị!", "#ffff00"));
+                    this.items[this.selectedSlot.r][this.selectedSlot.c] = null;
+                    this.selectedSlot = null;
+                    saveGame(player, inventory);
+                    return true;
+                }
+                else if (item.type === "HP_POTION") {
+                    player.hp = player.maxHp; 
+                    if(typeof floatingTexts !== 'undefined') floatingTexts.push(new FloatingText(player.x, player.y - 80, "Hồi Máu!", "#32c832"));
+                    item.count--; 
+                }
+                else if (item.type === "MP_POTION") {
+                    player.mp = player.maxMp; 
+                    if(typeof floatingTexts !== 'undefined') floatingTexts.push(new FloatingText(player.x, player.y - 80, "Hồi Mana!", "#3232c8"));
+                    item.count--;
+                }
+                else if (item.type === "DUAL_POTION") {
+                    player.hp = player.maxHp; player.mp = player.maxMp;
+                    if(typeof floatingTexts !== 'undefined') floatingTexts.push(new FloatingText(player.x, player.y - 80, "Phục Hồi!", "#ffff00"));
+                    item.count--;
+                }
+                else if (item.type === "STAMINA_POTION") {
+                    player.stamina = player.maxStamina;
+                    if(typeof floatingTexts !== 'undefined') floatingTexts.push(new FloatingText(player.x, player.y - 80, "Sung Sức!", "#00ffff"));
+                    item.count--;
+                }
+
+                if (item.type !== "PENCIL" && item.count <= 0) {
+                    this.items[this.selectedSlot.r][this.selectedSlot.c] = null;
+                    this.selectedSlot = null;
+                }
+                saveGame(player, inventory); 
+                return true;
+            }
+        }
+        
+        let gridW = this.cols * this.slotSize + (this.cols - 1) * this.gap;
+        let startX = this.x + (this.w - gridW) / 2;
+        let startY = this.y + 55;
+
+        for (let r=0; r<this.rows; r++) {
+            for (let c=0; c<this.cols; c++) {
+                let ox = startX + c * (this.slotSize + this.gap);
+                let oy = startY + r * (this.slotSize + this.gap);
+                if (mx >= ox && mx <= ox + this.slotSize && my >= oy && my <= oy + this.slotSize) {
+                    let item = this.items[r][c];
+                    if (item) { this.selectedSlot = {r: r, c: c}; } 
+                    else { this.selectedSlot = null; }
+                    return true;
+                }
+            }
+        }
+        if (mx >= this.x && mx <= this.x + this.w && my >= this.y && my <= this.y + this.h) return true;
+        return false;
+    }
+
+    drawItemIcon(x, y, size, itemData) {
+        if (!itemData) return;
+        if ((itemData.type === "PENCIL" || itemData.type === "RULER" || itemData.type === "CORRECTION_PEN") && images[itemData.img] && images[itemData.img].complete) {
+            let img = images[itemData.img];
+            ctx.save();
+            ctx.beginPath(); ctx.rect(x, y, size, size); ctx.clip();
+            ctx.translate(x + size / 2, y + size / 2); 
+
+            if (itemData.type === "CORRECTION_PEN") {
+                ctx.rotate(-Math.PI / 4);
+                let halfH = img.height / 2;
+                let drawW = size * 0.85; 
+                let drawH = drawW * (halfH / img.width);
+                ctx.drawImage(img, 0, halfH, img.width, halfH, -drawW/2, -drawH/2, drawW, drawH);
+            } else {
+                if (itemData.type === "RULER") ctx.rotate(0);
+                else ctx.rotate(-Math.PI / 4); 
+                let drawW = size * 0.85; 
+                let drawH = drawW * (img.height / img.width);
+                ctx.shadowColor = "rgba(0,0,0,0.4)"; ctx.shadowBlur = 5;
+                ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
+            }
+            ctx.restore();
+        } 
+        else if (["HP_POTION", "MP_POTION", "DUAL_POTION", "STAMINA_POTION"].includes(itemData.type) && images["1013"] && images["1013"].complete) {
+            let img = images["1013"];
+            let sw = img.width / 2; let sh = img.height / 2;
+            let sx = 0, sy = 0;
+            if (itemData.type === "HP_POTION")      { sx = 0; sy = 0; }
+            else if (itemData.type === "MP_POTION") { sx = sw; sy = 0; }
+            else if (itemData.type === "DUAL_POTION"){ sx = 0; sy = sh; }
+            else if (itemData.type === "STAMINA_POTION") { sx = sw; sy = sh; }
+            ctx.save();
+            let pad = 6; let drawSize = size - pad * 2; 
+            ctx.shadowColor = "rgba(0,0,0,0.3)"; ctx.shadowBlur = 4;
+            ctx.drawImage(img, sx, sy, sw, sh, x + pad, y + pad, drawSize, drawSize);
+            ctx.restore();
+        }
+        else if (itemData.img && images[itemData.img] && images[itemData.img].complete) {
+            let img = images[itemData.img];
+            let padding = 6;
+            let availSize = size - padding * 2;
+            let ratio = Math.min(availSize / img.width, availSize / img.height);
+            let w = img.width * ratio; let h = img.height * ratio;
+            ctx.save();
+            ctx.shadowColor = "rgba(0,0,0,0.3)"; ctx.shadowBlur = 4;
+            ctx.drawImage(img, x + (size - w) / 2, y + (size - h) / 2, w, h);
+            ctx.restore();
+        } 
+        else { drawText("?", x + size/2, y + size/2, 14, "#fff", "center"); }
+
+        if (itemData.count > 1) {
+            ctx.fillStyle = "rgba(0,0,0,0.6)";
+            ctx.beginPath(); ctx.arc(x + size - 10, y + size - 10, 8, 0, Math.PI*2); ctx.fill();
+            drawText(itemData.count, x + size - 10, y + size - 9, 11, "#fff", "center", true);
+        }
+    }
+
+    draw() {
+        if (!this.visible) return;
+        this.updatePos();
+
+        ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+        drawRect(this.x, this.y, this.w, this.h, COLORS.THEME_JADE_BG, true, 8);
+        drawRect(this.x, this.y, this.w, this.h, "#0a1e23", false, 8, 4);
+
+        let headerH = 40;
+        drawRect(this.x, this.y, this.w, headerH, "#234b50", true, 8); 
+        drawLine(this.x, this.y + headerH, this.x + this.w, this.y + headerH, "#0a1e1e");
+        drawText("HÀNH TRANG", this.x + this.w/2, this.y + 20, 18, COLORS.THEME_TEXT_WHITE, "center");
+
+        drawRect(this.closeBtnRect.x, this.closeBtnRect.y, this.closeBtnRect.w, this.closeBtnRect.h, "#962828", true, 4);
+        drawText("X", this.closeBtnRect.x + 11, this.closeBtnRect.y + 11, 14, "#fff", "center");
+
+        let gridW = this.cols * this.slotSize + (this.cols - 1) * this.gap;
+        let startX = this.x + (this.w - gridW) / 2;
+        let startY = this.y + 55;
+
+        for (let r=0; r<this.rows; r++) {
+            for (let c=0; c<this.cols; c++) {
+                let ox = startX + c * (this.slotSize + this.gap);
+                let oy = startY + r * (this.slotSize + this.gap);
+                
+                drawRect(ox, oy, this.slotSize, this.slotSize, COLORS.THEME_SLOT_BG);
+                drawRect(ox, oy, this.slotSize, this.slotSize, COLORS.THEME_SLOT_BORDER, false);
+                
+                if (this.items[r][c]) {
+                    this.drawItemIcon(ox, oy, this.slotSize, this.items[r][c]);
+                }
+
+                if (this.selectedSlot && this.selectedSlot.r === r && this.selectedSlot.c === c) {
+                    drawRect(ox-2, oy-2, this.slotSize+4, this.slotSize+4, "yellow", false, 2, 3);
+                }
+            }
+        }
+        
+        // --- [CHỈNH SỬA] Nút SỬ DỤNG: Đã dời qua phải, bỏ else (xóa chữ) ---
+        if (this.selectedSlot) {
+            let btn = this.useBtnRect;
+            ctx.shadowColor = "rgba(0,0,0,0.5)"; ctx.shadowBlur = 10;
+            drawRect(btn.x, btn.y, btn.w, btn.h, COLORS.BTN_USE_BG, true, 8);
+            drawRect(btn.x, btn.y, btn.w, btn.h, COLORS.BTN_USE_BORDER, false, 8, 2);
+            ctx.shadowBlur = 0;
+            drawText("SỬ DỤNG", btn.x + btn.w/2, btn.y + btn.h/2, 14, COLORS.BTN_USE_TEXT, "center", true);
+        } 
+        // ĐÃ XÓA PHẦN ELSE: "Chọn vật phẩm để xem"
+        
+        // --- VỊ TRÍ TIỀN (Giữ nguyên bên trái) ---
+        let moneyX = this.x + 25; 
+        let moneyY = this.y + this.h - 55; 
+        let moneyW = 100;
+        let moneyH = 32;
+
+        drawRect(moneyX, moneyY, moneyW, moneyH, "rgba(0, 0, 0, 0.6)", true, 6); 
+        drawRect(moneyX, moneyY, moneyW, moneyH, "#ffd700", false, 6);            
+
+        ctx.save();
+        ctx.shadowColor = "black"; ctx.shadowBlur = 2;
+        drawText(`${this.gold} 🥜`, moneyX + moneyW/2, moneyY + moneyH/2 + 1, 15, "#ffd700", "center", true);
+        ctx.restore();
+    }
+}
+// --- CLASS: CHARACTER PANEL ---
+class CharacterPanel {
+    constructor() {
+        this.visible = false;
+        this.w = 360; this.h = 450; // Tăng chiều rộng nhẹ để thoáng hơn
+        this.x = 0; this.y = 0;
+        
+        // 0: Trang bị (Equip), 1: Thông tin (Stats)
+        this.activeTab = 0; 
+        
+        this.rect = {x:0, y:0, w:0, h:0};
+        this.closeBtn = {x:0, y:0, w:22, h:22};
+        
+        // Rects cho 2 tab
+        this.tabEquipRect = {x:0, y:0, w:0, h:0};
+        this.tabInfoRect = {x:0, y:0, w:0, h:0};
+
+        // 0: Đầu, 1: Áo, 2: Quần, 3: Nhẫn, 4: Vũ khí
+        this.selectedEquipSlot = null; 
+        this.unequipBtnRect = {x:0, y:0, w:0, h:0};
+    }
+
+    toggle() { 
+        this.visible = !this.visible; 
+        this.selectedEquipSlot = null; 
+        // Reset về tab trang bị khi mở lại
+        if(this.visible) {
+            this.activeTab = 0;
+            this.updatePos(); 
+        }
+    }
+
+    updatePos() {
+        this.w = Math.min(420, SCREEN_WIDTH - 40);
+        this.x = (SCREEN_WIDTH - this.w) / 2;
+        this.y = (SCREEN_HEIGHT - this.h) / 2;
+        this.rect = {x:this.x, y:this.y, w:this.w, h:this.h};
+        this.closeBtn = {x:this.x + this.w - 30, y:this.y + 8, w:22, h:22};
+
+        // Tính toán vị trí 2 Tab
+        let headerH = 40;
+        let tabW = (this.w - 80) / 2; // Trừ khoảng trống cho nút close
+        this.tabEquipRect = {x: this.x + 10, y: this.y + 5, w: tabW, h: headerH - 5};
+        this.tabInfoRect = {x: this.x + 10 + tabW + 5, y: this.y + 5, w: tabW, h: headerH - 5};
+
+        // Vị trí nút Gỡ bỏ (Chỉ dùng ở tab Trang bị)
+        let btnW = 160; let btnH = 40;
+        this.unequipBtnRect = {
+            x: this.x + (this.w - btnW)/2,
+            y: this.y + this.h - 60,
+            w: btnW, h: btnH
+        };
+    }
+
+    checkClick(mx, my) {
+        if (!this.visible) return false;
+        
+        // 1. Click nút Đóng (Ưu tiên cao nhất)
+        if (mx >= this.closeBtn.x && mx <= this.closeBtn.x + this.closeBtn.w &&
+            my >= this.closeBtn.y && my <= this.closeBtn.y + this.closeBtn.h) {
+            this.visible = false; return true;
+        }
+
+        // 2. Click chuyển Tab
+        if (mx >= this.tabEquipRect.x && mx <= this.tabEquipRect.x + this.tabEquipRect.w &&
+            my >= this.tabEquipRect.y && my <= this.tabEquipRect.y + this.tabEquipRect.h) {
+            this.activeTab = 0; // Chuyển sang Trang bị
+            this.selectedEquipSlot = null;
+            return true;
+        }
+        if (mx >= this.tabInfoRect.x && mx <= this.tabInfoRect.x + this.tabInfoRect.w &&
+            my >= this.tabInfoRect.y && my <= this.tabInfoRect.y + this.tabInfoRect.h) {
+            this.activeTab = 1; // Chuyển sang Thông tin
+            return true;
+        }
+
+        // 3. Xử lý Logic riêng từng Tab
+        if (this.activeTab === 0) {
+            // --- LOGIC TAB TRANG BỊ ---
+            // Nút GỠ BỎ
+            if (this.selectedEquipSlot !== null) {
+                let uBtn = this.unequipBtnRect;
+                // Kiểm tra xem chuột có click trúng nút Gỡ Bỏ không
+                if (mx >= uBtn.x && mx <= uBtn.x + uBtn.w && my >= uBtn.y && my <= uBtn.y + uBtn.h) {
+                    
+                    // Kiểm tra xem có đang chọn slot Vũ khí (index 4) và nhân vật có đang cầm vũ khí không
+                    if (this.selectedEquipSlot === 4 && player.equippedWeapon) {
+                        
+                        // --- XÁC ĐỊNH ẢNH ĐỂ TRẢ VỀ TÚI ---
+                        let imgID = "1007"; // Mặc định: Bút Chì
+                        if (player.equippedWeapon === "RULER") imgID = "1024";
+                        if (player.equippedWeapon === "CORRECTION_PEN") imgID = "1025"; // <--- QUAN TRỌNG: Trả về ảnh Súng
+                        
+                        // Thử thêm vào hành trang
+                        let added = inventory.addItem(player.equippedWeapon, 1, imgID);
+                        
+                        if (added) {
+                            // Nếu thêm thành công -> Xóa vũ khí trên người
+                            player.equippedWeapon = null;
+                            this.selectedEquipSlot = null; 
+                            
+                            // Lưu game ngay lập tức
+                            saveGame(player, inventory);
+                        } else {
+                            // Nếu túi đầy -> Thông báo
+                            alert("Hành trang đã đầy! Không thể gỡ bỏ vũ khí.");
+                        }
+                    }
+                    return true;
+                }
+            }
+
+            // Click vào ô trang bị
+            let slotSize = 42; let gap = 12;
+            let startX = this.x + 30; 
+            let startY = this.y + 70;
+            
+            for (let i=0; i<5; i++) {
+                let sy = startY + i * (slotSize + gap);
+                if (mx >= startX && mx <= startX + slotSize && my >= sy && my <= sy + slotSize) {
+                    let hasItem = false;
+                    if (i === 4 && player.equippedWeapon) hasItem = true;
+                    
+                    if (hasItem) {
+                        this.selectedEquipSlot = i;
+                    } else {
+                        this.selectedEquipSlot = null;
+                    }
+                    return true;
+                }
+            }
+        } else {
+            // --- LOGIC TAB THÔNG TIN ---
+            // Hiện tại tab thông tin chỉ xem, chưa có nút bấm tương tác
+        }
+
+        // Chặn click xuyên qua bảng
+        if (mx >= this.rect.x && mx <= this.rect.x + this.rect.w && my >= this.rect.y && my <= this.rect.y + this.rect.h) return true;
+        return false;
+    }
+
+    draw(playerRef) {
+        if (!this.visible) return;
+        this.updatePos();
+
+        // Nền mờ toàn màn hình
+        ctx.fillStyle = "rgba(0,0,0,0.4)";
+        ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+        // Khung bảng chính
+        drawRect(this.x, this.y, this.w, this.h, COLORS.THEME_JADE_BG, true, 5);
+        drawRect(this.x, this.y, this.w, this.h, "#0a1e23", false, 0, 4);
+
+        // --- VẼ HEADER (TABS) ---
+        let t1 = this.tabEquipRect;
+        let t2 = this.tabInfoRect;
+
+        // Vẽ nền Tab 1 (Trang bị)
+        let bg1 = this.activeTab === 0 ? COLORS.THEME_JADE_BORDER : "#0f282d";
+        let txt1 = this.activeTab === 0 ? "#fff" : "#64828c";
+        drawRect(t1.x, t1.y, t1.w, t1.h, bg1, true, 5);
+        drawText("TRANG BỊ", t1.x + t1.w/2, t1.y + t1.h/2, 14, txt1, "center", true);
+
+        // Vẽ nền Tab 2 (Thông tin)
+        let bg2 = this.activeTab === 1 ? COLORS.THEME_JADE_BORDER : "#0f282d";
+        let txt2 = this.activeTab === 1 ? "#fff" : "#64828c";
+        drawRect(t2.x, t2.y, t2.w, t2.h, bg2, true, 5);
+        drawText("THÔNG TIN", t2.x + t2.w/2, t2.y + t2.h/2, 14, txt2, "center", true);
+
+        // Đường kẻ ngang dưới header
+        drawLine(this.x, this.y + 45, this.x + this.w, this.y + 45, "#0a1e1e");
+
+        // Nút Close
+        drawRect(this.closeBtn.x, this.closeBtn.y, this.closeBtn.w, this.closeBtn.h, "#962828", true, 2);
+        drawText("X", this.closeBtn.x + 11, this.closeBtn.y + 11, 14, "#fff", "center");
+
+
+        // --- NỘI DUNG ---
+        if (this.activeTab === 0) {
+            this.drawEquipTab(playerRef);
+        } else {
+            this.drawInfoTab(playerRef);
+        }
+    }
+
+    // --- VIEW 1: TRANG BỊ ---
+    drawEquipTab(playerRef) {
+        let slotSize = 42;
+        let gap = 12;
+        let startX = this.x + 30; 
+        let startY = this.y + 70;
+        
+        let names = ["Đầu", "Áo", "Quần", "Nhẫn", "Vũ Khí"];
+            
+        for (let i=0; i<5; i++) {
+            let sy = startY + i * (slotSize + gap);
+            
+            // Vẽ nền ô
+            drawRect(startX, sy, slotSize, slotSize, COLORS.THEME_SLOT_BG);
+            drawRect(startX, sy, slotSize, slotSize, COLORS.THEME_SLOT_BORDER, false);
+
+            let hasItem = false;
+            // Kiểm tra xem ô thứ 5 (index 4) có vũ khí không
+            if (i === 4 && playerRef.equippedWeapon) hasItem = true;
+
+            if (hasItem) {
+                // 1. Cấu hình mặc định (Bút Chì)
+                let imgID = "1007"; 
+                let rotation = -Math.PI / 4; 
+
+                // 2. Kiểm tra loại vũ khí để đổi ảnh
+                if (playerRef.equippedWeapon === "RULER") {
+                    imgID = "1024"; rotation = 0;
+                }
+                else if (playerRef.equippedWeapon === "CORRECTION_PEN") {
+                    imgID = "1025"; rotation = 0; // Súng Bút Xóa: Dùng ảnh 1025, Không xoay
+                }
+
+                if (i === 4 && images[imgID] && images[imgID].complete) {
+                    let img = images[imgID];
+                    ctx.save();
+                    
+                    // Tạo khung cắt (Clip) để hình không bị lem ra ngoài ô
+                    ctx.beginPath(); ctx.rect(startX, sy, slotSize, slotSize); ctx.clip();
+                    ctx.translate(startX + slotSize/2, sy + slotSize/2);
+                    
+                    // --- VẼ SÚNG BÚT XÓA (CẮT ẢNH DƯỚI & XOAY) ---
+                    if (playerRef.equippedWeapon === "CORRECTION_PEN") {
+                        ctx.rotate(-Math.PI / 4); // Xoay -45 độ
+                        
+                        // Chỉ lấy nửa DƯỚI của ảnh (Phần đóng nắp)
+                        let halfH = img.height / 2;
+                        let drawW = slotSize * 0.85;
+                        let drawH = drawW * (halfH / img.width);
+                        
+                        // Vẽ ảnh: img, sx=0, sy=halfH (nửa dưới), sw, sh...
+                        ctx.drawImage(img, 0, halfH, img.width, halfH, -drawW/2, -drawH/2, drawW, drawH);
+                    } 
+                    // --- VẼ CÁC VŨ KHÍ KHÁC (BÌNH THƯỜNG) ---
+                    else {
+                        ctx.rotate(rotation);
+                        let drawW = slotSize * 0.85;
+                        let drawH = drawW * (img.height / img.width);
+                        ctx.shadowColor = "rgba(0,0,0,0.4)"; ctx.shadowBlur = 4;
+                        ctx.drawImage(img, -drawW/2, -drawH/2, drawW, drawH);
+                    }
+                    ctx.restore();
+                 }
+            } else {
+                // Nếu không có đồ: Hiện tên slot mờ mờ
+                drawText(names[i], startX + slotSize/2, sy + slotSize/2, 10, "rgba(255, 255, 255, 0.3)", "center", false);
+            }
+
+            // Highlight viền vàng khi chọn
+            if (this.selectedEquipSlot === i) {
+                drawRect(startX-2, sy-2, slotSize+4, slotSize+4, "yellow", false, 2, 3);
+            }
+        }
+        
+        // Nút Gỡ Bỏ
+        if (this.selectedEquipSlot !== null) {
+            let btn = this.unequipBtnRect;
+            ctx.shadowColor = "rgba(0,0,0,0.5)"; ctx.shadowBlur = 10;
+            drawRect(btn.x, btn.y, btn.w, btn.h, "#d24628", true, 8); 
+            drawRect(btn.x, btn.y, btn.w, btn.h, "#8c2814", false, 8, 2);
+            ctx.shadowBlur = 0;
+            drawText("GỠ BỎ", btn.x + btn.w/2, btn.y + btn.h/2, 16, "#fff", "center", true);
+        }
+        
+        // Preview Nhân vật (Bên phải)
+        let prevCX = this.x + this.w - 110; 
+        let prevCY = this.y + 220;
+        playerRef.drawUIPreview(prevCX, prevCY, 1.6);
+    }
+
+    // --- VIEW 2: THÔNG TIN CHI TIẾT ---
+    drawInfoTab(playerRef) {
+        let startX = this.x + 20;
+        let startY = this.y + 70;
+        let rowH = 35;
+        let labelColor = "#8daab4";
+        let valueColor = "#fff";
+        let wFull = this.w - 40;
+
+        // Hàm vẽ thanh bar nhỏ (HP/MP/EXP/Stamina)
+        const drawStatBar = (x, y, w, h, cur, max, colorFill) => {
+            // Bg
+            drawRect(x, y, w, h, "#0f1e23", true, 4);
+            // Fill
+            let pct = Math.max(0, Math.min(1, cur/max));
+            if (pct > 0) drawRect(x, y, w * pct, h, colorFill, true, 4);
+            // Border
+            drawRect(x, y, w, h, "#3c5a5a", false, 4);
+            // Text
+            drawText(`${Math.floor(cur)}/${Math.floor(max)}`, x + w/2, y + h/2 + 1, 11, "#fff", "center", true);
+        };
+
+        // 1. TÊN & LEVEL
+        drawText("Họ tên:", startX, startY + 10, 14, labelColor);
+        drawText(playerRef.name, startX + 70, startY + 10, 16, COLORS.THEME_GOLD_ACTIVE, "left", true);
+
+        drawText("Cấp độ:", startX + 180, startY + 10, 14, labelColor);
+        drawText(playerRef.level, startX + 240, startY + 10, 16, "#fff", "left", true);
+
+        drawLine(startX, startY + 30, startX + wFull, startY + 30, "rgba(255,255,255,0.1)");
+
+        // 2. CÁC CHỈ SỐ (HP -> MP -> THỂ LỰC -> EXP)
+        let currentY = startY + 50;
+
+        // --- HP ---
+        drawText("Sinh Lực (HP)", startX, currentY, 13, labelColor);
+        drawStatBar(startX + 100, currentY - 8, wFull - 100, 16, playerRef.hp, playerRef.maxHp, "#c83232");
+        
+        currentY += rowH;
+        // --- MP ---
+        drawText("Nội Lực (MP)", startX, currentY, 13, labelColor);
+        drawStatBar(startX + 100, currentY - 8, wFull - 100, 16, playerRef.mp, playerRef.maxMp, "#3232c8");
+
+        currentY += rowH;
+        // --- THỂ LỰC ---
+        drawText("Thể Lực", startX, currentY, 13, labelColor);
+        // Vẽ thanh màu xanh lá cây (#46c846)
+        drawStatBar(startX + 100, currentY - 8, wFull - 100, 16, playerRef.stamina, playerRef.maxStamina, "#46c846");
+
+        currentY += rowH;
+        // --- EXP ---
+        drawText("Kinh Nghiệm", startX, currentY, 13, labelColor);
+        drawStatBar(startX + 100, currentY - 8, wFull - 100, 16, playerRef.exp, playerRef.maxExp, "#dcb432");
+
+        drawLine(startX, currentY + 25, startX + wFull, currentY + 25, "rgba(255,255,255,0.1)");
+        currentY += 45;
+
+        // 3. THỐNG KÊ KHÁC
+        let col2 = startX + wFull / 2;
+        
+        // Sức tấn công
+        drawText("Tấn công:", startX, currentY, 13, labelColor);
+        let dmg = 10; // Mặc định tay không (Base damage)
+        
+        // Cộng damage dựa trên vũ khí
+        if (playerRef.equippedWeapon === "PENCIL") dmg += 50;
+        if (playerRef.equippedWeapon === "RULER") dmg += 75; // Thước Kẻ mạnh hơn Bút Chì
+        
+        drawText(dmg, startX + 70, currentY, 14, "#fff");
+
+        // Tốc độ
+        drawText("Tốc độ:", col2, currentY, 13, labelColor);
+        drawText(playerRef.speed, col2 + 60, currentY, 14, "#fff");
+
+        currentY += 30;
+        
+        drawText("Vũ khí:", startX, currentY, 13, labelColor);
+        
+        // Xác định tên vũ khí
+        let wpName = "Không";
+        if (playerRef.equippedWeapon === "PENCIL") wpName = "Bút Chì";
+        if (playerRef.equippedWeapon === "RULER") wpName = "Thước Kẻ";
+        
+        // Vẽ tên (Nếu là "Không" thì màu xám, còn lại là màu vàng kim)
+        drawText(wpName, startX + 70, currentY, 14, wpName === "Không" ? "#888" : COLORS.THEME_GOLD_ACTIVE);
+    }
+}
+// --- CLASS: SKILL PANEL ---
+class SkillPanel {
+    constructor() {
+        this.visible = false;
+        this.w = 360; this.h = 450;
+        this.x = 0; this.y = 0;
+        this.rect = {x:0, y:0, w:0, h:0};
+        this.closeBtn = {x:0, y:0, w:22, h:22};
+    }
+
+    toggle() {
+        this.visible = !this.visible;
+        if (this.visible) this.updatePos();
+    }
+
+    updatePos() {
+         this.w = Math.min(400, SCREEN_WIDTH - 40);
+         this.x = (SCREEN_WIDTH - this.w) / 2;
+         this.y = (SCREEN_HEIGHT - this.h) / 2;
+         this.rect = {x: this.x, y: this.y, w: this.w, h: this.h};
+         this.closeBtn = {x: this.x + this.w - 30, y: this.y + 8, w: 22, h: 22};
+    }
+
+    checkClick(mx, my) {
+        if (!this.visible) return false;
+        
+        // 1. Nút Đóng (X)
+        if (mx >= this.closeBtn.x && mx <= this.closeBtn.x + this.closeBtn.w &&
+            my >= this.closeBtn.y && my <= this.closeBtn.y + this.closeBtn.h) {
+            this.visible = false;
+            return true;
+        }
+        
+        // 2. Chặn click xuyên qua bảng (để không bấm nhầm xuống map)
+        if (mx >= this.rect.x && mx <= this.rect.x + this.rect.w &&
+            my >= this.rect.y && my <= this.rect.y + this.rect.h) return true;
+
+        return false;
+    }
+
+    draw() {
+        if (!this.visible) return;
+        this.updatePos();
+
+        // --- VẼ NỀN BẢNG ---
+        ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        drawRect(this.x, this.y, this.w, this.h, COLORS.THEME_JADE_BG, true, 8);
+        drawRect(this.x, this.y, this.w, this.h, "#0a1e23", false, 8, 4);
+
+        // --- HEADER ---
+        let headerH = 40;
+        drawRect(this.x, this.y, this.w, headerH, "#234b50", true, 8);
+        drawLine(this.x, this.y + headerH, this.x + this.w, this.y + headerH, "#0a1e1e");
+        drawText("KỸ NĂNG VŨ KHÍ", this.x + this.w/2, this.y + 20, 18, COLORS.THEME_TEXT_WHITE, "center");
+
+        // Nút Close (X)
+        drawRect(this.closeBtn.x, this.closeBtn.y, this.closeBtn.w, this.closeBtn.h, "#962828", true, 4);
+        drawText("X", this.closeBtn.x + 11, this.closeBtn.y + 11, 14, "#fff", "center");
+
+        // --- NỘI DUNG CHIÊU THỨC ---
+        let startY = this.y + 70;
+        let startX = this.x + 20;
+        let contentW = this.w - 40;
+
+        // 1. KỸ NĂNG BÚT CHÌ (PENCIL)
+        if (player.equippedWeapon === "PENCIL") {
+            drawRect(startX, startY, contentW, 100, COLORS.THEME_SLOT_BG, true, 5);
+            drawRect(startX, startY, contentW, 100, COLORS.THEME_SLOT_BORDER, false, 5);
+
+            let iconSize = 64; let iconX = startX + 15; let iconY = startY + 18;
+            drawRect(iconX, iconY, iconSize, iconSize, "#000", true, 2);
+            
+            if (images["1012"] && images["1012"].complete) {
+                ctx.drawImage(images["1012"], iconX, iconY, iconSize, iconSize);
+                drawRect(iconX, iconY, iconSize, iconSize, COLORS.THEME_GOLD_ACTIVE, false, 2, 2);
+            }
+
+            let textX = iconX + iconSize + 15;
+            drawText("Xuyên Tâm Bút", textX, iconY + 15, 18, COLORS.THEME_GOLD_ACTIVE, "left", true);
+            drawText("Loại: Chủ động (Tấn công)", textX, iconY + 38, 12, "#8daab4", "left");
+            drawText("Sát thương vật lý tầm gần.", textX, iconY + 54, 12, "#fff", "left");
+            drawText("[Đang kích hoạt]", startX + contentW - 10, startY + 85, 11, "#46c846", "right", true);
+        }
+        
+        // 2. KỸ NĂNG THƯỚC KẺ (RULER)
+        else if (player.equippedWeapon === "RULER") {
+            drawRect(startX, startY, contentW, 100, COLORS.THEME_SLOT_BG, true, 5);
+            drawRect(startX, startY, contentW, 100, COLORS.THEME_SLOT_BORDER, false, 5);
+
+            let iconSize = 64; let iconX = startX + 15; let iconY = startY + 18;
+            drawRect(iconX, iconY, iconSize, iconSize, "#000", true, 2);
+            
+            if (images["1024"] && images["1024"].complete) {
+                ctx.save();
+                ctx.translate(iconX + iconSize/2, iconY + iconSize/2);
+                ctx.rotate(Math.PI / 4); 
+                let drawSize = 45;
+                let ratio = images["1024"].height / images["1024"].width;
+                ctx.drawImage(images["1024"], -drawSize/2, -(drawSize*ratio)/2, drawSize, drawSize*ratio);
+                ctx.restore();
+            }
+            drawRect(iconX, iconY, iconSize, iconSize, "#ff4444", false, 2, 2);
+
+            let textX = iconX + iconSize + 15;
+            drawText("Trảm Phong Thước", textX, iconY + 15, 18, "#ff4444", "left", true);
+            drawText("Loại: Cận chiến (Slash)", textX, iconY + 38, 12, "#8daab4", "left");
+            drawText("Vung thước chém mạnh hình vòng cung.", textX, iconY + 54, 12, "#fff", "left");
+            drawText("[Đang kích hoạt]", startX + contentW - 10, startY + 85, 11, "#46c846", "right", true);
+        }
+
+        // ============================================================
+        // >>> 3. KỸ NĂNG SÚNG BÚT XÓA (CORRECTION_PEN) - MỚI <<<
+        // ============================================================
+        else if (player.equippedWeapon === "CORRECTION_PEN") {
+            // Vẽ khung nền
+            drawRect(startX, startY, contentW, 100, COLORS.THEME_SLOT_BG, true, 5);
+            drawRect(startX, startY, contentW, 100, COLORS.THEME_SLOT_BORDER, false, 5);
+
+            // Vẽ ô chứa Icon
+            let iconSize = 64; let iconX = startX + 15; let iconY = startY + 18;
+            drawRect(iconX, iconY, iconSize, iconSize, "#000", true, 2);
+            
+            // Vẽ Icon (Cắt lấy phần đầu bút xóa từ ảnh 1025)
+            if (images["1025"] && images["1025"].complete) {
+                let img = images["1025"];
+                let halfH = img.height / 2; // Lấy nửa trên
+                let drawW = 50;
+                let drawH = drawW * (halfH / img.width);
+                
+                // Căn giữa icon vào ô vuông 64x64
+                let dx = iconX + (iconSize - drawW)/2;
+                let dy = iconY + (iconSize - drawH)/2;
+
+                // Vẽ cắt ảnh: img, sx=0, sy=0, sw, sh, dx, dy, dw, dh
+                ctx.drawImage(img, 0, 0, img.width, halfH, dx, dy, drawW, drawH);
+            }
+            // Vẽ viền màu Xanh Cyan (#0096aa)
+            drawRect(iconX, iconY, iconSize, iconSize, "#0096aa", false, 2, 2);
+
+            // Vẽ thông tin chiêu thức
+            let textX = iconX + iconSize + 15;
+            drawText("Pháo Mực Tẩy", textX, iconY + 15, 18, "#0096aa", "left", true);
+            drawText("Loại: Tầm xa (Range)", textX, iconY + 38, 12, "#8daab4", "left");
+            drawText("Bắn đạn mực gây sát thương từ xa.", textX, iconY + 54, 12, "#fff", "left");
+            drawText("[Đang kích hoạt]", startX + contentW - 10, startY + 85, 11, "#46c846", "right", true);
+        }
+        // ============================================================
+
+        // 4. CHƯA TRANG BỊ VŨ KHÍ
+        else {
+            drawText("Chưa trang bị vũ khí!", this.x + this.w/2, this.y + 150, 16, "#ff5555", "center");
+            drawText("(Vào Hành Trang để trang bị)", this.x + this.w/2, this.y + 180, 13, "#888", "center");
+        }
+    }
+}
+// --- CLASS: JOYSTICK
+class Joystick {
+    constructor() {
+        this.x = 55; this.y = SCREEN_HEIGHT - 100;   
+        this.radius = 30; 
+        this.knobRadius = 18; // Tăng nhẹ kích thước (cũ là 20) để nhìn rõ hình Bát Quái
+        this.knobX = this.x; this.knobY = this.y;
+        this.dragging = false; this.vector = {x: 0, y: 0};
+        this.touchId = null;
+    }
+    updatePos() { this.y = SCREEN_HEIGHT - 100; if(!this.dragging){this.knobX=this.x; this.knobY=this.y;} }
+    
+    handleStart(x, y, id) {
+        let dx = x - this.x; let dy = y - this.y;
+        if (Math.sqrt(dx*dx + dy*dy) < this.radius * 3.0) {
+            this.dragging = true; this.touchId = id; this.handleMove(x, y); return true;
+        } return false;
+    }
+    
+    handleMove(x, y) {
+        if (!this.dragging) return;
+        let dx = x - this.x; let dy = y - this.y;
+        let dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist <= this.radius) { this.knobX = x; this.knobY = y; } 
+        else {
+            let angle = Math.atan2(dy, dx);
+            this.knobX = this.x + this.radius * Math.cos(angle);
+            this.knobY = this.y + this.radius * Math.sin(angle);
+        }
+        this.vector.x = (this.knobX - this.x) / this.radius;
+        this.vector.y = (this.knobY - this.y) / this.radius;
+    }
+    
+    handleEnd() {
+        this.dragging = false; this.knobX = this.x; this.knobY = this.y;
+        this.vector = {x: 0, y: 0}; this.touchId = null;
+    }
+    
+    draw() {
+        this.updatePos();
+        // Vẽ vòng tròn nền bên ngoài
+        drawCircle(this.x, this.y, this.radius, COLORS.JOYSTICK_OUT); 
+        
+        // Vẽ nút Joystick bằng ảnh 1006
+        if (images["1006"] && images["1006"].complete) {
+            let img = images["1006"];
+            let size = this.knobRadius * 2; 
+            
+            ctx.save();
+            // Thêm bóng đổ cho nút nổi lên
+            ctx.shadowColor = "rgba(0,0,0,0.5)";
+            ctx.shadowBlur = 8;
+            ctx.shadowOffsetY = 4;
+            
+            // Vẽ ảnh căn giữa tâm knobX, knobY
+            ctx.drawImage(img, this.knobX - size/2, this.knobY - size/2, size, size);
+            ctx.restore();
+        } else {
+            // Fallback: Nếu ảnh chưa tải xong thì vẽ hình tròn xám như cũ
+            drawCircle(this.knobX, this.knobY, this.knobRadius, COLORS.JOYSTICK_IN);
+        }
+    }
+}
+// --- HUD BOTTOM & TOP ---
+class BottomHUD {
+    constructor() {
+        this.btns = {};
+        this.orbCenter = {hp: {x:0, y:0}, mp: {x:0, y:0}};
+        this.expRect = {x:0, y:0, w:0, h:0};
+        this.staminaRect = {x:0, y:0, w:0, h:0}; 
+        
+        this.conf = {
+            btnSize: 35, iconSize: 20, spacing: 6,         
+            orbSize: 55, 
+            orbOffset: 32, barHeight: 4, bottomPadding: 40   
+        };
+    }
+
+    updateLayout() {
+        let cx = SCREEN_WIDTH / 2;
+        let c = this.conf;
+        let totalBtnW = (c.btnSize * 4) + (c.spacing * 3);
+        let startX = cx - totalBtnW / 2;
+        let y = SCREEN_HEIGHT - c.bottomPadding;
+
+        this.btns = {
+            char: {x: startX, y: y, w: c.btnSize, h: c.btnSize},
+            bag: {x: startX + c.btnSize + c.spacing, y: y, w: c.btnSize, h: c.btnSize},
+            skill: {x: startX + (c.btnSize + c.spacing)*2, y: y, w: c.btnSize, h: c.btnSize},
+            quest: {x: startX + (c.btnSize + c.spacing)*3, y: y, w: c.btnSize, h: c.btnSize}
+        };
+
+        let expPad = 2; 
+        this.expRect = {x: startX - expPad, y: y - 12, w: totalBtnW + (expPad * 2), h: c.barHeight};
+        
+        this.staminaRect = {
+            x: this.expRect.x, 
+            y: this.expRect.y + c.barHeight + 2, 
+            w: this.expRect.w, 
+            h: c.barHeight
+        };
+
+        this.orbCenter.hp = {x: startX - c.orbOffset, y: y + c.btnSize/2 - 5}; 
+        this.orbCenter.mp = {x: startX + totalBtnW + c.orbOffset, y: y + c.btnSize/2 - 5};
+    }
+
+    checkClick(mx, my, charP, invP, skillP) {
+        let inRect = (rect) => mx >= rect.x && mx <= rect.x + rect.w && my >= rect.y && my <= rect.y + rect.h;
+        
+        if (inRect(this.btns.char)) { invP.visible = false; skillP.visible = false; charP.toggle(); return true; }
+        if (inRect(this.btns.bag)) { charP.visible = false; skillP.visible = false; invP.toggle(); return true; }
+        if (inRect(this.btns.skill)) { charP.visible = false; invP.visible = false; skillP.toggle(); return true; }
+        if (inRect(this.btns.quest)) { console.log("Nhiệm vụ: Chưa có tính năng"); return true; }
+        return false;
+    }
+
+    // --- CẬP NHẬT HÀM NÀY: Thêm tham số frameIndex để cắt ảnh ---
+    drawOrb(ctx, x, y, size, current, max, color, imgKey, offsetX, offsetY, frameIndex = 0) {
+        let drawW = size; let drawH = size; let r = size / 2 - 2; 
+        let innerScale = 0.72; 
+        let hasImage = images[imgKey] && images[imgKey].complete;
+        
+        // Biến để cắt ảnh
+        let sx = 0, sy = 0, sw = 0, sh = 0;
+        let img = null;
+
+        if (hasImage) {
+            img = images[imgKey];
+            sw = img.width; 
+            sh = img.height;
+
+            // [LOGIC MỚI] Xử lý sprite sheet 1009
+            if (imgKey === "1009") {
+                sw = img.width / 2;    // Cắt đôi chiều ngang
+                sx = frameIndex * sw;  // 0 = Bên trái (Đỏ), 1 = Bên phải (Xanh)
+            }
+
+            // Tính toán tỷ lệ dựa trên kích thước ĐÃ CẮT (sw, sh) thay vì img.width gốc
+            let ratio = Math.min(size/sw, size/sh);
+            drawW = sw * ratio; 
+            drawH = sh * ratio;
+            r = (drawW / 2) * innerScale;
+        }
+
+        let fluidX = x + offsetX; let fluidY = y + offsetY;
+        ctx.save();
+        ctx.beginPath(); ctx.arc(fluidX, fluidY, r, 0, Math.PI * 2); 
+        ctx.fillStyle = "#1a0f0f"; ctx.fill(); ctx.closePath();
+
+        if (current > 0) {
+            let pct = Math.max(0, Math.min(1, current / max));
+            let fluidR = r; let fluidHeight = fluidR * 2 * pct; 
+            let startY = (fluidY + fluidR) - fluidHeight; 
+            ctx.beginPath(); ctx.arc(fluidX, fluidY, fluidR, 0, Math.PI * 2); ctx.clip(); 
+            ctx.fillStyle = color;
+            ctx.fillRect(fluidX - fluidR, startY, fluidR * 2, fluidHeight);
+            ctx.fillStyle = "rgba(255, 255, 255, 0.25)";
+            ctx.fillRect(fluidX - fluidR, startY, fluidR * 2, 4);
+            ctx.restore(); 
+        } else { ctx.restore(); }
+
+        if (hasImage) {
+            // Dùng drawImage 9 tham số để vẽ đúng phần ảnh đã cắt
+            ctx.drawImage(img, sx, sy, sw, sh, x - drawW/2, y - drawH/2, drawW, drawH);
+            
+            ctx.shadowColor = "rgba(0, 0, 0, 0.5)"; ctx.shadowBlur = 2;
+            let percent = Math.floor((current / max) * 100);
+            drawText(`${percent}%`, x, y, 9, "rgba(255, 255, 255, 0.6)", "center", false);
+            ctx.shadowBlur = 0;
+        }
+    }
+
+    draw(player) {
+        this.updateLayout(); 
+        let c = this.conf;
+        let r = 2; 
+
+        // 1. VẼ DÂY & THANH BAR (GIỮ NGUYÊN)
+        ctx.lineWidth = 2; 
+        drawLine(this.orbCenter.hp.x, this.orbCenter.hp.y, this.expRect.x, this.expRect.y + c.barHeight/2, "#461414");
+        drawLine(this.orbCenter.mp.x, this.orbCenter.mp.y, this.expRect.x + this.expRect.w, this.expRect.y + c.barHeight/2, "#141446");
+
+        // EXP
+        drawRect(this.expRect.x, this.expRect.y, this.expRect.w, this.expRect.h, "#1e1919", true, r);
+        if (player.level < 99) {
+            let ratio = Math.max(0, Math.min(1, player.exp / player.maxExp));
+            let fillW = this.expRect.w * ratio;
+            if (fillW > 0) drawRect(this.expRect.x, this.expRect.y, fillW, this.expRect.h, "#dcb432", true, r);
+        } else {
+            drawRect(this.expRect.x, this.expRect.y, this.expRect.w, this.expRect.h, "#dcb432", true, r);
+        }
+        drawRect(this.expRect.x, this.expRect.y, this.expRect.w, this.expRect.h, "#0a0a0a", false, r, 1);
+
+        // Stamina
+        drawRect(this.staminaRect.x, this.staminaRect.y, this.staminaRect.w, this.staminaRect.h, "#1e1919", true, r);
+        let stamRatio = Math.max(0, Math.min(1, player.stamina / player.maxStamina));
+        let stamFillW = this.staminaRect.w * stamRatio;
+        if (stamFillW > 0) {
+            drawRect(this.staminaRect.x, this.staminaRect.y, stamFillW, this.staminaRect.h, "#46c846", true, r);
+        }
+        drawRect(this.staminaRect.x, this.staminaRect.y, this.staminaRect.w, this.staminaRect.h, "#0a0a0a", false, r, 1);
+
+        // 2. VẼ ORB (GIỮ NGUYÊN)
+        this.drawOrb(ctx, this.orbCenter.hp.x, this.orbCenter.hp.y, c.orbSize, player.hp, player.maxHp, "#c83232", "1009", 1, 2, 0); 
+        this.drawOrb(ctx, this.orbCenter.mp.x, this.orbCenter.mp.y, c.orbSize, player.mp, player.maxMp, "#3232c8", "1009", 1, 2, 1); 
+
+        // 3. VẼ NÚT MENU DÙNG ẢNH 1005 (ĐÃ SỬA TỪ 1004 -> 1005)
+        const drawSheetBtn = (rect, col, row) => {
+            // SỬA Ở ĐÂY: Dùng 1005 thay vì 1004
+            if (images["1005"] && images["1005"].complete) {
+                let img = images["1005"];
+                
+                let frameW = img.width / 2;
+                let frameH = img.height / 2;
+                
+                let sx = col * frameW;
+                let sy = row * frameH;
+                
+                let iconScale = 1.2; 
+                let displaySize = c.iconSize * iconScale;
+                let dx = rect.x + (rect.w - displaySize)/2;
+                let dy = rect.y + (rect.h - displaySize)/2;
+
+                ctx.drawImage(img, sx, sy, frameW, frameH, dx, dy, displaySize, displaySize);
+            }
+        };
+
+        drawSheetBtn(this.btns.char, 0, 0);  
+        drawSheetBtn(this.btns.bag, 1, 0);   
+        drawSheetBtn(this.btns.skill, 0, 1); 
+        drawSheetBtn(this.btns.quest, 1, 1); 
+    }
+}
+// --- CLASS: MINI MAP ---
+class MiniMap {
+    constructor() {
+        this.radius = 40; 
+        this.margin = 5; // Giảm từ 15 xuống 5 để map xích lên cao (ngang tầm avatar)
+        this.alpha = 0.85; 
+        
+        // Tính toán tỷ lệ thu nhỏ
+        this.scaleY = (this.radius * 2) / WORLD_HEIGHT; 
+        this.scaleX = this.scaleY; 
+        
+        this.drawW = WORLD_WIDTH * this.scaleX;
+        this.drawH = WORLD_HEIGHT * this.scaleY;
+    }
+
+    draw(ctx, player, enemies, camX, camY) {
+        // 1. Xác định tâm của Mini Map (Góc trên phải)
+        let cx = SCREEN_WIDTH - this.radius - this.margin;
+        let cy = this.radius + this.margin; 
+        // Với margin = 5, bán kính = 40 => Tâm Y = 45 (Gần với Avatar Y=35 hơn)
+
+        ctx.save();
+        
+        // 2. Vẽ khung tròn & Nền (Mask)
+        ctx.beginPath();
+        ctx.arc(cx, cy, this.radius, 0, Math.PI * 2);
+        
+        // Đổ màu nền giấy
+        ctx.fillStyle = "#f5f5f0"; 
+        ctx.globalAlpha = this.alpha;
+        ctx.fill();
+        
+        // Viền tròn bao quanh
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = "#505a64"; 
+        ctx.globalAlpha = 1.0;
+        ctx.stroke();
+
+        // 3. TẠO MẶT NẠ CẮT (CLIP)
+        ctx.clip(); 
+
+        // --- VẼ NỘI DUNG BÊN TRONG ---
+        
+        let startX = cx - (this.drawW / 2);
+        let startY = cy - (this.drawH / 2);
+
+        // b. Vẽ Khung Camera
+        let viewW = SCREEN_WIDTH * this.scaleX;
+        let viewH = SCREEN_HEIGHT * this.scaleY;
+        let viewX = startX + (camX * this.scaleX);
+        let viewY = startY + (camY * this.scaleY);
+
+        ctx.strokeStyle = "rgba(50, 50, 50, 0.3)";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(viewX, viewY, viewW, viewH);
+
+        // c. Vẽ Người chơi
+        let px = startX + (player.x * this.scaleX);
+        let py = startY + (player.y * this.scaleY);
+
+        ctx.beginPath();
+        ctx.arc(px, py, 4, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(0, 255, 0, 0.3)";
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(px, py, 2, 0, Math.PI * 2);
+        ctx.fillStyle = "#00cc00";
+        ctx.fill();
+
+        ctx.restore();
+        
+        // Chữ hướng Bắc "N"
+        ctx.fillStyle = "#505a64";
+        ctx.font = "bold 10px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("N", cx, cy - this.radius + 12);
+    }
+}
+// --- CẬP NHẬT: AVATAR
+function drawTopLeftHUD(player) {
+    let cx = 35, cy = 35;   
+    let r = 22;             
+    
+    // 1. Vẽ Khung Avatar
+    drawCircle(cx, cy, r + 2, "#2d2d2d"); 
+    drawCircle(cx, cy, r, "#f2f2f2");     
+    
+    // Bắt đầu vùng vẽ bên trong mặt (Clip mask)
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.clip();
+
+    // 2. Vẽ Mắt (Sắc lẹm)
+    ctx.fillStyle = "#141414";
+    ctx.beginPath(); ctx.ellipse(cx - 7, cy + 3, 2.5, 4, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(cx + 7, cy + 3, 2.5, 4, 0, 0, Math.PI*2); ctx.fill();
+
+    // 3. Vẽ Lông mày (Nhíu mày nghiêm túc)
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = "#141414";
+    ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(cx - 13, cy - 3); ctx.lineTo(cx - 4, cy + 1); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx + 4, cy + 1); ctx.lineTo(cx + 13, cy - 3); ctx.stroke();
+
+    // 4. VẼ MIỆNG (NHẾCH MÉP)
+    ctx.beginPath();
+    ctx.lineWidth = 2;
+    ctx.moveTo(cx - 5, cy + 11); 
+    ctx.quadraticCurveTo(cx, cy + 13, cx + 5, cy + 10); 
+    ctx.stroke();
+
+    // 5. Vẽ Băng Cá Nhân
+    ctx.save();
+    ctx.translate(cx + 6, cy - 10); 
+    ctx.rotate(-Math.PI / 6);       
+    
+    let bw = 14, bh = 5;
+    ctx.fillStyle = "#e6b48c"; 
+    ctx.strokeStyle = "#c89678"; 
+    ctx.lineWidth = 1;
+    
+    ctx.beginPath();
+    if(ctx.roundRect) ctx.roundRect(-bw/2, -bh/2, bw, bh, 2);
+    else ctx.rect(-bw/2, -bh/2, bw, bh);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = "#dcb496";
+    ctx.beginPath(); ctx.arc(0, 0, 1, 0, Math.PI*2); ctx.fill();
+    
+    ctx.restore(); 
+    ctx.restore();
+
+    // 6. Tên & Level
+    let tx = cx + r + 10; 
+    ctx.shadowColor = "rgba(255, 255, 255, 0.8)"; ctx.shadowBlur = 2;
+    drawText(player.name, tx, cy - 8, 14, "#141414", "left", true); 
+    ctx.shadowBlur = 0;
+    drawText(`Lv.${player.level}`, tx, cy + 10, 11, "#505050", "left", true);
+}
+// --- SETUP GAME & LOGIC MENU ---
+const player = new Stickman(WORLD_WIDTH/2, WORLD_HEIGHT/2);
+let activePet = null; 
+const joystick = new Joystick();
+const inventory = new InventoryPanel();
+const charPanel = new CharacterPanel();
+const skillPanel = new SkillPanel();
+const hud = new BottomHUD();
+const attackBtn = new AttackButton();
+const dashButton = new DashButton();
+const sitButton = new SitButton();
+const miniMap = new MiniMap();
+
+// --- BIẾN QUẢN LÝ TRẠNG THÁI GAME ---
+// false: Chưa có nhân vật (nút Tạo sáng). true: Đang chơi (nút Xoá/Lưu sáng).
+let isGameActive = false; 
+
+// 1. HÀM CẬP NHẬT MÀU SẮC NÚT BẤM
+function updateMenuButtons() {
+    const btnCreate = document.getElementById("btnCreate");
+    const btnDelete = document.getElementById("btnDelete");
+    const btnSave = document.getElementById("btnSaveManual");
+
+    if (!btnCreate || !btnDelete || !btnSave) return;
+
+    if (isGameActive) {
+        // --- TRẠNG THÁI ĐANG CHƠI ---
+        btnCreate.disabled = true;
+        btnCreate.style.opacity = "0.3"; 
+        btnCreate.style.cursor = "default";
+        btnCreate.classList.remove("btn-highlight"); // Tắt hiệu ứng nhấp nháy
+
+        btnDelete.disabled = false;
+        btnDelete.style.opacity = "1";
+        btnDelete.style.cursor = "pointer";
+
+        btnSave.disabled = false;
+        btnSave.style.opacity = "1";
+        btnSave.style.cursor = "pointer";
+    } else {
+        // --- TRẠNG THÁI CHƯA CÓ NHÂN VẬT ---
+        btnCreate.disabled = false;
+        btnCreate.style.opacity = "1";
+        btnCreate.style.cursor = "pointer";
+        btnCreate.classList.add("btn-highlight"); // BẬT HIỆU ỨNG NHẤP NHÁY
+
+        btnDelete.disabled = true;
+        btnDelete.style.opacity = "0.3";
+        btnDelete.style.cursor = "default";
+
+        btnSave.disabled = true;
+        btnSave.style.opacity = "0.3";
+        btnSave.style.cursor = "default";
+    }
+}
+// HÀM HIỆN THÔNG BÁO ĐẸP
+function showToast(message) {
+    var x = document.getElementById("toast-notification");
+    if (!x) return;
+    
+    x.innerText = message;
+    x.className = "show"; // Thêm class để hiện và bay lên
+    
+    // Ẩn sau 3 giây
+    setTimeout(function(){ 
+        x.className = x.className.replace("show", ""); 
+    }, 3000);
+}
+
+// 2. HÀM HIỆN/ẨN MENU
+function toggleAvatarMenu() {
+    const menu = document.getElementById("avatarMenu");
+    if (!menu) return;
+
+    if (menu.style.display === "none" || menu.style.display === "") {
+        updateMenuButtons(); // Cập nhật màu nút trước khi hiện
+        menu.style.display = "block";
+    } else {
+        menu.style.display = "none";
+    }
+}
+
+// --- 3. HÀM XỬ LÝ NÚT "TẠO" (ĐÃ SỬA: HIỆN BẢNG NHẬP TÊN) ---
+function actionCreate() {
+    if (isGameActive) return; // Đang chơi thì không được tạo đè
+    
+    // Ẩn menu chính đi
+    toggleAvatarMenu();
+    
+    // Hiện bảng nhập tên
+    const modal = document.getElementById("nameModal");
+    const input = document.getElementById("playerNameInput");
+    
+    if (modal && input) {
+        modal.style.display = "block";
+        input.value = ""; // Xóa tên cũ nếu có
+        input.focus();    // Đặt con trỏ chuột vào ô nhập
+    }
+}
+
+// --- HÀM HỦY TẠO NHÂN VẬT ---
+function closeNameModal() {
+    document.getElementById("nameModal").style.display = "none";
+    // Mở lại menu chính để người chơi chọn lại nếu muốn
+    toggleAvatarMenu();
+}
+
+// --- HÀM XÁC NHẬN TẠO NHÂN VẬT ---
+function confirmCreate() {
+    const input = document.getElementById("playerNameInput");
+    const rawName = input.value.trim();
+    
+    // Kiểm tra tên hợp lệ
+    if (!rawName) {
+        alert("Vui lòng nhập tên cho nhân vật!");
+        input.focus();
+        return;
+    }
+    
+    if (rawName.length > 10) {
+        alert("Tên quá dài! Tối đa 10 ký tự.");
+        return;
+    }
+
+    // Đóng bảng nhập tên
+    document.getElementById("nameModal").style.display = "none";
+
+    // --- BẮT ĐẦU LOGIC TẠO GAME CŨ ---
+    
+    // 1. Cập nhật tên từ ô nhập
+    player.name = rawName;
+    
+    // 2. Reset toàn bộ chỉ số về mặc định
+    player.level = 1;
+    player.exp = 0; player.maxExp = 200;
+    player.hp = 1000; player.maxHp = 1000;
+    player.mp = 1000; player.maxMp = 1000;
+    player.stamina = 100; player.maxStamina = 100;
+    player.x = WORLD_WIDTH / 2;
+    player.y = WORLD_HEIGHT / 2;
+    player.equippedWeapon = null;
+    player.hasSlime = false;
+    activePet = null; // Thu hồi Pet nếu có
+
+    // 3. Reset túi đồ và cho đồ tân thủ
+    inventory.gold = 99999;
+    // Tạo mảng rỗng mới cho túi đồ
+    inventory.items = Array(inventory.rows).fill().map(() => Array(inventory.cols).fill(null));
+    
+    // Thêm vật phẩm khởi đầu
+    inventory.addItem("PENCIL", 1, "1007");
+    inventory.addItem("HP_POTION", 5, "1013");
+    inventory.addItem("MP_POTION", 5, "1013");
+
+    // 4. Kích hoạt game
+    isGameActive = true;
+    saveGame(player, inventory, true); // Lưu ngay lập tức
+    
+    // Gọi thông báo Toast đẹp mắt thay vì alert xấu xí
+    showToast(`Xin chào ${player.name}! Bắt đầu hành trình.`);
+}
+
+// 4. HÀM XỬ LÝ NÚT "XOÁ"
+function actionDelete() {
+    if (!isGameActive) return;
+
+    if (confirm("CẢNH BÁO: Nhân vật sẽ bị xoá vĩnh viễn!\nBạn có chắc chắn không?")) {
+        // Xoá dữ liệu trong bộ nhớ trình duyệt
+        localStorage.removeItem("rpg_pencil_slots");
+        
+        // Đưa game về trạng thái chờ
+        isGameActive = false;
+        player.x = -9999; // Giấu nhân vật đi chỗ khác
+        activePet = null; // Xoá pet
+        
+        toggleAvatarMenu(); // Đóng menu
+        alert("Đã xoá dữ liệu. Hãy bấm 'Tạo' để chơi lại.");
+    }
+}
+
+// 5. HÀM XỬ LÝ NÚT "LƯU" (ĐÃ CẬP NHẬT)
+function actionSaveManual() {
+    if (!isGameActive) return;
+    
+    // Gọi hàm saveGame với tham số true (silent) để không hiện alert cũ
+    saveGame(player, inventory, true);
+    
+    // Gọi thông báo Toast đẹp mắt
+    showToast("✅ Đã lưu dữ liệu an toàn!");
+    
+    toggleAvatarMenu(); // Đóng menu
+}
+// --- HÀM XỬ LÝ CLICK / CHẠM MÀN HÌNH ---
+function handleStart(x, y, id="mouse") {
+    
+    // 1. [MỚI] KIỂM TRA CLICK VÀO AVATAR (GÓC TRÁI TRÊN)
+    // Tọa độ tâm Avatar là (35, 35). Ta cho bán kính vùng bấm là 40px để dễ bấm trúng.
+    let distAvatar = Math.sqrt((x - 35)**2 + (y - 35)**2);
+    
+    if (distAvatar <= 40) { 
+        // Nếu khoảng cách từ điểm bấm đến tâm Avatar nhỏ hơn 40px
+        toggleAvatarMenu(); // Gọi hàm mở/đóng menu (đã viết ở Bước 2)
+        return; // Dừng ngay lập tức, không cho nhân vật di chuyển hay chém gió
+    }
+    
+    // 2. XỬ LÝ ĐÓNG MENU KHI BẤM RA NGOÀI
+    const menu = document.getElementById("avatarMenu");
+    // Nếu menu đang hiện (display là block)
+    if (menu && menu.style.display === "block") {
+        // Lấy khung hình chữ nhật của menu
+        let rect = menu.getBoundingClientRect();
+        
+        // Kiểm tra xem điểm bấm (x,y) có nằm NGOÀI khung menu không
+        // Nếu x nhỏ hơn bên trái HOẶC x lớn hơn bên phải...
+        if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+            menu.style.display = "none"; // Đóng menu lại cho gọn
+        }
+        
+        // Lưu ý: Không 'return' ở đây, để người chơi có thể vừa đóng menu vừa di chuyển luôn
+    }
+    
+    // 3. CÁC LOGIC CŨ CỦA GAME
+    // Kiểm tra click vào các bảng UI (Hành trang, Kỹ năng...)
+    if (charPanel.checkClick(x, y)) return;
+    if (inventory.checkClick(x, y)) return; 
+    if (skillPanel.checkClick(x, y)) return;
+    
+    // Nếu đang mở bảng nào đó thì chặn thao tác di chuyển/đánh
+    if (charPanel.visible || inventory.visible || skillPanel.visible) return;
+
+    // Kiểm tra nút tấn công
+    if (attackBtn.checkClick(x, y)) return;
+
+    // Kiểm tra nút lướt (Dash)
+    if (dashButton.checkClick(x, y, player, joystick.vector.x, joystick.vector.y)) return;
+    
+    // Kiểm tra nút Ngồi
+    if (sitButton.checkClick(x, y)) return;
+
+    // Kiểm tra các nút chức năng dưới đáy (HUD)
+    if (hud.checkClick(x, y, charPanel, inventory, skillPanel)) return;
+
+    // Cuối cùng: Nếu không bấm trúng nút nào -> Di chuyển Joystick
+    // (Chỉ cho di chuyển nếu Game đang Active - Đã viết ở Bước 2)
+    if (typeof isGameActive !== 'undefined' && !isGameActive) {
+        return; // Nếu chưa tạo nhân vật thì không cho di chuyển
+    }
+    
+    joystick.handleStart(x, y, id);
+}
+
+function handleMove(x, y, id="mouse") {
+    if (id === joystick.touchId || id === "mouse") joystick.handleMove(x, y);
+}
+
+function handleEnd(id="mouse") {
+    if (id === joystick.touchId || id === "mouse") joystick.handleEnd();
+}
+// --- HỆ THỐNG NPC & CỬA HÀNG ---
+// --- HÀM VẼ NPC DƯỢC SĨ ---
+function drawPharmacist(camX, camY) {
+    let s = 0.6; // Tỉ lệ scale
+    let color = "#006400"; 
+    
+    // Tọa độ người
+    let cx = NPC_PHARMACIST.x - camX;
+    let cy = NPC_PHARMACIST.y - camY;
+
+    // --- 1. VẼ KÍNH HIỂN VI (ĐÃ SỬA LỖI VỊ TRÍ) ---
+    if (images["1019"] && images["1019"].complete) {
+        let bgW = 100 * s; 
+        let bgH = bgW * (images["1019"].height / images["1019"].width);
+        
+        // [QUAN TRỌNG] Đặt kính nằm ngay cạnh chân Dược sĩ
+        // Dời sang trái một chút (-60*s) để không che mặt người
+        ctx.drawImage(images["1019"], cx - 60*s, cy - 150*s, bgW, bgH);
+    }
+
+    // --- 2. VẼ BÓNG ĐỔ ---
+    ctx.save();
+    ctx.translate(cx, cy + 34 * s); 
+    ctx.scale(1, 0.4); 
+    ctx.beginPath(); ctx.arc(0, 0, 18 * s, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(0, 0, 0, 0.15)"; ctx.fill();
+    ctx.restore();
+
+    // --- 3. VẼ NGƯỜI (STICKMAN) ---
+    let time = Date.now() / 250; 
+    let breathY = Math.sin(time) * 1.5 * s; 
+
+    let hipX = cx; let hipY = cy; 
+    let footLX = cx + 12 * s; let footRX = cx - 12 * s;
+    let footLY = cy + 34 * s; let footRY = cy + 34 * s;
+    let shoulderX = cx; let shoulderY = (cy - 35 * s) + breathY; 
+    let headX = cx; let headY = (cy - 50 * s) + breathY; 
+    let handLX = shoulderX + 13 * s; let handRX = shoulderX - 13 * s;
+    let handLY = shoulderY + 28 * s; let handRY = shoulderY + 28 * s;
+
+    // Render bộ phận
+    drawLimb([hipX, hipY], [footLX, footLY], 35 * s, color, 1);
+    drawLimb([hipX, hipY], [footRX, footRY], 35 * s, color, -1);
+    drawLine(hipX, hipY, shoulderX, shoulderY, color, 3);
+    drawCircle(headX, headY, 13 * s, color, true); 
+    drawText("+", headX, headY + 2, 14 * s, "#fff", "center", true);
+    drawLimb([shoulderX, shoulderY], [handLX, handLY], 30 * s, color, 1);
+    drawLimb([shoulderX, shoulderY], [handRX, handRY], 30 * s, color, -1);
+
+    // Bình thuốc trên tay
+    if (images["1013"] && images["1013"].complete) {
+        let pSize = 24 * s; 
+        ctx.save();
+        ctx.translate(handRX, handRY);
+        ctx.rotate(Math.sin(time) * 0.1); 
+        let srcImg = images["1013"];
+        ctx.drawImage(srcImg, 0, 0, srcImg.width/2, srcImg.height/2, -pSize/2, -pSize/2, pSize, pSize);
+        ctx.restore();
+    }
+}
+// --- HÀM VẼ NPC THỢ RÈN ---
+function drawBlacksmith(camX, camY) {
+    let s = 0.6; 
+    let color = "#5a5a5a"; 
+    
+    let cx = NPC_BLACKSMITH.x - camX;
+    let cy = NPC_BLACKSMITH.y - camY;
+
+    // --- 1. VẼ CÁI DẬP GHIM (LÀM BÀN RÈN) ---
+    if (images["1017"] && images["1017"].complete) {
+        let anvilW = 160 * s; 
+        let anvilH = anvilW * (images["1017"].height / images["1017"].width);
+        
+        // Hạ thấp xuống (cy + 10*s) để nó nằm trên mặt đất
+        // Dời sang trái (cx - 80*s) để Thợ rèn đứng bên cạnh gõ búa vào
+        ctx.drawImage(images["1017"], cx - 80*s, cy - 40*s, anvilW, anvilH);
+    }
+
+    // --- 2. VẼ BÓNG ĐỔ ---
+    ctx.save();
+    ctx.translate(cx, cy + 34 * s); 
+    ctx.scale(1, 0.4); 
+    ctx.beginPath(); ctx.arc(0, 0, 18 * s, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(0, 0, 0, 0.15)"; ctx.fill();
+    ctx.restore();
+
+    // --- 3. VẼ THỢ RÈN ---
+    let time = Date.now() / 250; 
+    let breathY = Math.sin(time) * 1.5 * s; 
+
+    let hipX = cx; let hipY = cy; 
+    let footLX = cx + 12 * s; let footRX = cx - 12 * s;
+    let footLY = cy + 34 * s; let footRY = cy + 34 * s;
+    let shoulderX = cx; let shoulderY = (cy - 35 * s) + breathY; 
+    let headX = cx; let headY = (cy - 50 * s) + breathY; 
+    let handLX = shoulderX + 13 * s; let handRX = shoulderX - 13 * s;
+    let handLY = shoulderY + 28 * s; let handRY = shoulderY + 28 * s;
+
+    // Cây búa sau lưng
+    if (images["1018"] && images["1018"].complete) {
+        let hW = 60 * s; 
+        let hH = hW * (images["1018"].height / images["1018"].width);
+        ctx.save();
+        ctx.translate(shoulderX, shoulderY + 10*s); 
+        ctx.rotate(-Math.PI / 4); 
+        ctx.drawImage(images["1018"], -hW/2, -hH/2, hW, hH);
+        ctx.restore();
+    }
+
+    drawLimb([hipX, hipY], [footLX, footLY], 35 * s, color, 1);
+    drawLimb([hipX, hipY], [footRX, footRY], 35 * s, color, -1);
+    drawLine(hipX, hipY, shoulderX, shoulderY, color, 3);
+    drawCircle(headX, headY, 13 * s, color, true); 
+    drawRect(headX - 14*s, headY - 8*s, 28*s, 5*s, "#333", true); 
+    drawLimb([shoulderX, shoulderY], [handLX, handLY], 30 * s, color, 1);
+    drawLimb([shoulderX, shoulderY], [handRX, handRY], 30 * s, color, -1);
+}
+// --- HÀM VẼ NPC DORAEMON (ĐÃ SỬA: CHÂN CỐ ĐỊNH, THỞ NHẸ) ---
+function drawDoraemon(camX, camY) {
+    let s = 1; 
+    let cx = NPC_DORAEMON.x - camX;
+    let cy = NPC_DORAEMON.y - camY;
+
+    // 1. VẼ CÁNH CỬA THẦN KỲ (NẰM SAU LƯNG)
+    if (images["1020"] && images["1020"].complete) {
+        let doorW = 80 * s; 
+        let doorH = doorW * (images["1020"].height / images["1020"].width);
+        ctx.drawImage(images["1020"], cx - doorW/2, cy - 100*s, doorW, doorH); 
+    }
+
+    // 2. VẼ DORAEMON
+    if (images["1008"] && images["1008"].complete) {
+        let img = images["1008"];
+        let frameW = img.width / 2;
+        let frameH = img.height;
+        let isBlinking = (Date.now() % 4000) < 200; // Nháy mắt mỗi 4 giây
+        
+        let sx = isBlinking ? frameW : 0;      
+        let fixX = isBlinking ? 6.5 * s : 0;    
+
+        // --- HIỆU ỨNG THỞ CỐ ĐỊNH CHÂN ---
+        // 1. Đồng bộ tốc độ với NPC khác (chia cho 250 thay vì 450)
+        let time = Date.now() / 600; 
+        
+        // 2. Chỉ thay đổi chiều cao (Y) nhẹ, giữ nguyên chiều ngang (X)
+        let scaleX = 1; 
+        let scaleY = 1 + Math.sin(time) * 0.02; // Co giãn nhẹ biên độ 2%
+
+        let baseW = 50 * s; 
+        let baseH = baseW * (frameH / frameW); 
+        
+        let currentW = baseW * scaleX;
+        let currentH = baseH * scaleY; // Chiều cao thay đổi theo nhịp thở
+
+        // 3. Tính toán vị trí vẽ: 
+        // Lấy mặt đất làm chuẩn (cy + 60*s), vẽ ngược lên trên (- currentH)
+        // Việc này đảm bảo chân luôn dính chặt xuống đất khi người phồng lên
+        let drawX = (cx - currentW / 2) + fixX; 
+        let drawY = (cy + 60*s) - currentH; 
+
+        // Bóng đổ (Giữ nguyên kích thước, không co giãn theo người)
+        ctx.save();
+        ctx.translate(cx + 2*s, cy + 35*s); 
+        ctx.scale(1, 0.25); 
+        ctx.beginPath();
+        ctx.arc(0, 0, 20 * s, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(0,0,0,0.25)";
+        ctx.fill();
+        ctx.restore();
+
+        // Vẽ ảnh Doraemon
+        ctx.drawImage(img, sx, 0, frameW, frameH, drawX, drawY, currentW, currentH);
+    }
+}
+
+// --- Hàm Mở Cửa Hàng ---
+const createItemHTML = (img, name, price, code) => {
+    let iconHTML = "";
+    let imgSrc = img.includes(".") ? img : img + ".png";
+
+    // 1. NẾU LÀ CÁC BÌNH THUỐC (Giữ nguyên logic cũ)
+    if (code === "HP_POTION" || code === "MP_POTION" || code === "DUAL_POTION" || code === "STAMINA_POTION") {
+        let bgPos = "0% 0%";
+        if (code === "MP_POTION") bgPos = "100% 0%";
+        else if (code === "DUAL_POTION") bgPos = "0% 100%";
+        else if (code === "STAMINA_POTION") bgPos = "100% 100%";
+
+        iconHTML = `<div style="
+            width: 32px; height: 32px; margin-right: 10px;
+            background-image: url('${imgSrc}');
+            background-size: 200% 200%; 
+            background-position: ${bgPos};
+            border-radius: 4px;
+        "></div>`;
+    }
+    
+    // >>> 2. THÊM MỚI: XỬ LÝ RIÊNG CHO PET
+    else if (code === "PET_SLIME") {
+        iconHTML = `<div style="
+            width: 40px; height: 40px; margin-right: 10px;
+            background-image: url('${imgSrc}');
+            
+            /* GIẢI THÍCH: Ảnh có 3 cột, 4 hàng. Ta phóng to 300% ngang và 400% dọc 
+               để ô div 40px chỉ chứa vừa đúng 1 hình nhỏ */
+            background-size: 300% 400%;   
+            
+            /* VỊ TRÍ: 50% là lấy cột giữa, 0% là lấy hàng đầu tiên (Tư thế đứng) */
+            background-position: 50% 0%;  
+            
+            image-rendering: pixelated; /* Giữ ảnh sắc nét, không bị mờ */
+            background-repeat: no-repeat;
+        "></div>`;
+    }
+
+    // 3. CÁC VẬT PHẨM KHÁC (Vũ khí,...)
+    else {
+        let imgStyle = "width: 32px; height: 32px; margin-right: 10px;";
+
+        if (code === "PENCIL") {
+            imgStyle = "width: 45px; height: auto; transform: rotate(-45deg); margin-right: 5px; margin-left: -5px;";
+        } 
+        else if (code === "RULER") {
+            imgStyle = "width: 45px; height: auto; transform: rotate(0deg); margin-right: 5px; margin-left: -5px;";
+        }
+        else if (code === "CORRECTION_PEN") {
+            imgStyle = "width: 45px; height: 25px; object-fit: cover; object-position: bottom; transform: rotate(-45deg); margin-right: 5px; margin-left: -5px;";
+        }
+
+        iconHTML = `<div style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; margin-right: 10px;">
+                        <img src="${imgSrc}" style="${imgStyle}">
+                    </div>`;
+    }
+
+    return `
+    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.1); margin-bottom: 10px; padding: 8px; border-radius: 5px; overflow: hidden;">
+        ${iconHTML}
+        <div style="flex-grow: 1;">
+            <div style="font-weight: bold; font-size: 14px;">${name}</div>
+            <div style="color: #ffd700; font-size: 12px;">${price} 🥜</div>
+        </div>
+        <button onclick="buyItem('${code}', ${price}, '${name}', '${img}')" style="background: #28a745; border: none; color: white; padding: 5px 10px; border-radius: 4px; font-weight: bold;">Mua</button>
+    </div>`;
+};
+
+// 2. HÀM XỬ LÝ CHUYỂN TAB (ĐỂ RA NGOÀI LUÔN)
+function switchBlacksmithTab(tabName) {
+    const listDiv = document.getElementById("blacksmithList");
+    const btnSpear = document.getElementById("btnTabSpear");
+    const btnBlade = document.getElementById("btnTabBlade");
+    // Lấy thêm nút Súng
+    const btnGun = document.getElementById("btnTabGun");
+
+    // Nếu chưa mở shop mà gọi hàm thì return
+    if (!listDiv) return;
+
+    // Định nghĩa Style (Active / Inactive)
+    const styleActive = "flex: 1; padding: 10px; background: #d24628; color: #fff; border: 1px solid #ff4444; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 0 10px rgba(210, 70, 40, 0.5); transition: all 0.2s;";
+    const styleInactive = "flex: 1; padding: 10px; background: #2a2a2a; color: #888; border: 1px solid #444; border-radius: 5px; cursor: pointer; font-weight: bold; transition: all 0.2s;";
+
+    // Xóa danh sách cũ
+    listDiv.innerHTML = "";
+
+    // Reset style tất cả các nút về Inactive trước
+    if(btnSpear) btnSpear.style.cssText = styleInactive;
+    if(btnBlade) btnBlade.style.cssText = styleInactive;
+    if(btnGun) btnGun.style.cssText = styleInactive;
+
+    // --- XỬ LÝ TỪNG TAB ---
+    if (tabName === 'SPEAR') {
+        if(btnSpear) btnSpear.style.cssText = styleActive;
+        listDiv.innerHTML += createItemHTML("1007", "Bút Chì Thần", 1000, "PENCIL");
+    } 
+    else if (tabName === 'BLADE') {
+        if(btnBlade) btnBlade.style.cssText = styleActive;
+        listDiv.innerHTML += createItemHTML("1024", "Thước Kẻ Đao", 1000, "RULER");
+    }
+    // >>> MỚI: TAB SÚNG <<<
+    else if (tabName === 'GUN') {
+        if(btnGun) btnGun.style.cssText = styleActive;
+        // Gọi hàm tạo Bút Xóa
+        listDiv.innerHTML += createItemHTML("1025", "Súng Bút Xóa", 1000, "CORRECTION_PEN");
+    }
+}
+
+// 3. HÀM MỞ CỬA HÀNG (GIỜ CHỈ GỌI LẠI CÁC HÀM TRÊN)
+function openShop(type) {
+    const modal = document.getElementById("shopModal");
+    const title = modal.querySelector("h2");
+    const itemsDiv = document.getElementById("shopItems");
+    
+    itemsDiv.innerHTML = "";
+    modal.style.display = "block";
+    document.getElementById("interactBtn").style.display = "none";
+
+    if (type === "PHARMACIST") {
+        title.innerText = "⚗️ Dược Sĩ";
+        title.style.color = "#46c846"; 
+        // LƯU Ý: Tham số ảnh giờ để là '1013' cho tất cả, code sẽ tự cắt dựa trên Type
+        itemsDiv.innerHTML += createItemHTML("1013", "Bình Máu", 100, "HP_POTION");
+        itemsDiv.innerHTML += createItemHTML("1013", "Bình Mana", 100, "MP_POTION");
+        itemsDiv.innerHTML += createItemHTML("1013", "Bình Hỗn Hợp", 200, "DUAL_POTION");
+        itemsDiv.innerHTML += createItemHTML("1013", "Bình Thể Lực", 300, "STAMINA_POTION");
+    } 
+    else if (type === "BLACKSMITH") {
+        // ... (Giữ nguyên logic Thợ Rèn) ...
+        title.innerText = "🔨 Thợ Rèn";
+        title.style.color = "#ff4444"; 
+        itemsDiv.innerHTML = `
+            <div style="display: flex; gap: 5px; margin-bottom: 15px; padding-bottom: 5px;">
+                <button id="btnTabSpear" onclick="switchBlacksmithTab('SPEAR')">🗡️ Thương</button>
+                <button id="btnTabBlade" onclick="switchBlacksmithTab('BLADE')">🔪 Đao</button>
+                <button id="btnTabGun" onclick="switchBlacksmithTab('GUN')">🔫 Súng</button>
+            </div>
+            <div id="blacksmithList" style="min-height: 150px;"></div>
+        `;
+        setTimeout(() => switchBlacksmithTab('SPEAR'), 0);
+    }
+    else if (type === "DORAEMON") {
+        // ... (Giữ nguyên logic Doraemon) ...
+        title.innerText = "🚪 Cửa Hàng Pet";
+        title.style.color = "#0096e1";
+        // Thêm Pet Slime Đen vào shop
+       itemsDiv.innerHTML += createItemHTML("1003.png", "Slime Đen", 10000, "PET_SLIME");
+
+    }
+}
+
+// --- Hàm Đóng Cửa Hàng ---
+function closeShop() {
+    document.getElementById("shopModal").style.display = "none";
+}
+
+// --- Hàm Kiểm tra khoảng cách ---
+function updateNPCInteraction() {
+    const btn = document.getElementById("interactBtn");
+    const shop = document.getElementById("shopModal");
+    if (shop.style.display === "block") return;
+
+    let distPharmacist = Math.sqrt((player.x - NPC_PHARMACIST.x)**2 + (player.y - NPC_PHARMACIST.y)**2);
+    let distBlacksmith = Math.sqrt((player.x - NPC_BLACKSMITH.x)**2 + (player.y - NPC_BLACKSMITH.y)**2);
+    
+    let distDoraemon = Math.sqrt((player.x - NPC_DORAEMON.x)**2 + (player.y - NPC_DORAEMON.y)**2);
+
+    if (distPharmacist < NPC_PHARMACIST.interactDist) {
+        btn.style.display = "block";
+        btn.onclick = function() { openShop("PHARMACIST"); }; 
+    } 
+    else if (distBlacksmith < NPC_BLACKSMITH.interactDist) {
+        btn.style.display = "block";
+        btn.onclick = function() { openShop("BLACKSMITH"); }; 
+    }
+    else if (distDoraemon < NPC_DORAEMON.interactDist) {
+        btn.style.display = "block";
+        btn.innerHTML = "MUA"; // Đảm bảo nút hiện chữ Mua
+        btn.onclick = function() { openShop("DORAEMON"); };
+    }
+    else {
+        btn.style.display = "none";
+    }
+}
+
+function buyItem(type, price, name, imgId) {
+    if (inventory.gold >= price) {
+        
+   // --- XỬ LÝ MUA PET SLIME ĐEN ---
+   if (type === "PET_SLIME") { // <--- Kiểm tra mã mới
+    if (player.hasSlime) {
+        alert("Bạn đã có Slime Đen rồi!");
+        return;
+    }
+    inventory.gold -= price;
+    player.hasSlime = true; // <--- Cập nhật biến hasSlime
+    activePet = new PetSlime(player); // <--- Gọi class PetSlime
+    
+    saveGame(player, inventory, false);
+    alert("Đã mua Slime Đen!");
+    return;
+}
+
+        // Logic mua đồ thường
+        let added = inventory.addItem(type, 1, imgId);
+        if (added) {
+            inventory.gold -= price; 
+            saveGame(player, inventory, false); 
+            alert(`Đã mua thành công: ${name}`);
+        } else {
+            alert("Hành trang đã đầy!");
+        }
+    } else {
+        alert(`Bạn không đủ Đậu! Cần ${price} 🥜, bạn có ${inventory.gold} 🥜`);
+    }
+}
+// --- HÀM VẼ HƯỚNG DẪN Ở MÀN HÌNH CHỜ ---
+function drawStartScreenGuide() {
+    let cx = 35, cy = 35; // Tọa độ tâm Avatar (Góc trái trên)
+    let time = Date.now() / 300; // Tốc độ nhấp nháy
+    
+    // 1. Vẽ vòng tròn tỏa sáng bao quanh Avatar
+    let pulseSize = 28 + Math.sin(time) * 4; // Co giãn từ 24px đến 32px
+    ctx.beginPath();
+    ctx.arc(cx, cy, pulseSize, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(255, 215, 0, ${0.6 + Math.sin(time)*0.3})`; // Màu vàng
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // 2. Vẽ Mũi tên màu đỏ chỉ vào Avatar
+    let arrowX = cx + 60 + Math.sin(time) * 10; // Mũi tên thụt thò
+    let arrowY = cy;
+    
+    ctx.save();
+    ctx.translate(arrowX, arrowY);
+    
+    // Vẽ hình tam giác (đầu mũi tên)
+    ctx.fillStyle = "#ff4444";
+    ctx.beginPath();
+    ctx.moveTo(0, 0);       // Đỉnh nhọn hướng về Avatar
+    ctx.lineTo(15, -10);
+    ctx.lineTo(15, 10);
+    ctx.fill();
+    
+    // Vẽ đuôi mũi tên
+    ctx.fillRect(15, -4, 25, 8);
+    
+    // 3. Vẽ chữ hướng dẫn cạnh mũi tên
+    ctx.font = "bold 14px Arial";
+    ctx.fillStyle = "#fff";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText("BẤM VÀO ĐÂY ĐỂ TẠO", 45, 0);
+    
+    ctx.restore();
+}
+// --- XỬ LÝ NÚT BACK VÀ TỰ ĐỘNG LƯU ---
+history.pushState(null, null, location.href);
+window.onpopstate = function () {
+    // Chỉ lưu game và thông báo, không chuyển trang nữa
+    saveGame(player, inventory, false);
+    alert("Đã lưu game! Bạn có thể đóng trình duyệt.");
+    // Hoặc nếu muốn đóng tab luôn (tùy trình duyệt hỗ trợ):
+    // window.close(); 
+};
+
+// Lưu khi ẩn ứng dụng (Home/Tab khác)
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden) saveGame(player, inventory, true);
+});
+
+// Lưu dự phòng khi đóng hẳn trình duyệt
+window.addEventListener("beforeunload", () => {
+    saveGame(player, inventory, true);
+});
+// --- HÀM XỬ LÝ NÚT NGỒI THIỀN ---
+function toggleSit() {
+    if (!player) return;
+
+    // Chỉ đổi trạng thái ngồi/đứng
+    player.isSitting = !player.isSitting;
+
+    if (player.isSitting) {
+        player.sitTimer = 0; 
+        // Hiệu ứng chữ bay
+        if (typeof floatingTexts !== 'undefined') {
+            floatingTexts.push(new FloatingText(player.x, player.y - 60, "Tịnh Tâm...", "#00ff00"));
+        }
+    }
+}
+// KHỞI CHẠY GAME TẠI ĐÂY (SAU KHI MỌI THỨ ĐÃ SẴN SÀNG)
+const game = new Phaser.Game(config);
+// --- 2. HÀM KIỂM TRA VA CHẠM ---
+function checkCollision(targetX, targetY) {
+    // A. KIỂM TRA BIÊN GIỚI BẢN ĐỒ (COLLISION MAP BOUNDS)
+    
+    // 1. Kiểm tra hai bên Trái / Phải (Giữ nguyên)
+    if (targetX < 20 || targetX > WORLD_WIDTH - 20) return true;
+
+    // 2. Kiểm tra Đáy bản đồ (Giữ nguyên)
+    if (targetY > WORLD_HEIGHT - 20) return true;
+
+    // 3. Kiểm tra mép trên bản đồ
+    if (targetY < 20) return true;
+
+    // B. KIỂM TRA VA CHẠM VỚI NPC (Giữ nguyên đoạn dưới này)
+    let npcs = [NPC_PHARMACIST, NPC_DORAEMON, NPC_BLACKSMITH];
+    for (let npc of npcs) {
+        let dist = Math.sqrt((targetX - npc.x)**2 + (targetY - npc.y)**2);
+        if (dist < NPC_HITBOX_SIZE) {
+            return true; 
+        }
+    }
+
+    // C. KIỂM TRA VA CHẠM VỚI VẬT CẢN (Giữ nguyên đoạn dưới này)
+    let playerFeet = {
+        left: targetX - 10,   
+        right: targetX + 10,
+        top: targetY - 5,     
+        bottom: targetY + 5
+    };
+
+    for (let obs of OBSTACLES) {
+        if (obs.type === 'RECT') {
+            if (playerFeet.right > obs.x && 
+                playerFeet.left < obs.x + obs.w && 
+                playerFeet.bottom > obs.y && 
+                playerFeet.top < obs.y + obs.h) {
+                return true; 
+            }
+        } 
+        else if (obs.type === 'CIRCLE') {
+            let dist = Math.sqrt((targetX - obs.x)**2 + (targetY - obs.y)**2);
+            if (dist < obs.r + 10) {
+                return true; 
+            }
+        }
+    }
+
+    return false; // Không đụng gì cả, đi được!
+}
+// --- 4. HÀM VẼ VẬT CẢN ---
+function drawObstacles(camX, camY) {
+    for (let obs of OBSTACLES) {
+        // Tính toạ độ vẽ trên màn hình (trừ đi Camera)
+        let drawX = obs.x - camX;
+        let drawY = obs.y - camY;
+
+        // Chỉ vẽ nếu nằm trong màn hình (Tối ưu hiệu năng)
+        if (drawX + (obs.w || obs.r*2) < 0 || drawX > SCREEN_WIDTH ||
+            drawY + (obs.h || obs.r*2) < 0 || drawY > SCREEN_HEIGHT) continue;
+
+        ctx.fillStyle = obs.color;
+        ctx.strokeStyle = "rgba(0,0,0,0.3)";
+        ctx.lineWidth = 2;
+
+        if (obs.type === 'RECT') {
+            // Vẽ bóng đổ nhẹ
+            ctx.fillStyle = "rgba(0,0,0,0.2)";
+            ctx.fillRect(drawX + 5, drawY + obs.h - 5, obs.w, 10);
+            
+            // Vẽ khối
+            ctx.fillStyle = obs.color;
+            ctx.fillRect(drawX, drawY, obs.w, obs.h);
+            ctx.strokeRect(drawX, drawY, obs.w, obs.h);
+        } 
+        else if (obs.type === 'CIRCLE') {
+            // Vẽ bóng đổ tròn
+            ctx.beginPath();
+            ctx.arc(drawX + obs.r + 5, drawY + obs.r + 5, obs.r, 0, Math.PI*2);
+            ctx.fillStyle = "rgba(0,0,0,0.2)";
+            ctx.fill();
+
+            // Vẽ khối tròn
+            ctx.beginPath();
+            ctx.arc(drawX + obs.r, drawY + obs.r, obs.r, 0, Math.PI*2);
+            ctx.fillStyle = obs.color;
+            ctx.fill();
+            ctx.stroke();
+        }
+    }
+}
+// Hàm vẽ lưới chuyên dụng (Chỉ vẽ gọn gàng bên trong tờ giấy)
+function drawGridLinesOnly() {
+    let gridW = 40; // Kích thước 1 ô ly
+
+    ctx.beginPath();
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "#a2d5f2"; // Màu mực xanh nhạt (chuẩn ô ly vở)
+
+    // Vẽ các đường dọc (Chỉ vẽ từ x=0 đến hết WORLD_WIDTH)
+    for (let x = 0; x <= WORLD_WIDTH; x += gridW) { 
+        ctx.moveTo(x, 0); 
+        ctx.lineTo(x, WORLD_HEIGHT); 
+    }
+    // Vẽ các đường ngang (Chỉ vẽ từ y=0 đến hết WORLD_HEIGHT)
+    for (let y = 0; y <= WORLD_HEIGHT; y += gridW) { 
+        ctx.moveTo(0, y); 
+        ctx.lineTo(WORLD_WIDTH, y); 
+    }
+    ctx.stroke();
+    
+    // Vẽ lề đỏ (Đường kẻ dọc màu đỏ cố định ở tọa độ X = 200)
+    ctx.beginPath();
+    ctx.moveTo(200, 0);
+    ctx.lineTo(200, WORLD_HEIGHT);
+    ctx.strokeStyle = "#ff7b7b"; // Màu mực đỏ nhạt
+    ctx.lineWidth = 2.5;         
+    ctx.stroke();
+}
+</script>
 </body>
 </html>
