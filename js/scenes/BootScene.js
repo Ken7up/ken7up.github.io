@@ -12,6 +12,19 @@ export default class BootScene extends Phaser.Scene {
         // Tải ảnh bầu trời và mặt đất
         this.load.image('Sky', 'assets/images/canh.png');
         this.load.image('ground', 'assets/images/nen.png');
+        // Tải ảnh hàng rào và cổng rào
+        this.load.image('hangrao', 'assets/images/hangrao.png');
+        this.load.image('xuongrong', 'assets/images/xuongrong.png');
+        this.load.image('xuongrong2', 'assets/images/xuongrong2.png');
+        this.load.spritesheet('congrao', 'assets/images/congrao.png', {
+        frameWidth: 1600,  // <-- Thay số này bằng chiều ngang của ảnh
+        frameHeight: 1000   // <-- Thay số này bằng 1/2 chiều dọc của ảnh
+        });
+        // Tải ảnh núi
+        this.load.image('nui', 'assets/images/nui.png');
+        this.load.image('nui1', 'assets/images/nui1.png');
+        // Tải ảnh mây bay
+        this.load.image('maybay', 'assets/images/maybay.png');
         // Tải ảnh tầng mây
         this.load.image('tangmay', 'assets/images/tangmay.png');
         // Tải ảnh gốc tre (gấu trúc)
