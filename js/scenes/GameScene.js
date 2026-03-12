@@ -26,6 +26,8 @@ export default class GameScene extends Phaser.Scene {
         let ground = this.add.image(0, height + groundOffsetY, 'ground').setOrigin(0, 1).setDepth(1);
         const scaleRatio = width / ground.width;
         ground.setScale(scaleRatio);
+        // Giả sử 400 là chiều rộng chuẩn trên điện thoại của bạn
+        let heSoScale = width / 400;
 
         // --- THÊM NÚI ---
         // 1. Tính toán chiều cao thực tế của mặt đất trên màn hình sau khi đã scale
@@ -60,13 +62,13 @@ export default class GameScene extends Phaser.Scene {
         
         // 1. Điểm GẦN NHẤT (Nằm sát mép dưới màn hình, kích thước to nhất)
         let yGanNhat = height + groundOffsetY; 
-        let scaleGanNhat = 0.03;    // Kích thước to nhất 
+        let scaleGanNhat = 0.02 * heSoScale; // Kích thước to nhất 
         let xGanTrai = 22;          // Nằm sát lề trái
         let xGanPhai = width - 22;  // Nằm sát lề phải
         
         // 2. Điểm XA NHẤT (Nằm tít phía sau gần chân núi, kích thước nhỏ nhất)
         let yXaNhat = mountainY - 40; 
-        let scaleXaNhat = 0.015;       // Kích thước nhỏ nhất
+        let scaleXaNhat = 0.008 * heSoScale; // Kích thước nhỏ nhất
         
         // Gắn tọa độ X xa bằng X gần để tạo thành 2 đường thẳng song song dọc hai bên
         let xXaTrai = xGanTrai;       
@@ -102,11 +104,12 @@ export default class GameScene extends Phaser.Scene {
         }
 
         // --- HÀNG RÀO XƯƠNG RỒNG NGANG BÊN CHÂN NÚI (Đã sửa để không bị méo) ---
-        let hangRaoY = mountainY - 42; // Nhích số này để chân cây cắm ngập xuống đất vừa ý
+        let hangRaoY = mountainY - 39; // Nhích số này để chân cây cắm ngập xuống đất vừa ý
 
         // 1. Tự do điều chỉnh số lượng và kích thước
         let soLuongCay = 25; // Tăng lên nếu muốn cây xếp khít hơn, giảm đi nếu muốn thưa ra
-        let hrScale = 0.015;  // Chỉnh kích thước cây to/nhỏ ở đây (0.12 là 12% so với ảnh gốc)
+        // Nhân thêm tỷ lệ màn hình để cây tự động to ra khi màn hình rộng
+        let hrScale = 0.008 * (width / 400);
 
         // 2. Đổi tên biến thành 'khoangCachCay' để tránh trùng lặp
         let khoangCachCay = width / (soLuongCay - 1); 
