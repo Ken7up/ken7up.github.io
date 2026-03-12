@@ -9,10 +9,17 @@ export default class GameScene extends Phaser.Scene {
         const height = this.scale.height;
 
         // --- CHỈNH BẦU TRỜI ---
-        let skyOffsetY = 0; 
+        // Đẩy bầu trời lên cao hơn (số âm) để khi vuốt lên đỉnh không bị lộ viền đen
+        let skyOffsetY = -3000; 
         let sky = this.add.image(0, skyOffsetY, 'Sky').setOrigin(0, 0).setDepth(0); 
-        sky.setDisplaySize(width, height + Math.abs(skyOffsetY));
-        sky.setScrollFactor(0); 
+        
+        // Kéo dãn chiều cao ảnh bầu trời gấp 2.5 lần màn hình để dư dả không gian cuộn
+        sky.setDisplaySize(width, height * 3.5);
+        
+        // CHỈNH HIỆU ỨNG CUỘN TỪ TỪ (PARALLAX)
+        // 0: Không cuộn theo chiều ngang
+        // 0.2: Cuộn theo chiều dọc với tốc độ bằng 20% so với tốc độ vuốt màn hình
+        sky.setScrollFactor(0, 0.5);
 
         // --- CHỈNH MẶT ĐẤT ---
         let groundOffsetY = 0; 
@@ -20,10 +27,126 @@ export default class GameScene extends Phaser.Scene {
         const scaleRatio = width / ground.width;
         ground.setScale(scaleRatio);
 
+        // --- THÊM NÚI ---
+        // 1. Tính toán chiều cao thực tế của mặt đất trên màn hình sau khi đã scale
+        let groundDisplayHeight = ground.height * scaleRatio;
+        
+        // 2. Tính tọa độ Y của chân núi (đặt nằm ngay mép trên của mặt đất, +50 để ngập nhẹ xuống đất tránh hở viền)
+        let mountainY = (height + groundOffsetY) - groundDisplayHeight + 50; 
+        
+        // 3. Hiển thị núi với Depth = 0.5 (Nằm giữa Bầu trời 0 và Mặt đất 1)
+        let nui = this.add.image(0, mountainY, 'nui').setOrigin(0, 1).setDepth(0.5);
+        
+        // 4. Kéo dãn núi cho vừa vặn với chiều ngang màn hình
+        const nuiScaleRatio = width / nui.width;
+        nui.setScale(nuiScaleRatio);
+        
+        // 5. Hiệu ứng Parallax cho núi: 
+        // 0: Khóa cuộn ngang
+        // 1: Cuộn dọc 100% theo camera để dính chặt vào mặt đất
+        nui.setScrollFactor(0, 1);
+
+        // --- THÊM NÚI 1 ---
+        // Depth = 0.6 giúp núi này đè lên núi cũ (0.5) nhưng vẫn núp sau mặt đất (1.0)
+        let nui1 = this.add.image(0, mountainY, 'nui1').setOrigin(0, 1).setDepth(0.6);
+        const nui1ScaleRatio = width / nui1.width;
+        nui1.setScale(nui1ScaleRatio);
+        nui1.setScrollFactor(0, 1);
+
+        // ==========================================
+        // --- HÀNG RÀO XƯƠNG RỒNG TẠO CHIỀU SÂU ---
+        // ==========================================
+        let soCâyXuongRong = 15; // Số lượng cây xương rồng mỗi bên
+        
+        // 1. Điểm GẦN NHẤT (Nằm sát mép dưới màn hình, kích thước to nhất)
+        let yGanNhat = height + groundOffsetY; 
+        let scaleGanNhat = 0.10;    // Kích thước to nhất 
+        let xGanTrai = 22;          // Nằm sát lề trái
+        let xGanPhai = width - 22;  // Nằm sát lề phải
+        
+        // 2. Điểm XA NHẤT (Nằm tít phía sau gần chân núi, kích thước nhỏ nhất)
+        let yXaNhat = mountainY - 10; 
+        let scaleXaNhat = 0.06;       // Kích thước nhỏ nhất
+        
+        // Gắn tọa độ X xa bằng X gần để tạo thành 2 đường thẳng song song dọc hai bên
+        let xXaTrai = xGanTrai;       
+        let xXaPhai = xGanPhai;
+
+        // 3. Vòng lặp vẽ từ XA đến GẦN để cây gần đè lên cây xa một cách tự nhiên
+        for (let i = soCâyXuongRong - 1; i >= 0; i--) {
+            // Tính tỷ lệ khoảng cách (progress chạy từ 0 đến 1)
+            let tiLe = i / (soCâyXuongRong - 1);
+            
+            // Tự động tính toán tọa độ và kích thước cho từng mốc
+            let hienTaiY = yGanNhat - (yGanNhat - yXaNhat) * tiLe;
+            let hienTaiScale = scaleGanNhat - (scaleGanNhat - scaleXaNhat) * tiLe;
+            let hienTaiXTrai = xGanTrai + (xXaTrai - xGanTrai) * tiLe;
+            let hienTaiXPhai = xGanPhai - (xGanPhai - xXaPhai) * tiLe;
+            
+            // Độ sâu (Depth): Cây càng gần (tiLe tiến về 0) thì depth càng cao để nổi lên trên
+            // Lớp nền đất đang là 1, nên mình cho xương rồng từ 1.1 đến 1.9
+            let currentDepth = 1.1 + (1 - tiLe); 
+
+            // Vẽ cây xương rồng BÊN TRÁI
+            let xrTrai = this.add.image(hienTaiXTrai, hienTaiY, 'xuongrong')
+                .setOrigin(0.5, 1) // Set tâm ở dưới cùng chân cây
+                .setDepth(currentDepth)
+                .setScale(hienTaiScale)
+                .setScrollFactor(0, 1); // Khóa cuộn ngang, cuộn dọc bám theo nền đất
+
+            // Vẽ cây xương rồng BÊN PHẢI
+            let xrPhai = this.add.image(hienTaiXPhai, hienTaiY, 'xuongrong')
+                .setOrigin(0.5, 1)
+                .setDepth(currentDepth)
+                .setScale(hienTaiScale)
+                .setScrollFactor(0, 1);
+        }
+
+        // --- HÀNG RÀO XƯƠNG RỒNG NGANG BÊN CHÂN NÚI (Đã sửa để không bị méo) ---
+        let hangRaoY = mountainY - 43; // Nhích số này để chân cây cắm ngập xuống đất vừa ý
+
+        // 1. Tự do điều chỉnh số lượng và kích thước
+        let soLuongCay = 30; // Tăng lên nếu muốn cây xếp khít hơn, giảm đi nếu muốn thưa ra
+        let hrScale = 0.05;  // Chỉnh kích thước cây to/nhỏ ở đây (0.12 là 12% so với ảnh gốc)
+
+        // 2. Đổi tên biến thành 'khoangCachCay' để tránh trùng lặp
+        let khoangCachCay = width / (soLuongCay - 1); 
+
+        for (let i = 0; i < soLuongCay; i++) {
+          // Khởi tạo cây xương rồng
+          let hangRao = this.add.image(0, hangRaoY, 'xuongrong2')
+              .setOrigin(0.5, 1) // Đặt tâm ở giữa chân cây
+              .setDepth(1.2)     // Nổi lên trên mặt đất (1.0)
+              .setScale(hrScale)
+              .setScrollFactor(0, 1);
+         
+          // Xếp vị trí X: Cập nhật lại tên biến ở đây
+          hangRao.x = i * khoangCachCay;
+        }
+
+        // --- THÊM MÂY BAY ---
+        let maybayStartX = width + 150; 
+        
+        // *Lưu ý: Khi đổi ScrollFactor, vị trí hiển thị ban đầu có thể bị lệch một chút. 
+        // Bạn có thể trừ thêm số ở đây (ví dụ -300 hoặc -400) nếu thấy máy bay bị thấp quá.
+        let maybayStartY = mountainY - 300; 
+        
+        this.maybay = this.add.image(maybayStartX, maybayStartY, 'maybay');
+        this.maybay.setOrigin(0.5, 0.5);
+        this.maybay.setDepth(0.7); 
+        this.maybay.setScale(0.3); 
+       
+        // Đổi số 1 thành 0.75 để máy bay cuộn chậm hơn núi (1.0) nhưng nhanh hơn bầu trời (0.5)
+        this.maybay.setScrollFactor(0, 0.75);
+
         // ---> CHIẾC AO <---
         let groundLevelY = height + groundOffsetY - 460;
-        let pondX = 500;
-        let pondY = groundLevelY + -30;
+        
+        // Giảm số này để ao dịch qua TRÁI (Ví dụ: từ 500 xuống 420)
+        let pondX = 270; 
+        
+        // Giảm số này (trừ thêm) để ao nhích LÊN CAO (Ví dụ: từ -30 thành -80)
+        let pondY = groundLevelY - 70;
         
         // 2. Hiển thị ảnh ra màn hình:
         let pond = this.add.image(pondX, pondY, 'ao');
@@ -33,47 +156,46 @@ export default class GameScene extends Phaser.Scene {
         pond.setDepth(2);
         
         // 4. Chỉnh kích thước (To/Nhỏ):
-        pond.setScale(1.2);
+        pond.setScale(1);
 
         // =====================================
         // CẦU CÁ TRA (Đã bật Vật lý để va chạm)
         // =====================================
-        let cauCaTraX = pondX + -90;
-        let cauCaTraY = pondY + 55;
+        let cauCaTraX = pondX - 110;
+        let cauCaTraY = pondY + 35;
 
         let cauCaTra = this.physics.add.image(cauCaTraX, cauCaTraY, 'caucatra');
         cauCaTra.setOrigin(0.5, 1); 
         cauCaTra.setDepth(3); // Cầu nằm đè lên cá (cá là 2.5)
-        cauCaTra.setScale(0.15);
+        cauCaTra.setScale(0.12);
         cauCaTra.setImmovable(true); 
 
         // TẠO HITBOX CHO CHÂN CẦU:
         // SetSize: Chiều ngang vùng va chạm = 50% ảnh, Chiều cao = 15% ảnh (chỉ lấy phần chân)
         // SetOffset: Đẩy vùng va chạm dời sang phải 25% (để ra giữa) và đẩy xuống tận cùng đáy (85%)
-        cauCaTra.body.setSize(cauCaTra.width * 0.65, cauCaTra.height * 0.10);
+        cauCaTra.body.setSize(cauCaTra.width * 0.60, cauCaTra.height * 0.20);
         cauCaTra.body.setOffset(cauCaTra.width * 0, cauCaTra.height * 0.95);
         // TẠO THÊM 1 KHUNG CHỮ NHẬT LÀM VA CHẠM CHO THANH CẦU XÉO
         // ---------------------------------------------------------
         
         // 1. Xác định vị trí (X, Y) của khung: Dịch sang trái và nhấc lên cao một chút so với chân cầu
-        let thanhCauX = cauCaTraX + 40; 
+        let thanhCauX = cauCaTraX + 35; 
         let thanhCauY = cauCaTraY - 15; 
         
         // 2. Tạo hình chữ nhật vô hình (Đã tăng chiều dài)
         // Thay đổi số 80 (chiều dài) và 15 (độ dày) cho đến khi vừa ý
-        let chieuDaiThanhCau = 45; // <-- Tăng số này để làm ô va chạm dài ra
-        let doDayThanhCau = 10;    // <-- Tăng số này nếu muốn thanh này dày hơn một chút
+        let chieuDaiThanhCau = 30; // <-- Tăng số này để làm ô va chạm dài ra
+        let doDayThanhCau = 5;    // <-- Tăng số này nếu muốn thanh này dày hơn một chút
 
         let thanhCauHitbox = this.add.rectangle(thanhCauX, thanhCauY, chieuDaiThanhCau, doDayThanhCau, 0x000000, 0);
 
         
         // 3. Bật vật lý cho nó và chốt chặt nó lại (setImmovable) để cá không húc bay nó đi
         this.physics.add.existing(thanhCauHitbox, true);
-        // =====================================
+
         // TẠO GIỚI HẠN AO CÁ (Tường vô hình - Đã thu nhỏ vừa ao)
-        // =====================================
-        let wWidth = 430;  
-        let wHeight = 160; 
+        let wWidth = 370;  
+        let wHeight = 135; 
         
         // Đưa tâm của bức tường về lại chính giữa cái ao
         let boundaryCenterX = pondX + 0; 
@@ -93,8 +215,8 @@ export default class GameScene extends Phaser.Scene {
         // 2. TẠO 2 Ô VUÔNG Ở GÓC TRÊN (Đã tách riêng Trái và Phải)
         
         // --- GÓC TRÊN BÊN TRÁI (ĐÃ CHỈNH DÀI XUỐNG) ---
-        let chieuDaiGocTraiTren = 40; // Chiều ngang giữ nguyên
-        let chieuCaoGocTraiTren = 65; // <-- Tăng số này để ô va chạm dài tuột xuống dưới
+        let chieuDaiGocTraiTren = 45; // Chiều ngang giữ nguyên
+        let chieuCaoGocTraiTren = 55; // <-- Tăng số này để ô va chạm dài tuột xuống dưới
         
         let gocTraiTrenX = (boundaryCenterX - wWidth/2) + chieuDaiGocTraiTren / 2 + 10;
         let gocTraiTrenY = (boundaryCenterY - wHeight/2) + chieuCaoGocTraiTren / 2 + 10;
@@ -115,10 +237,10 @@ export default class GameScene extends Phaser.Scene {
         // 3. TẠO 2 Ô VUÔNG Ở GÓC DƯỚI (Đã tách riêng Trái và Phải)
         
         // --- GÓC DƯỚI BÊN TRÁI (ĐÃ CHỈNH DÀI RA VÀ DỊCH SANG TRÁI) ---
-        let chieuDaiGocTraiDuoi = 70; 
+        let chieuDaiGocTraiDuoi = 68; 
         let chieuCaoGocTraiDuoi = 1; 
         
-        let gocTraiDuoiY = (boundaryCenterY + wHeight/2) - chieuCaoGocTraiDuoi / 2 - 78; 
+        let gocTraiDuoiY = (boundaryCenterY + wHeight/2) - chieuCaoGocTraiDuoi / 2 - 65; 
         
         // ĐỂ DỊCH SANG TRÁI: Mình đã giảm số "+ 55" xuống thành "+ 20".
         // Bạn có thể tiếp tục hạ số này xuống (ví dụ: 0, -10, -30) để nó dịch sang trái đúng ý bạn nhất.
@@ -129,8 +251,8 @@ export default class GameScene extends Phaser.Scene {
 
         // --- GÓC DƯỚI BÊN PHẢI (GIỮ NGUYÊN NHỎ) ---
         let kichThuocGocPhaiDuoi = 5; // <-- Giữ nguyên 20
-        let gocPhaiDuoiY = (boundaryCenterY + wHeight/2) - kichThuocGocPhaiDuoi / 2 - 75; 
-        let gocPhaiDuoiX = (boundaryCenterX + wWidth/2) - kichThuocGocPhaiDuoi / 2 - 20;
+        let gocPhaiDuoiY = (boundaryCenterY + wHeight/2) - kichThuocGocPhaiDuoi / 2 - 65; 
+        let gocPhaiDuoiX = (boundaryCenterX + wWidth/2) - kichThuocGocPhaiDuoi / 2 - 25;
         
         let cornerBottomRight = this.add.rectangle(gocPhaiDuoiX, gocPhaiDuoiY, kichThuocGocPhaiDuoi, kichThuocGocPhaiDuoi, 0x000000, 0);
         this.physics.add.existing(cornerBottomRight, true);
@@ -138,8 +260,8 @@ export default class GameScene extends Phaser.Scene {
         // ==========================================
         
         // 1. Ô phụ kế góc TRÊN BÊN TRÁI (Dịch sang phải và xích xuống một chút)
-        let sizePhuTraiTren = 10; 
-        let phuTraiTrenX = gocTraiTrenX + 55; // Cộng thêm để dịch sang phải
+        let sizePhuTraiTren = 20; 
+        let phuTraiTrenX = gocTraiTrenX + 45; // Cộng thêm để dịch sang phải
         let phuTraiTrenY = gocTraiTrenY - 15; // Cộng thêm để dịch xuống dưới
         
         let extraTopLeft = this.add.rectangle(phuTraiTrenX, phuTraiTrenY, sizePhuTraiTren, sizePhuTraiTren, 0x000000, 0);
@@ -147,32 +269,58 @@ export default class GameScene extends Phaser.Scene {
 
         // 2. Ô phụ kế góc DƯỚI BÊN PHẢI (Dịch sang trái và nhấc lên cao một chút)
         let sizePhuPhaiDuoi = 5; 
-        let phuPhaiDuoiX = gocPhaiDuoiX - 0; // Trừ đi để dịch sang trái
-        let phuPhaiDuoiY = gocPhaiDuoiY + 60; // Trừ đi để nhấc lên cao
+        let phuPhaiDuoiX = gocPhaiDuoiX + 5; // Trừ đi để dịch sang trái
+        let phuPhaiDuoiY = gocPhaiDuoiY + 45; // Trừ đi để nhấc lên cao
         
         let extraBottomRight = this.add.rectangle(phuPhaiDuoiX, phuPhaiDuoiY, sizePhuPhaiDuoi, sizePhuPhaiDuoi, 0x000000, 0);
         this.physics.add.existing(extraBottomRight, true);
         // 3. Ô phụ kế góc TRÊN BÊN PHẢI (Dịch sang trái và xích xuống một chút)
-        let sizePhuPhaiTren = 5; 
-        let phuPhaiTrenX = gocPhaiTrenX - 50; // Trừ đi để dịch sang trái
+        let sizePhuPhaiTren = 10; 
+        let phuPhaiTrenX = gocPhaiTrenX - 45; // Trừ đi để dịch sang trái
         let phuPhaiTrenY = gocPhaiTrenY + 0; // Cộng thêm để nhích xuống dưới
         
         let extraTopRight = this.add.rectangle(phuPhaiTrenX, phuPhaiTrenY, sizePhuPhaiTren, sizePhuPhaiTren, 0x000000, 0);
         this.physics.add.existing(extraTopRight, true);
         // 4. Ô phụ kế góc DƯỚI BÊN TRÁI (Dịch sang phải và xích xuống một chút)
         let sizePhuTraiDuoi = 5; 
-        let phuTraiDuoiX = gocTraiDuoiX - 10; // Cộng thêm để dịch sang phải (bạn có thể tinh chỉnh số này)
-        let phuTraiDuoiY = gocTraiDuoiY + 60; // Cộng thêm để dịch xuống dưới
+        let phuTraiDuoiX = gocTraiDuoiX - 15; // Cộng thêm để dịch sang phải (bạn có thể tinh chỉnh số này)
+        let phuTraiDuoiY = gocTraiDuoiY + 5; // Cộng thêm để dịch xuống dưới
         
         let extraBottomLeft = this.add.rectangle(phuTraiDuoiX, phuTraiDuoiY, sizePhuTraiDuoi, sizePhuTraiDuoi, 0x000000, 0);
         this.physics.add.existing(extraBottomLeft, true);
-        // 4. GOM TẤT CẢ VÀO CHUNG 1 MẢNG ĐỂ CÁ VA CHẠM (Đã bổ sung đủ 4 ô phụ)
-        let walls = [wallTop, wallBottom, wallLeft, wallRight, cornerTopLeft, cornerTopRight, cornerBottomLeft, cornerBottomRight, extraTopLeft, extraBottomRight, extraTopRight, extraBottomLeft];
+        // ==========================================
+        // Ô VUÔNG VA CHẠM PHÍA TRÊN TRONG AO (MỚI)
+        // ==========================================
+        let kichThuocOVuongMoi = 10;
+        
+        // --- CHỈNH TỌA ĐỘ TẠI ĐÂY ---
+        // 1. Chỉnh Trái / Phải: 
+        // Số ÂM (VD: -20, -50) để dịch qua TRÁI. Số DƯƠNG (VD: 20, 50) để qua PHẢI. Số 0 là ở giữa.
+        let dichSangTraiPhai = - 85; 
+        
+        // 2. Chỉnh Lên / Xuống: 
+        // -40 là đang ở phía trên. Tăng số âm (VD: -50, -60) để lên CAO HƠN. Giảm thành (VD: -20, 0) để lùi XUỐNG THẤP.
+        let dichLenXuong = -50;   
+        
+        let oVuongMoiX = boundaryCenterX + dichSangTraiPhai;
+        let oVuongMoiY = boundaryCenterY + dichLenXuong;
+        
+        // *MẸO: Bạn có thể đổi số 0 ở cuối thành 1 (0xff0000, 1) để ô vuông hiện màu đỏ lên, giúp bạn dễ nhìn bằng mắt để chỉnh tọa độ. Chỉnh xong thì đổi lại thành 0 để nó tàng hình.
+        let oVuongPhiaTren = this.add.rectangle(oVuongMoiX, oVuongMoiY, kichThuocOVuongMoi, kichThuocOVuongMoi, 0xff0000, 0); 
+        this.physics.add.existing(oVuongPhiaTren, true);
+
+        // 4. GOM TẤT CẢ VÀO CHUNG 1 MẢNG ĐỂ CÁ VA CHẠM (Đã bổ sung thêm ô vuông mới)
+        let walls = [
+            wallTop, wallBottom, wallLeft, wallRight, 
+            cornerTopLeft, cornerTopRight, cornerBottomLeft, cornerBottomRight, 
+            extraTopLeft, extraBottomRight, extraTopRight, extraBottomLeft,
+            oVuongPhiaTren // <-- Đã thêm ô vuông mới vào danh sách va chạm của cá
+        ];
 
         // CÁ TRÊ BƠI LỘI 
         this.catre = this.physics.add.sprite(pondX + 80, pondY, 'catre', 0);
         this.catre.setDepth(2.5); 
-        this.catre.setScale(0.02); // Hoặc kích thước bạn đã chọn
+        this.catre.setScale(0.015); // Hoặc kích thước bạn đã chọn
         
         // Tạo viền va chạm hình tròn ôm vừa khít đường kính của ảnh gốc
         this.catre.body.setCircle(this.catre.width / 2); 
@@ -182,7 +330,7 @@ export default class GameScene extends Phaser.Scene {
         
         let speed = 10; 
         this.catre.setVelocity(speed, speed);
-        let gocScale = 0.02; // Kích thước gốc của cá trê
+        let gocScale = 0.015; // Kích thước gốc của cá trê
 
         // Thêm hiệu ứng lắc lư (quẫy đuôi)
         this.tweens.add({
@@ -213,7 +361,7 @@ export default class GameScene extends Phaser.Scene {
         // Đặt vị trí xuất hiện hơi lệch so với cá trê một chút để không dính vào nhau
         this.cavo = this.physics.add.sprite(pondX - 50, pondY + 20, 'cavo', 0);
         this.cavo.setDepth(2.5); 
-        this.cavo.setScale(0.02); 
+        this.cavo.setScale(0.015); 
         
         this.cavo.body.setCircle(this.cavo.width / 2); 
         this.cavo.setBounce(1, 1); 
@@ -224,7 +372,7 @@ export default class GameScene extends Phaser.Scene {
 
         // Hiệu ứng lắc lư và thở cho Cá Vồ
         this.tweens.add({ targets: this.cavo, angle: { from: -4, to: 4 }, duration: 600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-        this.tweens.add({ targets: this.cavo, scaleX: 0.02 * 0.95, scaleY: 0.02 * 1.05, duration: 280, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+        this.tweens.add({ targets: this.cavo, scaleX: 0.015 * 0.95, scaleY: 0.015 * 1.05, duration: 280, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
 
         this.physics.add.collider(this.cavo, [cauCaTra, thanhCauHitbox]);
         this.physics.add.collider(this.cavo, walls);
@@ -232,7 +380,7 @@ export default class GameScene extends Phaser.Scene {
         // CÁ TAI TƯỢNG BƠI LỘI
         this.cataituong = this.physics.add.sprite(pondX + 30, pondY - 40, 'cataituong', 0);
         this.cataituong.setDepth(2.5); 
-        this.cataituong.setScale(0.02); 
+        this.cataituong.setScale(0.015); 
         
         this.cataituong.body.setCircle(this.cataituong.width / 2); 
         this.cataituong.setBounce(1, 1); 
@@ -243,7 +391,7 @@ export default class GameScene extends Phaser.Scene {
 
         // Hiệu ứng lắc lư và thở cho Cá Tai Tượng
         this.tweens.add({ targets: this.cataituong, angle: { from: -2, to: 2 }, duration: 800, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-        this.tweens.add({ targets: this.cataituong, scaleX: 0.02 * 0.95, scaleY: 0.02 * 1.05, duration: 320, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+        this.tweens.add({ targets: this.cataituong, scaleX: 0.015 * 0.95, scaleY: 0.015 * 1.05, duration: 320, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
 
         this.physics.add.collider(this.cataituong, [cauCaTra, thanhCauHitbox]);
         this.physics.add.collider(this.cataituong, walls);
@@ -252,9 +400,12 @@ export default class GameScene extends Phaser.Scene {
         this.physics.add.collider([this.catre, this.cavo, this.cataituong]);
 
         // ---> NGÔI NHÀ <---
-        // Đặt vị trí X gần khu vực ao, Y lùi xuống dưới ao (cộng thêm px)
-        let nhaX = pondX - 220; 
-        let nhaY = pondY + 220; 
+        // Chỉnh số này để đưa nhà qua Trái (giảm số) hoặc qua Phải (tăng số)
+        let nhaX = 355; 
+
+        // Chỉnh số này để đưa nhà lên Cao (giảm số) hoặc xuống Thấp (tăng số)
+        // Lưu ý: Vẫn nên giữ 'groundLevelY' cộng/trừ thêm để nhà luôn đứng trên mặt đất, không bị bay lơ lửng
+        let nhaY = groundLevelY + 380; 
 
         let nha = this.add.image(nhaX, nhaY, 'nha');
         
@@ -265,40 +416,60 @@ export default class GameScene extends Phaser.Scene {
         nha.setDepth(4); 
         
         // Scale lại cho vừa màn hình (bạn có thể tăng/giảm số này nếu nhà to/nhỏ quá)
-        nha.setScale(0.18);
+        nha.setScale(0.20);
 
-        // --- TRỒNG CÂY TRE, MÂY VÀ NGỌN TRE ---
-        let bambooX = 150;
+        // --- TRỒNG CÂY TRE, MÂY VÀ NGỌN TRE (DÙNG CONTAINER) ---
+        let bambooX = 110;
+        let doiTreLen = 70; 
+        let baseBambooY = groundLevelY - doiTreLen; 
         
-        let soDotTre = 33; 
+        // 1. TĂNG SỐ ĐỐT TRE LÊN 48 (Hoặc hơn) ĐỂ CÂY ĐỦ CAO CHỨA 9 TẦNG MÂY
+        let soDotTre = 49; 
         let chieuCaoMotDot = 100; 
-        let baseDepth = 10; 
+        let baseDepth = 2.8; 
+
+        // 1. Tạo Container đặt tại vị trí gốc tre
+        this.treeContainer = this.add.container(bambooX, baseBambooY);
+        // Đặt Depth cho toàn bộ cụm này
+        this.treeContainer.setDepth(baseDepth);
 
         for (let i = 0; i < soDotTre; i++) {
-            let toaDoY = groundLevelY - (i * chieuCaoMotDot);
+            // Lưu ý: Tọa độ Y bây giờ tính từ 0 (vì Container đã ở sẵn vị trí baseBambooY)
+            let toaDoY = -(i * chieuCaoMotDot);
             
-            // Vẽ thân tre
-            this.add.image(bambooX, toaDoY, 'bamboo')
-                .setOrigin(0.5, 1)
-                .setDepth(baseDepth + i);
+            // Vẽ thân tre thêm vào Container
+            let dotTre = this.add.image(0, toaDoY, 'bamboo').setOrigin(0.5, 1);
+            dotTre.setDepth(baseDepth + i);
+            this.treeContainer.add(dotTre);
             
-            // TỰ ĐỘNG THÊM TẦNG MÂY:
-            if (i >= 5 && (i - 5) % 3 === 0 && i <= 29) {
-                let cloud = this.add.image(width / 2, toaDoY - chieuCaoMotDot, 'tangmay').setOrigin(0.5, 0.5);
+            // 2. SỬA ĐIỀU KIỆN TẠO MÂY (Bắt đầu từ 21, cách 3 đốt, kết thúc ở 45)
+            if (i >= 21 && (i - 21) % 3 === 0 && i <= 45) {
+                // Tính toán khoảng cách xích qua phải để mây nằm giữa màn hình
+                let cloudX = (width / 2) - bambooX;
+                let cloud = this.add.image(cloudX, toaDoY - chieuCaoMotDot, 'tangmay').setOrigin(0.5, 0.5);
                 cloud.setScale((width / cloud.width) * 0.95);
                 
                 cloud.setDepth(baseDepth + i + 0.5); 
+                this.treeContainer.add(cloud);
             }
         }
 
-        // CẮM NGỌN TRE VÀO ĐỐT CUỐI CÙNG
-        let topY = groundLevelY - (soDotTre * chieuCaoMotDot);
-        this.add.image(bambooX, topY, 'ngontre')
-            .setOrigin(0.5, 1)
-            .setDepth(baseDepth + soDotTre);
-        
+        // 2. Cắm ngọn tre vào Container
+        let topY = -(soDotTre * chieuCaoMotDot);
+        let ngontre = this.add.image(0, topY, 'ngontre').setOrigin(0.5, 1).setDepth(baseDepth + soDotTre);
+        this.treeContainer.add(ngontre);
+
+        // 3. Thêm gốc tre (Gấu trúc) vào Container
+        let pandaBase = this.add.image(0, 10, 'goctre').setOrigin(0.5, 1).setDepth(1000);
+        pandaBase.setScale(0.30);
+        this.treeContainer.add(pandaBase);
+
+        // 4. THIẾT LẬP KÍCH THƯỚC BAN ĐẦU (Scale = 0.4 tức là nhỏ bằng 40%)
+        this.treeContainer.setScale(0.4);
+        // ==========================================================
+
         // ---> MÂY TRẮNG (SHOP) <---
-        let yTangMay1 = groundLevelY - (5 * chieuCaoMotDot); 
+        let yTangMay1 = groundLevelY - (9 * chieuCaoMotDot); 
         let shopCloudX = 400;
         let shopCloudY = yTangMay1 + 200;
 
@@ -388,20 +559,76 @@ export default class GameScene extends Phaser.Scene {
             // Code mở UI Sự kiện của bạn sẽ viết ở đây sau này
         });
 
-        // --- GỐC TRE ---
-        let pandaY = groundLevelY + 10; 
+        // HÀNG RÀO & CỔNG TRƯỚC NHÀ
         
-        // Sử dụng this.add.image để thêm ảnh tĩnh
-        let pandaBase = this.add.image(bambooX, pandaY, 'goctre')
-            .setOrigin(0.5, 1)
-            .setDepth(1000); 
-            
-        // Giữ nguyên tỉ lệ scale cũ, bạn có thể điều chỉnh số 0.5 này nếu ảnh mới quá to hoặc nhỏ
-        pandaBase.setScale(0.3);
+        let congRaoScale = 0.22; // Kích thước cổng
+        let hrScaleTruoc = 0.35; // Kích thước hàng rào 2 bên
 
-        // ==========================================
-        // HỆ THỐNG TIỀN TỆ VÀ GIAO DIỆN SHOP (CHUẨN UI)
-        // ==========================================
+        // Lấy mốc Y gốc sát mép dưới màn hình
+        let baseOriginY = height + groundOffsetY; 
+
+        // TẠO BIẾN ĐIỀU CHỈNH CHỈ DÀNH RIÊNG CHO CỔNG:
+        let congDichXuong = 25; 
+        let viTriYCong = baseOriginY + congDichXuong;
+
+        // TẠO BIẾN ĐIỀU CHỈNH DÀNH RIÊNG CHO HÀNG RÀO 2 BÊN:
+        let hrDichXuong = 30; // <-- Tăng số này lên (ví dụ 40, 50, 60) để hàng rào xích xuống sâu hơn
+        let viTriYHangRao = baseOriginY + hrDichXuong;
+
+        // 1. Cổng rào ở chính giữa màn hình (Sử dụng viTriYCong)
+        // Thay vì add.image, ta dùng add.sprite và gọi frame 0 (Cổng đóng)
+        let congRao = this.add.sprite(width / 2, viTriYCong, 'congrao', 0)
+            .setOrigin(0.5, 1)
+            .setDepth(2000) 
+            .setScrollFactor(0, 1)
+            .setScale(congRaoScale);
+
+        let congRaoWidth = congRao.width * congRaoScale;
+
+        // BẬT TƯƠNG TÁC CLICK CHO CỔNG RÀO
+        congRao.setInteractive({ useHandCursor: true });
+        
+        // Biến lưu trạng thái của cổng (mặc định là true = đang đóng)
+        let isGateClosed = true;
+
+        // Lưu lại vị trí Y gốc của cổng
+        let yGocCuaCong = viTriYCong;
+        
+        // Số pixel cần bù trừ khi mở cổng 
+        // (Do cổng bị nhích LÊN, ta dùng dấu CỘNG để kéo nó XUỐNG)
+        let doLechY = 43; // <-- Bạn có thể thay đổi số này
+
+        congRao.on('pointerdown', () => {
+            // Chặn click nếu Shop hoặc Giao diện khác đang mở
+            if (this.isUIOpen) return; 
+
+            // Đảo ngược trạng thái
+            isGateClosed = !isGateClosed; 
+
+            if (isGateClosed) {
+                congRao.setFrame(0); // Chuyển sang ảnh Đóng
+                congRao.y = yGocCuaCong; // Trả về vị trí Y ban đầu
+            } else {
+                congRao.setFrame(1); // Chuyển sang ảnh Mở
+                congRao.y = yGocCuaCong + doLechY; // Cộng thêm Y để kéo cổng lún xuống cho khớp
+            }
+        });
+
+        // 2. Hàng rào bên TRÁI (Sử dụng viTriYHangRao)
+        let hangRaoTrai = this.add.image((width / 2) - (congRaoWidth / 2) + 60, viTriYHangRao, 'hangrao')
+            .setOrigin(1, 1) 
+            .setDepth(1999)  
+            .setScrollFactor(0, 1)
+            .setScale(hrScaleTruoc);
+
+        // 3. Hàng rào bên PHẢI (Sử dụng viTriYHangRao)
+        let hangRaoPhai = this.add.image((width / 2) + (congRaoWidth / 2) - 60, viTriYHangRao, 'hangrao')
+            .setOrigin(0, 1) 
+            .setDepth(1999)
+            .setScrollFactor(0, 1)
+            .setScale(hrScaleTruoc);
+
+        // HỆ THỐNG TIỀN TỆ VÀ GIAO DIỆN SHOP
         
         this.soDau = 86869; // Cấp số lượng Đậu giống ảnh mẫu để test
 
@@ -571,13 +798,58 @@ export default class GameScene extends Phaser.Scene {
             }
         }
 
-        // ---> THÊM: CÁ TAI TƯỢNG QUAY ĐẦU <---
+        // --- CÁ TAI TƯỢNG QUAY ĐẦU ---
         if (this.cataituong && this.cataituong.active) {
             if (this.cataituong.body.velocity.x > 0) {
                 this.cataituong.setFrame(1); 
             } else if (this.cataituong.body.velocity.x < 0) {
-                this.cataituong.setFrame(0); 
+                this.cataituong.setFrame(0);
             }
+        }
+
+        // --- MÂY BAY DI CHUYỂN ---
+        if (this.maybay && this.maybay.active) {
+            // Mỗi khung hình, máy bay tiến sang trái 1.5 pixel
+            this.maybay.x -= 0.3;
+
+            // Lấy một nửa chiều rộng của máy bay
+            let halfWidth = (this.maybay.width * this.maybay.scaleX) / 2;
+            
+            // Nếu máy bay bay khuất hoàn toàn khỏi rìa TRÁI màn hình
+            if (this.maybay.x < -halfWidth) {
+                // Đưa nó quay trở lại vị trí tít bên rìa PHẢI màn hình để bay tiếp vòng mới
+                this.maybay.x = this.scale.width + halfWidth;
+            }
+        }
+               // ==========================================================
+        // --- HIỆU ỨNG PHÓNG TO CÂY TRE KHI VUỐT LÊN ---
+        // ==========================================================
+        if (this.treeContainer) {
+            // Lấy vị trí hiện tại của Camera (Mặc định ở mặt đất là 0, vuốt lên sẽ ra số âm)
+            let currentScrollY = this.cameras.main.scrollY;
+
+            // Mốc 1: Camera đang ở mặt đất (Cây tre nhỏ nhất)
+            let startY = 0; 
+
+            // Mốc 2: Camera vuốt lên khuất mặt đất (Cây tre to tối đa)
+            // Bạn có thể TĂNG số này (ví dụ -1000, -1200) để người chơi phải vuốt cao hơn nữa cây mới to hết cỡ
+            let endY = -800; 
+
+            // Tính toán tỷ lệ phần trăm người chơi đã vuốt (từ 0 đến 1)
+            let progress = (currentScrollY - startY) / (endY - startY);
+
+            // Bắt buộc progress chỉ được chạy từ 0 đến 1, không được lố
+            progress = Phaser.Math.Clamp(progress, 0, 1);
+
+            // Định nghĩa kích thước: Từ 40% (0.4) lên 100% (1.0)
+            let minScale = 0.4;
+            let maxScale = 1.0;
+            
+            // Tính toán Scale hiện tại dựa trên phần trăm đã vuốt
+            let currentScale = minScale + (maxScale - minScale) * progress;
+
+            // Áp dụng kích thước mới cho toàn bộ cụm cây tre
+            this.treeContainer.setScale(currentScale);
         }
     }
 }
