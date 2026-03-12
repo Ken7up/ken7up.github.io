@@ -63,8 +63,8 @@ export default class GameScene extends Phaser.Scene {
         // 1. Điểm GẦN NHẤT (Nằm sát mép dưới màn hình, kích thước to nhất)
         let yGanNhat = height + groundOffsetY; 
         let scaleGanNhat = 0.02 * heSoScale; // Kích thước to nhất 
-        let xGanTrai = 18;          // Nằm sát lề trái
-        let xGanPhai = width - 18;  // Nằm sát lề phải
+        let xGanTrai = 15;          // Nằm sát lề trái
+        let xGanPhai = width - 15;  // Nằm sát lề phải
         
         // 2. Điểm XA NHẤT (Nằm tít phía sau gần chân núi, kích thước nhỏ nhất)
         let yXaNhat = mountainY - 40; 
