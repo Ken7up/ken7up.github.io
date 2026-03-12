@@ -56,17 +56,17 @@ export default class GameScene extends Phaser.Scene {
         // ==========================================
         // --- HÀNG RÀO XƯƠNG RỒNG TẠO CHIỀU SÂU ---
         // ==========================================
-        let soCâyXuongRong = 15; // Số lượng cây xương rồng mỗi bên
+        let soCâyXuongRong = 18; // Số lượng cây xương rồng mỗi bên
         
         // 1. Điểm GẦN NHẤT (Nằm sát mép dưới màn hình, kích thước to nhất)
         let yGanNhat = height + groundOffsetY; 
-        let scaleGanNhat = 0.10;    // Kích thước to nhất 
+        let scaleGanNhat = 0.03;    // Kích thước to nhất 
         let xGanTrai = 22;          // Nằm sát lề trái
         let xGanPhai = width - 22;  // Nằm sát lề phải
         
         // 2. Điểm XA NHẤT (Nằm tít phía sau gần chân núi, kích thước nhỏ nhất)
-        let yXaNhat = mountainY - 10; 
-        let scaleXaNhat = 0.06;       // Kích thước nhỏ nhất
+        let yXaNhat = mountainY - 40; 
+        let scaleXaNhat = 0.015;       // Kích thước nhỏ nhất
         
         // Gắn tọa độ X xa bằng X gần để tạo thành 2 đường thẳng song song dọc hai bên
         let xXaTrai = xGanTrai;       
@@ -83,19 +83,18 @@ export default class GameScene extends Phaser.Scene {
             let hienTaiXTrai = xGanTrai + (xXaTrai - xGanTrai) * tiLe;
             let hienTaiXPhai = xGanPhai - (xGanPhai - xXaPhai) * tiLe;
             
-            // Độ sâu (Depth): Cây càng gần (tiLe tiến về 0) thì depth càng cao để nổi lên trên
-            // Lớp nền đất đang là 1, nên mình cho xương rồng từ 1.1 đến 1.9
-            let currentDepth = 1.1 + (1 - tiLe); 
+            // Nâng mức thấp nhất từ 1.1 lên 1.3 để đè lên xuongrong2 (đang là 1.2)
+            let currentDepth = 1.3 + (1 - tiLe);
 
-            // Vẽ cây xương rồng BÊN TRÁI
-            let xrTrai = this.add.image(hienTaiXTrai, hienTaiY, 'xuongrong')
+            // Vẽ cây xương rồng BÊN TRÁI (Dùng frame 0)
+            let xrTrai = this.add.sprite(hienTaiXTrai, hienTaiY, 'hangrao2', 0)
                 .setOrigin(0.5, 1) // Set tâm ở dưới cùng chân cây
                 .setDepth(currentDepth)
                 .setScale(hienTaiScale)
                 .setScrollFactor(0, 1); // Khóa cuộn ngang, cuộn dọc bám theo nền đất
 
-            // Vẽ cây xương rồng BÊN PHẢI
-            let xrPhai = this.add.image(hienTaiXPhai, hienTaiY, 'xuongrong')
+            // Vẽ cây xương rồng BÊN PHẢI (Dùng frame 0)
+            let xrPhai = this.add.sprite(hienTaiXPhai, hienTaiY, 'hangrao2', 0)
                 .setOrigin(0.5, 1)
                 .setDepth(currentDepth)
                 .setScale(hienTaiScale)
@@ -103,20 +102,20 @@ export default class GameScene extends Phaser.Scene {
         }
 
         // --- HÀNG RÀO XƯƠNG RỒNG NGANG BÊN CHÂN NÚI (Đã sửa để không bị méo) ---
-        let hangRaoY = mountainY - 43; // Nhích số này để chân cây cắm ngập xuống đất vừa ý
+        let hangRaoY = mountainY - 42; // Nhích số này để chân cây cắm ngập xuống đất vừa ý
 
         // 1. Tự do điều chỉnh số lượng và kích thước
-        let soLuongCay = 30; // Tăng lên nếu muốn cây xếp khít hơn, giảm đi nếu muốn thưa ra
-        let hrScale = 0.05;  // Chỉnh kích thước cây to/nhỏ ở đây (0.12 là 12% so với ảnh gốc)
+        let soLuongCay = 25; // Tăng lên nếu muốn cây xếp khít hơn, giảm đi nếu muốn thưa ra
+        let hrScale = 0.015;  // Chỉnh kích thước cây to/nhỏ ở đây (0.12 là 12% so với ảnh gốc)
 
         // 2. Đổi tên biến thành 'khoangCachCay' để tránh trùng lặp
         let khoangCachCay = width / (soLuongCay - 1); 
 
         for (let i = 0; i < soLuongCay; i++) {
-          // Khởi tạo cây xương rồng
-          let hangRao = this.add.image(0, hangRaoY, 'xuongrong2')
+          // Khởi tạo cây xương rồng (Dùng frame 1)
+          let hangRao = this.add.sprite(0, hangRaoY, 'hangrao2', 1)
               .setOrigin(0.5, 1) // Đặt tâm ở giữa chân cây
-              .setDepth(1.2)     // Nổi lên trên mặt đất (1.0)
+              .setDepth(1.05)     // Nổi lên trên mặt đất (1.0)
               .setScale(hrScale)
               .setScrollFactor(0, 1);
          
@@ -424,7 +423,7 @@ export default class GameScene extends Phaser.Scene {
         let baseBambooY = groundLevelY - doiTreLen; 
         
         // 1. TĂNG SỐ ĐỐT TRE LÊN 48 (Hoặc hơn) ĐỂ CÂY ĐỦ CAO CHỨA 9 TẦNG MÂY
-        let soDotTre = 49; 
+        let soDotTre = 57; 
         let chieuCaoMotDot = 100; 
         let baseDepth = 2.8; 
 
@@ -442,12 +441,12 @@ export default class GameScene extends Phaser.Scene {
             dotTre.setDepth(baseDepth + i);
             this.treeContainer.add(dotTre);
             
-            // 2. SỬA ĐIỀU KIỆN TẠO MÂY (Bắt đầu từ 21, cách 3 đốt, kết thúc ở 45)
-            if (i >= 21 && (i - 21) % 3 === 0 && i <= 45) {
+            // 2. SỬA ĐIỀU KIỆN TẠO MÂY (Bắt đầu từ 21, cách 4 đốt, kết thúc ở 45)
+            if (i >= 20 && (i - 20) % 4 === 0 && i <= 54) {
                 // Tính toán khoảng cách xích qua phải để mây nằm giữa màn hình
                 let cloudX = (width / 2) - bambooX;
                 let cloud = this.add.image(cloudX, toaDoY - chieuCaoMotDot, 'tangmay').setOrigin(0.5, 0.5);
-                cloud.setScale((width / cloud.width) * 0.95);
+                cloud.setScale((width / cloud.width) * 1.18);
                 
                 cloud.setDepth(baseDepth + i + 0.5); 
                 this.treeContainer.add(cloud);
