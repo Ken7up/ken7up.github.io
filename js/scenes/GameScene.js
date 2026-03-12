@@ -446,7 +446,9 @@ export default class GameScene extends Phaser.Scene {
                 // Tính toán khoảng cách xích qua phải để mây nằm giữa màn hình
                 let cloudX = (width / 2) - bambooX;
                 let cloud = this.add.image(cloudX, toaDoY - chieuCaoMotDot, 'tangmay').setOrigin(0.5, 0.5);
-                cloud.setScale((width / cloud.width) * 1.18);
+                // Gán một tỷ lệ cố định để mây luôn tỷ lệ thuận với cây tre gốc.
+                // Gợi ý: Hãy thay đổi con số 1.0 này (ví dụ: 0.8, 1.2, 1.5...) cho đến khi bạn thấy mây ôm vừa khít thân tre trên máy bạn.
+                cloud.setScale(0.57);
                 
                 cloud.setDepth(baseDepth + i + 0.5); 
                 this.treeContainer.add(cloud);
