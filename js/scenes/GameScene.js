@@ -8,20 +8,20 @@ export default class GameScene extends Phaser.Scene {
         const width = this.scale.width;
         const height = this.scale.height;
 
-        // --- CHỈNH BẦU TRỜI ---
+        // --- BẦU TRỜI ---
         // Đẩy bầu trời lên cao hơn (số âm) để khi vuốt lên đỉnh không bị lộ viền đen
         let skyOffsetY = -3000; 
         let sky = this.add.image(0, skyOffsetY, 'Sky').setOrigin(0, 0).setDepth(0); 
         
-        // Kéo dãn chiều cao ảnh bầu trời gấp 2.5 lần màn hình để dư dả không gian cuộn
+        // Kéo dãn chiều cao ảnh bầu trời gấp 3.5 lần màn hình để dư dả không gian cuộn
         sky.setDisplaySize(width, height * 3.5);
         
-        // CHỈNH HIỆU ỨNG CUỘN TỪ TỪ (PARALLAX)
+        // HIỆU ỨNG CUỘN TỪ TỪ (PARALLAX)
         // 0: Không cuộn theo chiều ngang
-        // 0.2: Cuộn theo chiều dọc với tốc độ bằng 20% so với tốc độ vuốt màn hình
+        // 0.5: Cuộn theo chiều dọc với tốc độ bằng 20% so với tốc độ vuốt màn hình
         sky.setScrollFactor(0, 0.5);
 
-        // --- CHỈNH MẶT ĐẤT ---
+        // --- MẶT ĐẤT ---
         let groundOffsetY = 0; 
         let ground = this.add.image(0, height + groundOffsetY, 'ground').setOrigin(0, 1).setDepth(1);
         const scaleRatio = width / ground.width;
@@ -29,7 +29,7 @@ export default class GameScene extends Phaser.Scene {
         // Giả sử 400 là chiều rộng chuẩn trên điện thoại của bạn
         let heSoScale = width / 400;
 
-        // --- THÊM NÚI ---
+        // --- NÚI ---
         // 1. Tính toán chiều cao thực tế của mặt đất trên màn hình sau khi đã scale
         let groundDisplayHeight = ground.height * scaleRatio;
         
@@ -48,16 +48,14 @@ export default class GameScene extends Phaser.Scene {
         // 1: Cuộn dọc 100% theo camera để dính chặt vào mặt đất
         nui.setScrollFactor(0, 1);
 
-        // --- THÊM NÚI 1 ---
+        // --- NÚI 1 ---
         // Depth = 0.6 giúp núi này đè lên núi cũ (0.5) nhưng vẫn núp sau mặt đất (1.0)
         let nui1 = this.add.image(0, mountainY, 'nui1').setOrigin(0, 1).setDepth(0.6);
         const nui1ScaleRatio = width / nui1.width;
         nui1.setScale(nui1ScaleRatio);
         nui1.setScrollFactor(0, 1);
 
-        // ==========================================
         // --- HÀNG RÀO XƯƠNG RỒNG TẠO CHIỀU SÂU ---
-        // ==========================================
         let soCâyXuongRong = 18; // Số lượng cây xương rồng mỗi bên
         
         // 1. Điểm GẦN NHẤT (Nằm sát mép dưới màn hình, kích thước to nhất)
@@ -103,7 +101,7 @@ export default class GameScene extends Phaser.Scene {
                 .setScrollFactor(0, 1);
         }
 
-        // --- HÀNG RÀO XƯƠNG RỒNG NGANG BÊN CHÂN NÚI (Đã sửa để không bị méo) ---
+        // --- HÀNG RÀO XƯƠNG RỒNG NGANG BÊN CHÂN NÚI ---
         let hangRaoY = mountainY - 39; // Nhích số này để chân cây cắm ngập xuống đất vừa ý
 
         // 1. Tự do điều chỉnh số lượng và kích thước
@@ -126,7 +124,7 @@ export default class GameScene extends Phaser.Scene {
           hangRao.x = i * khoangCachCay;
         }
 
-        // --- THÊM MÂY BAY ---
+        // --- MÂY BAY ---
         let maybayStartX = width + 150; 
         
         // *Lưu ý: Khi đổi ScrollFactor, vị trí hiển thị ban đầu có thể bị lệch một chút. 
@@ -141,7 +139,7 @@ export default class GameScene extends Phaser.Scene {
         // Đổi số 1 thành 0.75 để máy bay cuộn chậm hơn núi (1.0) nhưng nhanh hơn bầu trời (0.5)
         this.maybay.setScrollFactor(0, 0.75);
 
-        // ---> CHIẾC AO <---
+        // --- CHIẾC AO ---
         let groundLevelY = height + groundOffsetY - 460;
         
         // Giảm số này để ao dịch qua TRÁI (Ví dụ: từ 500 xuống 420)
@@ -160,9 +158,306 @@ export default class GameScene extends Phaser.Scene {
         // 4. Chỉnh kích thước (To/Nhỏ):
         pond.setScale(1);
 
-        // =====================================
-        // CẦU CÁ TRA (Đã bật Vật lý để va chạm)
-        // =====================================
+        // --- GẠCH LÓT ĐƯỜNG (BẢN ĐẶT THỦ CÔNG TỪNG VIÊN) ---
+        
+        // Lấy tọa độ mép ao làm điểm tựa ban đầu
+        let gocX = 320; 
+        let gocY = groundLevelY - 45; 
+
+        // VIÊN GẠCH SỐ 1 (Viên gốc)
+        let gach1X = gocX - 205; // Chỉnh số này để viên 1 qua trái/phải
+        let gach1Y = gocY + 15;  // Chỉnh số này để viên 1 lên/xuống
+        let gach1 = this.add.image(gach1X, gach1Y, 'gach');
+        gach1.setOrigin(0.5, 0.5);
+        gach1.setDepth(1.02); 
+        gach1.setScale(0.8,0.5);
+
+        // VIÊN GẠCH SỐ 2
+        let gach2X = gach1X - 0; // +25 để xếp sang phải, -25 để xếp sang trái
+        let gach2Y = gach1Y + 15;  // +15 để xếp xuống dưới, -15 để xếp lên trên
+        let gach2 = this.add.image(gach2X, gach2Y, 'gach');
+        gach2.setOrigin(0.5, 0.5);
+        gach2.setDepth(1.02); 
+        gach2.setScale(0.8,0.5);
+        // VIÊN GẠCH SỐ 3
+        let gach3X = gach2X + 25; // +25 để xếp sang phải, -25 để xếp sang trái
+        let gach3Y = gach2Y - 0;  // +15 để xếp xuống dưới, -15 để xếp lên trên
+        let gach3 = this.add.image(gach3X, gach3Y, 'gach');
+        gach3.setOrigin(0.5, 0.5);
+        gach3.setDepth(1.02); 
+        gach3.setScale(0.8,0.5);
+        // VIÊN GẠCH SỐ 4
+        let gach4X = gach3X + 25; // +25 để xếp sang phải, -25 để xếp sang trái
+        let gach4Y = gach3Y - 0;  // +15 để xếp xuống dưới, -15 để xếp lên trên
+        let gach4 = this.add.image(gach4X, gach4Y, 'gach');
+        gach4.setOrigin(0.5, 0.5);
+        gach4.setDepth(1.02); 
+        gach4.setScale(0.8,0.5);
+        // VIÊN GẠCH SỐ 5
+        let gach5X = gach4X + 25; // +25 để xếp sang phải, -25 để xếp sang trái
+        let gach5Y = gach4Y - 0;  // +15 để xếp xuống dưới, -15 để xếp lên trên
+        let gach5 = this.add.image(gach5X, gach5Y, 'gach');
+        gach5.setOrigin(0.5, 0.5);
+        gach5.setDepth(1.02); 
+        gach5.setScale(0.8,0.5);
+        // VIÊN GẠCH SỐ 6
+        let gach6X = gach5X + 25; // +25 để xếp sang phải, -25 để xếp sang trái
+        let gach6Y = gach5Y - 0;  // +15 để xếp xuống dưới, -15 để xếp lên trên
+        let gach6 = this.add.image(gach6X, gach6Y, 'gach');
+        gach6.setOrigin(0.5, 0.5);
+        gach6.setDepth(1.02); 
+        gach6.setScale(0.8,0.5);
+        // VIÊN GẠCH SỐ 7
+        let gach7X = gach6X + 25; // +25 để xếp sang phải, -25 để xếp sang trái
+        let gach7Y = gach6Y - 0;  // +15 để xếp xuống dưới, -15 để xếp lên trên
+        let gach7 = this.add.image(gach7X, gach7Y, 'gach');
+        gach7.setOrigin(0.5, 0.5);
+        gach7.setDepth(1.02); 
+        gach7.setScale(0.8,0.5);
+        // VIÊN GẠCH SỐ 8
+        let gach8X = gach7X + 25; // +25 để xếp sang phải, -25 để xếp sang trái
+        let gach8Y = gach7Y - 0;  // +15 để xếp xuống dưới, -15 để xếp lên trên
+        let gach8 = this.add.image(gach8X, gach8Y, 'gach');
+        gach8.setOrigin(0.5, 0.5);
+        gach8.setDepth(1.02); 
+        gach8.setScale(0.8,0.5);
+        // VIÊN GẠCH SỐ 9
+        let gach9X = gach8X + 25; // +25 để xếp sang phải, -25 để xếp sang trái
+        let gach9Y = gach8Y - 0;  // +15 để xếp xuống dưới, -15 để xếp lên trên
+        let gach9 = this.add.image(gach9X, gach9Y, 'gach');
+        gach9.setOrigin(0.5, 0.5);
+        gach9.setDepth(1.02); 
+        gach9.setScale(0.8,0.5);
+        // VIÊN GẠCH SỐ 10
+        let gach10X = gach9X + 25; // +25 để xếp sang phải, -25 để xếp sang trái
+        let gach10Y = gach9Y - 0;  // +15 để xếp xuống dưới, -15 để xếp lên trên
+        let gach10 = this.add.image(gach10X, gach10Y, 'gach');
+        gach10.setOrigin(0.5, 0.5);
+        gach10.setDepth(1.02); 
+        gach10.setScale(0.8,0.5);
+        // VIÊN GẠCH SỐ 11
+        let gach11X = gach10X + 25; // +25 để xếp sang phải, -25 để xếp sang trái
+        let gach11Y = gach10Y - 0;  // +15 để xếp xuống dưới, -15 để xếp lên trên
+        let gach11 = this.add.image(gach11X, gach11Y, 'gach');
+        gach11.setOrigin(0.5, 0.5);
+        gach11.setDepth(1.02); 
+        gach11.setScale(0.8,0.5);
+        // VIÊN GẠCH SỐ 12
+        let gach12X = gach11X + 25; // +25 để xếp sang phải, -25 để xếp sang trái
+        let gach12Y = gach11Y - 0;  // +15 để xếp xuống dưới, -15 để xếp lên trên
+        let gach12 = this.add.image(gach12X, gach12Y, 'gach');
+        gach12.setOrigin(0.5, 0.5);
+        gach12.setDepth(1.02); 
+        gach12.setScale(0.8,0.5);
+        // VIÊN GẠCH SỐ 13
+        let gach13X = gach12X + 25; // +25 để xếp sang phải, -25 để xếp sang trái
+        let gach13Y = gach12Y - 0;  // +15 để xếp xuống dưới, -15 để xếp lên trên
+        let gach13 = this.add.image(gach13X, gach13Y, 'gach');
+        gach13.setOrigin(0.5, 0.5);
+        gach13.setDepth(1.02); 
+        gach13.setScale(0.8,0.5);
+        // VIÊN GẠCH SỐ 14
+        let gach14X = gach13X + 25; // +25 để xếp sang phải, -25 để xếp sang trái
+        let gach14Y = gach13Y - 0;  // +15 để xếp xuống dưới, -15 để xếp lên trên
+        let gach14 = this.add.image(gach14X, gach14Y, 'gach');
+        gach14.setOrigin(0.5, 0.5);
+        gach14.setDepth(1.02); 
+        gach14.setScale(0.8,0.5);
+        // VIÊN GẠCH SỐ 15
+        let gach15X = gach14X + 25; // +25 để xếp sang phải, -25 để xếp sang trái
+        let gach15Y = gach14Y - 0;  // +15 để xếp xuống dưới, -15 để xếp lên trên
+        let gach15 = this.add.image(gach15X, gach15Y, 'gach');
+        gach15.setOrigin(0.5, 0.5);
+        gach15.setDepth(1.02); 
+        gach15.setScale(0.8,0.5);
+        // VIÊN GẠCH SỐ 16
+        let gach16X = gach15X + 25; // +25 để xếp sang phải, -25 để xếp sang trái
+        let gach16Y = gach15Y - 0;  // +15 để xếp xuống dưới, -15 để xếp lên trên
+        let gach16 = this.add.image(gach16X, gach16Y, 'gach');
+        gach16.setOrigin(0.5, 0.5);
+        gach16.setDepth(1.02); 
+        gach16.setScale(0.8,0.5);
+        // VIÊN GẠCH SỐ 17
+        let gach17X = gach16X + 25; // +25 để xếp sang phải, -25 để xếp sang trái
+        let gach17Y = gach16Y - 0;  // +15 để xếp xuống dưới, -15 để xếp lên trên
+        let gach17 = this.add.image(gach17X, gach17Y, 'gach');
+        gach17.setOrigin(0.5, 0.5);
+        gach17.setDepth(1.02); 
+        gach17.setScale(0.8,0.5);
+        // VIÊN GẠCH SỐ 18
+        let gach18X = gach17X + 25; // +25 để xếp sang phải, -25 để xếp sang trái
+        let gach18Y = gach17Y - 0;  // +15 để xếp xuống dưới, -15 để xếp lên trên
+        let gach18 = this.add.image(gach18X, gach18Y, 'gach');
+        gach18.setOrigin(0.5, 0.5);
+        gach18.setDepth(1.02); 
+        gach18.setScale(0.8,0.5);
+        // VIÊN GẠCH SỐ 19
+        let gach19X = gach18X + 25; // +25 để xếp sang phải, -25 để xếp sang trái
+        let gach19Y = gach18Y - 0;  // +15 để xếp xuống dưới, -15 để xếp lên trên
+        let gach19 = this.add.image(gach19X, gach19Y, 'gach');
+        gach19.setOrigin(0.5, 0.5);
+        gach19.setDepth(1.02); 
+        gach19.setScale(0.8,0.5);
+        // VIÊN GẠCH SỐ 20
+        let gach20X = gach19X + 25; // +25 để xếp sang phải, -25 để xếp sang trái
+        let gach20Y = gach19Y - 0;  // +15 để xếp xuống dưới, -15 để xếp lên trên
+        let gach20 = this.add.image(gach20X, gach20Y, 'gach');
+        gach20.setOrigin(0.5, 0.5);
+        gach20.setDepth(1.02); 
+        gach20.setScale(0.8,0.5);
+        // VIÊN GẠCH SỐ 21
+        let gach21X = gach20X + 25; // +25 để xếp sang phải, -25 để xếp sang trái
+        let gach21Y = gach20Y - 0;  // +15 để xếp xuống dưới, -15 để xếp lên trên
+        let gach21 = this.add.image(gach21X, gach21Y, 'gach');
+        gach21.setOrigin(0.5, 0.5);
+        gach21.setDepth(1.02); 
+        gach21.setScale(0.8,0.5);
+        // VIÊN GẠCH SỐ 22
+        let gach22X = gach21X + 25; // +25 để xếp sang phải, -25 để xếp sang trái
+        let gach22Y = gach21Y - 0;  // +15 để xếp xuống dưới, -15 để xếp lên trên
+        let gach22 = this.add.image(gach22X, gach22Y, 'gach');
+        gach22.setOrigin(0.5, 0.5);
+        gach22.setDepth(1.02); 
+        gach22.setScale(0.8,0.5);
+        // VIÊN GẠCH SỐ 23
+        let gach23X = gach22X + 25; // +25 để xếp sang phải, -25 để xếp sang trái
+        let gach23Y = gach22Y - 0;  // +15 để xếp xuống dưới, -15 để xếp lên trên
+        let gach23 = this.add.image(gach23X, gach17Y, 'gach');
+        gach23.setOrigin(0.5, 0.5);
+        gach23.setDepth(1.02); 
+        gach23.setScale(0.8,0.5);
+        // VIÊN GẠCH SỐ 24
+        let gach24X = gach23X + 25; // +25 để xếp sang phải, -25 để xếp sang trái
+        let gach24Y = gach23Y - 0;  // +15 để xếp xuống dưới, -15 để xếp lên trên
+        let gach24 = this.add.image(gach24X, gach24Y, 'gach');
+        gach24.setOrigin(0.5, 0.5);
+        gach24.setDepth(1.02); 
+        gach24.setScale(0.8,0.5);
+        // VIÊN GẠCH SỐ 25
+        let gach25X = gach24X + 25; // +25 để xếp sang phải, -25 để xếp sang trái
+        let gach25Y = gach24Y - 0;  // +15 để xếp xuống dưới, -15 để xếp lên trên
+        let gach25 = this.add.image(gach25X, gach25Y, 'gach');
+        gach25.setOrigin(0.5, 0.5);
+        gach25.setDepth(1.02); 
+        gach25.setScale(0.8,0.5);
+
+        // --- Ô ĐẤT, MÁY BƠM VÀ CHỨC NĂNG BƠM NƯỚC ---
+        
+        // 1. TẠO TEXTURE GIỌT NƯỚC (Không cần dùng ảnh ngoài)
+        let nuocGraphics = this.make.graphics({x: 0, y: 0, add: false});
+        nuocGraphics.fillStyle(0x4FC3F7, 0.9); // Màu nước xanh lơ, hơi trong suốt
+        nuocGraphics.fillCircle(6, 6, 6); // Vẽ một hình tròn nhỏ làm giọt nước
+        nuocGraphics.generateTexture('giotnuoc', 12, 12);
+
+        // 2. CÁC BIẾN TÙY CHỈNH VỊ TRÍ Ô ĐẤT
+        let oDatX = 568; 
+        let oDatY = groundLevelY - 68; 
+        let oDatScale = 0.08; 
+
+        // Hiển thị ô đất
+        let oDat = this.add.sprite(oDatX, oDatY, 'odat', 0);
+        oDat.setOrigin(0.5, 0.5);
+        oDat.setDepth(1.2); 
+        oDat.setScale(oDatScale);
+        oDat.setInteractive({ useHandCursor: true });
+
+        // 3. THÊM MÁY BƠM (Đặt trên Ao cá)
+        // Lấy tọa độ dựa theo pondX và pondY của ao cá
+        let mayBomX = pondX + 150; // Dịch sang phải tâm ao một chút để hướng về ô đất
+        let mayBomY = pondY - 20; // Nổi trên mặt ao
+        let mayBomScale = 0.07; // Chỉnh độ to/nhỏ của máy bơm
+
+        let mayBom = this.add.image(mayBomX, mayBomY, 'maybom');
+        mayBom.setOrigin(0.5, 0.5);
+        mayBom.setDepth(3.5); // Đặt Depth cao (3.5) để máy bơm nằm đè lên ao (2) và cầu cá (3)
+        mayBom.setScale(mayBomScale);
+
+        // 4. TẠO HIỆU ỨNG PHUN NƯỚC TỪ VÒI MÁY BƠM
+        let voiNuocX = mayBomX + 40; 
+        let voiNuocY = mayBomY - 15; 
+
+        let emitter = this.add.particles(0, 0, 'giotnuoc', {
+            x: voiNuocX,
+            y: voiNuocY,
+            // Chỉnh lại góc bắn và lực bắn vì máy bơm giờ ở xa ô đất hơn
+            angle: { min: +0, max: -0 }, // Bắn vút cao lên một chút để bay xa
+            speed: { min: 100, max: 200 }, // Tăng tốc độ văng mạnh hơn
+            gravityY: 300,                 // Trọng lực kéo cong xuống
+            lifespan: 500,                // Tăng thời gian sống của nước để kịp bay tới ô đất
+            scale: { start: 0.5, end: 0 },   // Giọt nước nhỏ dần rồi tan biến
+            quantity: 5,                   // Số lượng giọt nước phun ra
+            emitting: false                // MẶC ĐỊNH LÀ TẮT
+        });
+        emitter.setDepth(3.6); // Tia nước phải nổi lên trên cùng
+
+        // 5. CÁC BIẾN TRẠNG THÁI
+        let isWatering = false; 
+        let isDraining = false; 
+        let isFullWater = false; 
+        let doLechKhungHinh = 1;
+
+        // 6. SỰ KIỆN KHI CLICK VÀO Ô ĐẤT
+        oDat.on('pointerdown', () => {
+            if (this.isUIOpen) return; 
+            if (isWatering || isDraining) return; 
+
+            if (!isFullWater) {
+                // TRƯỜNG HỢP 1: ĐANG KHÔ -> BƠM NƯỚC
+                isWatering = true; 
+                
+                // BẬT MÁY BƠM PHUN NƯỚC
+                emitter.start(); 
+
+                let textBom = this.add.text(oDat.x, oDat.y - 40, 'Đang bơm nước...', { 
+                    fontSize: '18px', fill: '#0288D1', fontStyle: 'bold', stroke: '#ffffff', strokeThickness: 3
+                }).setOrigin(0.5).setDepth(1.5);
+
+                this.tweens.add({ targets: textBom, alpha: 0.3, duration: 500, yoyo: true, repeat: -1 });
+
+                // Đợi 5 giây
+                this.time.delayedCall(5000, () => {
+                    isWatering = false; 
+                    isFullWater = true; 
+                    oDat.setFrame(1);
+                    oDat.y = oDatY + doLechKhungHinh;
+                    textBom.destroy();  
+                    
+                    // TẮT MÁY BƠM KHI ĐÃ ĐẦY NƯỚC
+                    emitter.stop(); 
+                    
+                    let textDay = this.add.text(oDat.x, oDat.y - 40, 'Đã đầy!', { 
+                        fontSize: '20px', fill: '#4CAF50', fontStyle: 'bold', stroke: '#ffffff', strokeThickness: 3
+                    }).setOrigin(0.5).setDepth(1.5);
+                    this.time.delayedCall(2000, () => textDay.destroy());
+                });
+
+            } else {
+                // TRƯỜNG HỢP 2: ĐÃ ĐẦY -> XẢ NƯỚC
+                isDraining = true;
+                // Khi xả nước thì máy bơm không hoạt động (không gọi emitter.start())
+
+                let textXa = this.add.text(oDat.x, oDat.y - 40, 'Đang xả nước...', { 
+                    fontSize: '18px', fill: '#FF9800', fontStyle: 'bold', stroke: '#ffffff', strokeThickness: 3
+                }).setOrigin(0.5).setDepth(1.5);
+
+                this.tweens.add({ targets: textXa, alpha: 0.3, duration: 500, yoyo: true, repeat: -1 });
+
+                this.time.delayedCall(3000, () => {
+                    isDraining = false; 
+                    isFullWater = false; 
+                    oDat.setFrame(0);
+                    oDat.y = oDatY;
+                    textXa.destroy();    
+                    
+                    let textKho = this.add.text(oDat.x, oDat.y - 40, 'Đã cạn!', { 
+                        fontSize: '20px', fill: '#795548', fontStyle: 'bold', stroke: '#ffffff', strokeThickness: 3
+                    }).setOrigin(0.5).setDepth(1.5);
+                    this.time.delayedCall(2000, () => textKho.destroy());
+                });
+            }
+        });
+
+        // --- CẦU CÁ TRA (Đã bật Vật lý để va chạm) ---
         let cauCaTraX = pondX - 110;
         let cauCaTraY = pondY + 35;
 
@@ -178,7 +473,6 @@ export default class GameScene extends Phaser.Scene {
         cauCaTra.body.setSize(cauCaTra.width * 0.60, cauCaTra.height * 0.20);
         cauCaTra.body.setOffset(cauCaTra.width * 0, cauCaTra.height * 0.95);
         // TẠO THÊM 1 KHUNG CHỮ NHẬT LÀM VA CHẠM CHO THANH CẦU XÉO
-        // ---------------------------------------------------------
         
         // 1. Xác định vị trí (X, Y) của khung: Dịch sang trái và nhấc lên cao một chút so với chân cầu
         let thanhCauX = cauCaTraX + 35; 
@@ -195,7 +489,7 @@ export default class GameScene extends Phaser.Scene {
         // 3. Bật vật lý cho nó và chốt chặt nó lại (setImmovable) để cá không húc bay nó đi
         this.physics.add.existing(thanhCauHitbox, true);
 
-        // TẠO GIỚI HẠN AO CÁ (Tường vô hình - Đã thu nhỏ vừa ao)
+        // TẠO GIỚI HẠN AO CÁ
         let wWidth = 370;  
         let wHeight = 135; 
         
@@ -214,9 +508,9 @@ export default class GameScene extends Phaser.Scene {
         this.physics.add.existing(wallLeft, true);
         this.physics.add.existing(wallRight, true);
 
-        // 2. TẠO 2 Ô VUÔNG Ở GÓC TRÊN (Đã tách riêng Trái và Phải)
+        // 2. TẠO 2 Ô VUÔNG Ở GÓC TRÊN
         
-        // --- GÓC TRÊN BÊN TRÁI (ĐÃ CHỈNH DÀI XUỐNG) ---
+        // GÓC TRÊN BÊN TRÁI
         let chieuDaiGocTraiTren = 45; // Chiều ngang giữ nguyên
         let chieuCaoGocTraiTren = 55; // <-- Tăng số này để ô va chạm dài tuột xuống dưới
         
@@ -226,7 +520,7 @@ export default class GameScene extends Phaser.Scene {
         let cornerTopLeft = this.add.rectangle(gocTraiTrenX, gocTraiTrenY, chieuDaiGocTraiTren, chieuCaoGocTraiTren, 0x000000, 0);
         this.physics.add.existing(cornerTopLeft, true);
 
-        // --- GÓC TRÊN BÊN PHẢI (ĐÃ TĂNG CHIỀU NGANG) ---
+        // GÓC TRÊN BÊN PHẢI
         let chieuDaiGocPhaiTren = 40; // <-- Tăng/giảm số này để chỉnh chiều ngang dài ra hoặc ngắn lại
         let chieuCaoGocPhaiTren = 25; // Giữ nguyên chiều cao cũ
         
@@ -236,9 +530,9 @@ export default class GameScene extends Phaser.Scene {
         let cornerTopRight = this.add.rectangle(gocPhaiTrenX, gocPhaiTrenY, chieuDaiGocPhaiTren, chieuCaoGocPhaiTren, 0x000000, 0);
         this.physics.add.existing(cornerTopRight, true);
 
-        // 3. TẠO 2 Ô VUÔNG Ở GÓC DƯỚI (Đã tách riêng Trái và Phải)
+        // 3. TẠO 2 Ô VUÔNG Ở GÓC DƯỚI
         
-        // --- GÓC DƯỚI BÊN TRÁI (ĐÃ CHỈNH DÀI RA VÀ DỊCH SANG TRÁI) ---
+        // GÓC DƯỚI BÊN TRÁI
         let chieuDaiGocTraiDuoi = 68; 
         let chieuCaoGocTraiDuoi = 1; 
         
@@ -251,17 +545,16 @@ export default class GameScene extends Phaser.Scene {
         let cornerBottomLeft = this.add.rectangle(gocTraiDuoiX, gocTraiDuoiY, chieuDaiGocTraiDuoi, chieuCaoGocTraiDuoi, 0x000000, 0);
         this.physics.add.existing(cornerBottomLeft, true);
 
-        // --- GÓC DƯỚI BÊN PHẢI (GIỮ NGUYÊN NHỎ) ---
+        // GÓC DƯỚI BÊN PHẢI
         let kichThuocGocPhaiDuoi = 5; // <-- Giữ nguyên 20
         let gocPhaiDuoiY = (boundaryCenterY + wHeight/2) - kichThuocGocPhaiDuoi / 2 - 65; 
-        let gocPhaiDuoiX = (boundaryCenterX + wWidth/2) - kichThuocGocPhaiDuoi / 2 - 25;
+        let gocPhaiDuoiX = (boundaryCenterX + wWidth/2) - kichThuocGocPhaiDuoi / 2 - 20;
         
         let cornerBottomRight = this.add.rectangle(gocPhaiDuoiX, gocPhaiDuoiY, kichThuocGocPhaiDuoi, kichThuocGocPhaiDuoi, 0x000000, 0);
         this.physics.add.existing(cornerBottomRight, true);
-        // THÊM 2 Ô VUÔNG PHỤ ĐỂ BO GÓC MƯỢT HƠN
-        // ==========================================
+        // THÊM 2 Ô VUÔNG PHỤ
         
-        // 1. Ô phụ kế góc TRÊN BÊN TRÁI (Dịch sang phải và xích xuống một chút)
+        // 1. Ô phụ kế góc TRÊN BÊN TRÁI
         let sizePhuTraiTren = 20; 
         let phuTraiTrenX = gocTraiTrenX + 45; // Cộng thêm để dịch sang phải
         let phuTraiTrenY = gocTraiTrenY - 15; // Cộng thêm để dịch xuống dưới
@@ -269,33 +562,31 @@ export default class GameScene extends Phaser.Scene {
         let extraTopLeft = this.add.rectangle(phuTraiTrenX, phuTraiTrenY, sizePhuTraiTren, sizePhuTraiTren, 0x000000, 0);
         this.physics.add.existing(extraTopLeft, true);
 
-        // 2. Ô phụ kế góc DƯỚI BÊN PHẢI (Dịch sang trái và nhấc lên cao một chút)
+        // 2. Ô phụ kế góc DƯỚI BÊN PHẢI
         let sizePhuPhaiDuoi = 5; 
         let phuPhaiDuoiX = gocPhaiDuoiX + 5; // Trừ đi để dịch sang trái
         let phuPhaiDuoiY = gocPhaiDuoiY + 45; // Trừ đi để nhấc lên cao
         
         let extraBottomRight = this.add.rectangle(phuPhaiDuoiX, phuPhaiDuoiY, sizePhuPhaiDuoi, sizePhuPhaiDuoi, 0x000000, 0);
         this.physics.add.existing(extraBottomRight, true);
-        // 3. Ô phụ kế góc TRÊN BÊN PHẢI (Dịch sang trái và xích xuống một chút)
+        // 3. Ô phụ kế góc TRÊN BÊN PHẢI
         let sizePhuPhaiTren = 10; 
         let phuPhaiTrenX = gocPhaiTrenX - 45; // Trừ đi để dịch sang trái
         let phuPhaiTrenY = gocPhaiTrenY + 0; // Cộng thêm để nhích xuống dưới
         
         let extraTopRight = this.add.rectangle(phuPhaiTrenX, phuPhaiTrenY, sizePhuPhaiTren, sizePhuPhaiTren, 0x000000, 0);
         this.physics.add.existing(extraTopRight, true);
-        // 4. Ô phụ kế góc DƯỚI BÊN TRÁI (Dịch sang phải và xích xuống một chút)
+        // 4. Ô phụ kế góc DƯỚI BÊN TRÁI
         let sizePhuTraiDuoi = 5; 
         let phuTraiDuoiX = gocTraiDuoiX - 15; // Cộng thêm để dịch sang phải (bạn có thể tinh chỉnh số này)
         let phuTraiDuoiY = gocTraiDuoiY + 5; // Cộng thêm để dịch xuống dưới
         
         let extraBottomLeft = this.add.rectangle(phuTraiDuoiX, phuTraiDuoiY, sizePhuTraiDuoi, sizePhuTraiDuoi, 0x000000, 0);
         this.physics.add.existing(extraBottomLeft, true);
-        // ==========================================
-        // Ô VUÔNG VA CHẠM PHÍA TRÊN TRONG AO (MỚI)
-        // ==========================================
+        // Ô VUÔNG VA CHẠM PHÍA TRÊN TRONG AO
         let kichThuocOVuongMoi = 10;
         
-        // --- CHỈNH TỌA ĐỘ TẠI ĐÂY ---
+        // CHỈNH TỌA ĐỘ
         // 1. Chỉnh Trái / Phải: 
         // Số ÂM (VD: -20, -50) để dịch qua TRÁI. Số DƯƠNG (VD: 20, 50) để qua PHẢI. Số 0 là ở giữa.
         let dichSangTraiPhai = - 85; 
@@ -310,16 +601,29 @@ export default class GameScene extends Phaser.Scene {
         // *MẸO: Bạn có thể đổi số 0 ở cuối thành 1 (0xff0000, 1) để ô vuông hiện màu đỏ lên, giúp bạn dễ nhìn bằng mắt để chỉnh tọa độ. Chỉnh xong thì đổi lại thành 0 để nó tàng hình.
         let oVuongPhiaTren = this.add.rectangle(oVuongMoiX, oVuongMoiY, kichThuocOVuongMoi, kichThuocOVuongMoi, 0xff0000, 0); 
         this.physics.add.existing(oVuongPhiaTren, true);
+        // Ô VUÔNG VA CHẠM CHO ỐNG MÁY BƠM
+        let wOngBom = 5; // Chiều ngang vùng va chạm của ống bơm
+        let hOngBom = 5; // Chiều dài ống rủ xuống nước
+        
+        // Vị trí: Dịch sang trái một chút (-25) và kéo xuống dưới (+20) so với tâm máy bơm
+        let ongBomX = mayBomX - 25; 
+        let ongBomY = mayBomY + 20; 
+        
+        // *MẸO: Đổi số 0 ở cuối thành 0.5 (ví dụ: 0xff0000, 0.5) để ô vuông hiện màu đỏ mờ, 
+        // giúp bạn dễ dàng nhìn bằng mắt để tinh chỉnh x, y cho khớp vòi hút. Xong thì đổi lại thành 0.
+        let hitboxOngBom = this.add.rectangle(ongBomX, ongBomY, wOngBom, hOngBom, 0xff0000, 0); 
+        this.physics.add.existing(hitboxOngBom, true);
 
-        // 4. GOM TẤT CẢ VÀO CHUNG 1 MẢNG ĐỂ CÁ VA CHẠM (Đã bổ sung thêm ô vuông mới)
+        // 4. GOM TẤT CẢ VÀO CHUNG 1 MẢNG ĐỂ CÁ VA CHẠM (Đã bổ sung thêm hitboxOngBom)
         let walls = [
             wallTop, wallBottom, wallLeft, wallRight, 
             cornerTopLeft, cornerTopRight, cornerBottomLeft, cornerBottomRight, 
             extraTopLeft, extraBottomRight, extraTopRight, extraBottomLeft,
-            oVuongPhiaTren // <-- Đã thêm ô vuông mới vào danh sách va chạm của cá
+            oVuongPhiaTren,
+            hitboxOngBom
         ];
 
-        // CÁ TRÊ BƠI LỘI 
+        // --- CÁ TRÊ BƠI LỘI ---
         this.catre = this.physics.add.sprite(pondX + 80, pondY, 'catre', 0);
         this.catre.setDepth(2.5); 
         this.catre.setScale(0.015); // Hoặc kích thước bạn đã chọn
@@ -359,7 +663,7 @@ export default class GameScene extends Phaser.Scene {
         this.physics.add.collider(this.catre, [cauCaTra, thanhCauHitbox]);
         this.physics.add.collider(this.catre, walls);
 
-        // CÁ VỒ BƠI LỘI
+        // --- CÁ VỒ BƠI LỘI ---
         // Đặt vị trí xuất hiện hơi lệch so với cá trê một chút để không dính vào nhau
         this.cavo = this.physics.add.sprite(pondX - 50, pondY + 20, 'cavo', 0);
         this.cavo.setDepth(2.5); 
@@ -379,7 +683,7 @@ export default class GameScene extends Phaser.Scene {
         this.physics.add.collider(this.cavo, [cauCaTra, thanhCauHitbox]);
         this.physics.add.collider(this.cavo, walls);
 
-        // CÁ TAI TƯỢNG BƠI LỘI
+        // --- CÁ TAI TƯỢNG BƠI LỘI ---
         this.cataituong = this.physics.add.sprite(pondX + 30, pondY - 40, 'cataituong', 0);
         this.cataituong.setDepth(2.5); 
         this.cataituong.setScale(0.015); 
@@ -401,7 +705,7 @@ export default class GameScene extends Phaser.Scene {
         // CHO CÁC CON CÁ TỰ VA CHẠM (DỘI VÀO NHAU)
         this.physics.add.collider([this.catre, this.cavo, this.cataituong]);
 
-        // ---> NGÔI NHÀ <---
+        // --- NGÔI NHÀ ---
         // Chỉnh số này để đưa nhà qua Trái (giảm số) hoặc qua Phải (tăng số)
         let nhaX = 355; 
 
@@ -470,9 +774,8 @@ export default class GameScene extends Phaser.Scene {
 
         // 4. THIẾT LẬP KÍCH THƯỚC BAN ĐẦU (Scale = 0.4 tức là nhỏ bằng 40%)
         this.treeContainer.setScale(0.4);
-        // ==========================================================
 
-        // ---> MÂY TRẮNG (SHOP) <---
+        // --- MÂY TRẮNG (SHOP) ---
         let yTangMay1 = groundLevelY - (9 * chieuCaoMotDot); 
         let shopCloudX = 400;
         let shopCloudY = yTangMay1 + 200;
@@ -521,7 +824,7 @@ export default class GameScene extends Phaser.Scene {
             console.log("Đã mở Shop Mây thành công!");
         });
 
-        // ---> MÂY ĐEN (SỰ KIỆN) <---
+        // --- MÂY ĐEN (SỰ KIỆN) ---
         // 1. Tính toán vị trí: Nằm bên phải mây trắng, cùng độ cao
         let darkCloudX = shopCloudX + 150; // Cộng thêm 150px để dịch sang phải
         let darkCloudY = shopCloudY - 15;       
@@ -563,7 +866,7 @@ export default class GameScene extends Phaser.Scene {
             // Code mở UI Sự kiện của bạn sẽ viết ở đây sau này
         });
 
-        // HÀNG RÀO & CỔNG TRƯỚC NHÀ
+        // --- HÀNG RÀO & CỔNG TRƯỚC NHÀ ---
         
         let congRaoScale = 0.22; // Kích thước cổng
         let hrScaleTruoc = 0.35; // Kích thước hàng rào 2 bên
@@ -634,7 +937,7 @@ export default class GameScene extends Phaser.Scene {
 
         // HỆ THỐNG TIỀN TỆ VÀ GIAO DIỆN SHOP
         
-        this.soDau = 86869; // Cấp số lượng Đậu giống ảnh mẫu để test
+        this.soDau = 9999; // Cấp số lượng Đậu giống ảnh mẫu để test
 
         let shopUI = this.add.container(width / 2, height / 2);
         shopUI.setDepth(9999); 
@@ -671,9 +974,7 @@ export default class GameScene extends Phaser.Scene {
         
         shopUI.add([titleText, currencyBg, dauText, subtitleText]);
 
-        // ==========================================
         // 6. DANH SÁCH THẺ VẬT PHẨM (LƯỚI 2x2)
-        // ==========================================
         
         // 1. TẠO DANH SÁCH HẠT GIỐNG (Đã đổi sang dùng frame của spritesheet)
         const shopItems = [
@@ -709,7 +1010,7 @@ export default class GameScene extends Phaser.Scene {
             itemImgBg.fillStyle(0xe8f5e9, 1); 
             itemImgBg.fillRoundedRect(cardX - 50, cardY - 80, 100, 100, 20);
 
-            // THÊM DÒNG MỚI: Dùng sprite và truyền item.frame vào
+            // Dùng sprite và truyền item.frame vào
             let itemImg = this.add.sprite(cardX, cardY - 30, 'hatmay', item.frame);
             
             let maxSize = 85; 
@@ -749,9 +1050,7 @@ export default class GameScene extends Phaser.Scene {
             });
         });
 
-        // ==========================================
         // 7. NÚT ĐÓNG (Màu đỏ bên dưới cùng)
-        // ==========================================
         let closeBtnBg = this.add.graphics();
         closeBtnBg.fillStyle(0xF44336, 1); 
         closeBtnBg.fillRoundedRect(-250, 310, 500, 60, 20);
@@ -784,7 +1083,7 @@ export default class GameScene extends Phaser.Scene {
     }
     
     update() {
-        // CÁ TRÊ QUAY ĐẦU (Code cũ)
+        // CÁ TRÊ QUAY ĐẦU
         if (this.catre && this.catre.active) {
             if (this.catre.body.velocity.x > 0) {
                 this.catre.setFrame(1); 
@@ -793,7 +1092,7 @@ export default class GameScene extends Phaser.Scene {
             }
         }
 
-        // ---> THÊM: CÁ VỒ QUAY ĐẦU <---
+        // --- CÁ VỒ QUAY ĐẦU ---
         if (this.cavo && this.cavo.active) {
             if (this.cavo.body.velocity.x > 0) {
                 this.cavo.setFrame(1); 
@@ -819,15 +1118,13 @@ export default class GameScene extends Phaser.Scene {
             // Lấy một nửa chiều rộng của máy bay
             let halfWidth = (this.maybay.width * this.maybay.scaleX) / 2;
             
-            // Nếu máy bay bay khuất hoàn toàn khỏi rìa TRÁI màn hình
+            // Nếu mây bay bay khuất hoàn toàn khỏi rìa TRÁI màn hình
             if (this.maybay.x < -halfWidth) {
                 // Đưa nó quay trở lại vị trí tít bên rìa PHẢI màn hình để bay tiếp vòng mới
                 this.maybay.x = this.scale.width + halfWidth;
             }
         }
-               // ==========================================================
         // --- HIỆU ỨNG PHÓNG TO CÂY TRE KHI VUỐT LÊN ---
-        // ==========================================================
         if (this.treeContainer) {
             // Lấy vị trí hiện tại của Camera (Mặc định ở mặt đất là 0, vuốt lên sẽ ra số âm)
             let currentScrollY = this.cameras.main.scrollY;
