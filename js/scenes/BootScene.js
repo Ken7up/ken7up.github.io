@@ -12,6 +12,8 @@ export default class BootScene extends Phaser.Scene {
         // Tải ảnh bầu trời và mặt đất
         this.load.image('Sky', 'assets/images/canh.png');
         this.load.image('ground', 'assets/images/nen.png');
+        // Tải ảnh gạch
+        this.load.image('gach', 'assets/images/gach.png');
         // Tải ảnh hàng rào và cổng rào
         this.load.image('hangrao', 'assets/images/hangrao.png');
         // Tải spritesheet xương rồng gộp (hangrao2)
@@ -71,6 +73,13 @@ export default class BootScene extends Phaser.Scene {
             frameWidth: 2048, 
             frameHeight: 2048 
         });
+        // Tải spritesheet ô đất (odat.png)
+        this.load.spritesheet('odat', 'assets/images/odat.png', {
+            frameWidth: 4096,  // <-- Thay bằng CHIỀU NGANG THẬT của ảnh
+            frameHeight: 1365   // <-- Thay bằng 1/2 CHIỀU DỌC THẬT của ảnh
+        });
+        // Tải máy bơm nước
+        this.load.image('maybom', 'assets/images/maybom.png');
     }
 
     create() {
