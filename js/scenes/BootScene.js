@@ -4,19 +4,20 @@ class BootScene extends Phaser.Scene {
     }
 
     preload() {
-        // Tải ảnh spritesheet khủng long. 
-        // BẠN CẦN CHỈNH: frameWidth và frameHeight tương ứng với 1 ô hình khủng long.
+        // Tải ảnh spritesheet khủng long (64x96) -> Frame 32x32
         this.load.spritesheet('dino', 'assets/images/dino.png', {
-            frameWidth: 32, // THAY ĐỔI SỐ NÀY (Chiều rộng chia 2)
-            frameHeight: 32 // THAY ĐỔI SỐ NÀY (Chiều cao chia 2)
+            frameWidth: 32, 
+            frameHeight: 32 
         });
 
-        // Tải ảnh xương rồng
-        this.load.image('cactus', 'assets/images/cactus.png');
+        // Tải ảnh spritesheet xương rồng (32x64) -> Cắt thành các frame 16x32
+        this.load.spritesheet('cactus', 'assets/images/cactus.png', {
+            frameWidth: 32, 
+            frameHeight: 32
+        });
     }
 
     create() {
-        // Sau khi tải xong assets, tự động chuyển sang GameScene
         this.scene.start('GameScene');
     }
 }
