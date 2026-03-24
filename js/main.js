@@ -3,8 +3,8 @@ const config = {
     scale: {
         mode: Phaser.Scale.FIT, // Tự động co giãn vừa với màn hình (rất quan trọng cho mobile)
         autoCenter: Phaser.Scale.CENTER_BOTH,
-        width: 800,
-        height: 300,
+        width: 600,
+        height: 1000,
         parent: 'game-container'
     },
     physics: {
