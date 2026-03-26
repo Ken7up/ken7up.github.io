@@ -8,31 +8,47 @@ class GameScene extends Phaser.Scene {
 
         this.isGameOver = false;
         this.isDashing = false;
-        this.joyDir = 0; 
+        this.joyDir = 0;
+        this.wasGrounded = true;
         
-        // --- 1. DỜI MẶT ĐẤT, KHỦNG LONG VÀ XƯƠNG RỒNG XUỐNG DƯỚI ---
+        // --- 1. KHỞI TẠO BẢN ĐỒ CỐ ĐỊNH ---
+        const MAP_WIDTH = 3000; // Chiều dài cố định của map (bà có thể tùy chỉnh)
+        this.MAP_WIDTH = MAP_WIDTH; // THÊM DÒNG NÀY ĐỂ LƯU LẠI
         const groundY = this.scale.height - 300;
         this.groundY = groundY; 
 
-        this.physics.world.setBounds(0, 0, 1000000, this.scale.height);
-        this.cameras.main.setBounds(0, 0, 1000000, this.scale.height);
+        // Đặt giới hạn vật lý và giới hạn camera bằng với chiều dài của map
+        this.physics.world.setBounds(0, 0, MAP_WIDTH, this.scale.height);
+        this.cameras.main.setBounds(0, 0, MAP_WIDTH, this.scale.height);
         
+        this.clouds = this.add.group();
+        this.mountains = this.add.group();
         this.groundDetails = this.add.group();
-        this.lastDirtSpawnX = 0;
-        this.spawnDirtChunk(0, this.scale.width * 2);
+        this.obstacles = this.physics.add.group();
 
-        this.groundPhysics = this.add.rectangle(0, groundY + 10, 1000000, 50, 0x000000, 0).setOrigin(0, 0);
+        // Nền đất chính (Đã xóa + 10)
+        this.groundPhysics = this.add.rectangle(0, groundY, MAP_WIDTH, 50, 0x000000, 0).setOrigin(0, 0);
+
         this.physics.add.existing(this.groundPhysics, true); 
 
-        // --- 2. KHỦNG LONG ---
+        // --- 2. TẠO SẴN TOÀN BỘ MÔI TRƯỜNG CHO MAP CỐ ĐỊNH ---
+        // Sinh toàn bộ chi tiết đất
+        this.spawnDirtChunk(0, MAP_WIDTH);
+        // Sinh toàn bộ mây và núi
+        this.spawnEnvironment(MAP_WIDTH);
+        
+        // TẠM ẨN XƯƠNG RỒNG (MAP FARM)
+        // Comment dòng dưới đây lại để xương rồng không xuất hiện.
+        // Sau này làm map khác cần xương rồng, bạn chỉ việc bỏ dấu // đi.
+        // this.spawnInitialObstacles(MAP_WIDTH);
+
+        // --- 3. KHỦNG LONG ---
         this.dino = this.physics.add.sprite(100, groundY - 100, 'dino');
         this.dino.setScale(2); 
-        this.dino.setCollideWorldBounds(true);
+        this.dino.setCollideWorldBounds(true); // Ngăn nhân vật đi ra khỏi MAP_WIDTH
         
-        // [SỬA ĐỔI]: Thu nhỏ hitbox và dịch chuyển (offset) cho khớp với hình nhân vật
-        this.dino.body.setSize(22, 22); // Chiều rộng 14, chiều cao 22
-        this.dino.body.setOffset(5, 5); // Đẩy hitbox xích vào giữa khung ảnh 32x32
-        
+        this.dino.body.setSize(22, 22); 
+        this.dino.body.setOffset(5, 5); 
         this.dino.setDepth(10);
 
         this.anims.create({ key: 'idle', frames: [{ key: 'dino', frame: 0 }], frameRate: 10 });
@@ -43,12 +59,10 @@ class GameScene extends Phaser.Scene {
         this.dino.play('idle'); 
         this.physics.add.collider(this.dino, this.groundPhysics);
 
-        // --- CAMERA BÁM THEO KHỦNG LONG ---
+        // --- 4. CAMERA BÁM THEO CHUẨN RPG ---
         this.cameras.main.startFollow(this.dino, true, 0.1, 0.1);
-        this.cameras.main.setFollowOffset(-200, 0); 
-
-        this.obstacles = this.physics.add.group();
-        this.lastSpawnX = 400; 
+        // Đặt offset X về 0 để nhân vật luôn ở chính giữa, thuận tiện đi lại 2 chiều
+        this.cameras.main.setFollowOffset(0, 0); 
 
         this.createControls();
 
@@ -58,7 +72,53 @@ class GameScene extends Phaser.Scene {
         this.physics.add.overlap(this.dino, this.obstacles, this.hitObstacle, null, this);
     }
 
-    // --- 3. HÀM TẠO CHI TIẾT NỀN ĐẤT ---
+    // --- HÀM TẠO SẴN MÂY VÀ NÚI ---
+    spawnEnvironment(mapWidth) {
+        // 1. RẢI NÚI CỐ ĐỊNH
+        // Đã giảm số lượng xuống còn 3 ngọn núi.
+        // Bổ sung thêm thuộc tính 'yOffset' để kéo núi xích xuống dưới nền đất.
+        const fixedMountains = [
+            { x: 180,  scale: 10, yOffset: 100 }, // Núi 1: To, gần đầu map, kéo xuống 40px
+            { x: 600, scale: 2, yOffset: -50 }, // Núi 2: Rất to, ở giữa map, kéo xuống 60px
+            { x: 1100, scale: 5, yOffset: 20 }  // Núi 3: Nằm gần cuối map, cách mép 3000 một khoảng an toàn
+        ];
+
+        fixedMountains.forEach(mountain => {
+            this.add.image(mountain.x, this.groundY + mountain.yOffset, 'mountain')
+                // Đổi Origin từ (0, 1) thành (0.5, 1).
+                // Gốc tọa độ X nằm ở giữa ảnh giúp núi nở đều ra 2 bên khi phóng to (scale), 
+                // tránh việc ngọn núi cuối cùng bị tràn và khuất ra khỏi map (width 3000).
+                .setOrigin(0.5, 1) 
+                .setScrollFactor(0.3) 
+                .setScale(mountain.scale)
+                .setDepth(-1);
+        });
+        
+        // 2. RẢI MÂY NGẪU NHIÊN
+        for (let x = 0; x < mapWidth; x += Phaser.Math.Between(200, 400)) {
+            let cloudY = Phaser.Math.Between(20, 150);
+            
+            // Gán vào biến cloud thay vì add trực tiếp
+            let cloud = this.add.image(x, cloudY, 'cloud')
+                .setOrigin(0, 0)
+                .setScrollFactor(0.1)
+                .setScale(Phaser.Math.FloatBetween(3, 5))
+                .setDepth(-2);
+                
+            this.clouds.add(cloud); // THÊM DÒNG NÀY: Cho mây vào group
+        }
+    }
+
+    // --- HÀM TẠO SẴN CHƯỚNG NGẠI VẬT ---
+    spawnInitialObstacles(mapWidth) {
+        let currentX = 400; // Bắt đầu sinh xương rồng từ vị trí X = 400
+        while (currentX < mapWidth - 400) { // Không sinh quá sát mép phải của map
+            this.spawnCactusCluster(currentX);
+            currentX += Phaser.Math.Between(600, 1000); // Khoảng cách giữa các cụm
+        }
+    }
+
+    // Giữ nguyên các hàm cơ bản cũ
     spawnDirtChunk(startX, endX) {
         for (let x = startX; x < endX; x += Phaser.Math.Between(15, 35)) {
             if (Phaser.Math.Between(0, 100) < 50) { 
@@ -68,42 +128,12 @@ class GameScene extends Phaser.Scene {
                 const offsetY = Phaser.Math.Between(6, 30); 
 
                 const dirt = this.add.rectangle(x, this.groundY + offsetY, width, height, 0x535353).setOrigin(0, 0);
-                // Đất mặc định sẽ có depth = 0 nên sẽ nằm dưới Khủng long (depth = 10)
                 this.groundDetails.add(dirt);
             }
         }
 
-        let currentX = startX;
-        while (currentX < endX) {
-            const featureType = Phaser.Math.Between(0, 100);
-
-            if (featureType < 15) {
-                // KHE NỨT
-                const gapWidth = Phaser.Math.Between(15, 30);
-                const craterBottom = this.add.rectangle(currentX + 4, this.groundY + 4, gapWidth - 8, 2, 0x535353).setOrigin(0, 0);
-                this.groundDetails.add(craterBottom);
-                
-                currentX += gapWidth; 
-            } 
-            else if (featureType < 30) {
-                // ĐƯỜNG THẲNG BÌNH THƯỜNG
-                const segmentWidth = Phaser.Math.Between(30, 60);
-                const line = this.add.rectangle(currentX, this.groundY, segmentWidth, 2, 0x535353).setOrigin(0, 0);
-                this.groundDetails.add(line);
-
-                currentX += segmentWidth;
-            } 
-            else {
-                // ĐƯỜNG THẲNG BÌNH THƯỜNG
-                const segmentWidth = Phaser.Math.Between(40, 150);
-                const line = this.add.rectangle(currentX, this.groundY, segmentWidth, 2, 0x535353).setOrigin(0, 0);
-                this.groundDetails.add(line);
-                
-                currentX += segmentWidth;
-            }
-        }
-        
-        this.lastDirtSpawnX = currentX;
+        // Tạo một đường thẳng duy nhất xuyên suốt map
+        this.groundDetails.add(this.add.rectangle(startX, this.groundY, endX - startX, 2, 0x535353).setOrigin(0, 0));
     }
 
     createControls() {
@@ -114,7 +144,6 @@ class GameScene extends Phaser.Scene {
         this.add.circle(joyX, joyY, joyRadius, 0x888888, 0.3).setScrollFactor(0);
         this.joyThumb = this.add.circle(joyX, joyY, 25, 0x555555, 0.8).setScrollFactor(0);
         
-        // Tránh Nút điều khiển bị che mất, ta đưa nó lên trên cùng luôn
         this.joyThumb.setDepth(20); 
         
         const largerHitArea = new Phaser.Geom.Circle(25, 25, 60); 
@@ -163,6 +192,8 @@ class GameScene extends Phaser.Scene {
         if (this.dino.body.touching.down && !this.isGameOver) {
             this.dino.setVelocityY(-700); 
             this.dino.play('idle');
+            // file âm thanh jump:
+            this.sound.play('sound_jump'); 
         }
     }
 
@@ -171,23 +202,18 @@ class GameScene extends Phaser.Scene {
         
         this.isDashing = true;
         this.dino.play('dash_anim');
+        // file âm thanh dash:
+        this.sound.play('sound_dash');
         
-        // 1. Lấy hướng hiện tại của khủng long
         const isFacingLeft = this.dino.flipX;
-        
-        // 2. Thu nhỏ hitbox cho dáng khôm
         this.dino.body.setSize(26, 14); 
 
-        // 3. [XỬ LÝ LẬT HITBOX]
         if (isFacingLeft) {
-            // Nếu đang quay trái, dùng công thức bù trừ
             this.dino.body.setOffset(2, 13); 
         } else {
-            // Nếu quay phải, dùng offset mặc định
             this.dino.body.setOffset(4, 13); 
         }
 
-        // Lướt theo hướng đang nhìn
         const dashDirection = isFacingLeft ? -1 : 1;
         this.dino.setVelocityX(400 * dashDirection); 
 
@@ -195,13 +221,15 @@ class GameScene extends Phaser.Scene {
             if (this.isGameOver) return;
             this.isDashing = false;
             
-            // 4. Trả lại hitbox dáng đứng
             this.dino.body.setSize(22, 22); 
-            // Dáng đứng nằm giữa nên trái/phải đều chung offset X là 8
             this.dino.body.setOffset(5, 5); 
 
             if (this.dino.body.touching.down) {
-                this.dino.play('run');
+                if (Math.abs(this.joyDir) > 0.1) {
+                    this.dino.play('run');
+                } else {
+                    this.dino.play('idle');
+                }
             } else {
                 this.dino.play('idle');
             }
@@ -214,7 +242,7 @@ class GameScene extends Phaser.Scene {
         let currentX = startX;
 
         for (let i = 0; i < count; i++) {
-            const cactus = this.obstacles.create(currentX, this.groundY + 10, 'cactus');
+            const cactus = this.obstacles.create(currentX, this.groundY, 'cactus');
             
             cactus.setDepth(10);
             cactus.setFrame(Phaser.Math.Between(0, 1)); 
@@ -223,10 +251,8 @@ class GameScene extends Phaser.Scene {
             const randomSize = Phaser.Utils.Array.GetRandom(sizes);
             cactus.setScale(randomSize); 
 
-            // [SỬA ĐỔI]: Thu nhỏ hitbox của xương rồng lại để tránh chạm oan
-            // Do xương rồng hẹp theo chiều ngang, ta giảm width xuống đáng kể
             cactus.body.setSize(22, 31); 
-            cactus.body.setOffset(5, 1); // Căn giữa hitbox theo chiều ngang
+            cactus.body.setOffset(5, 1); 
 
             cactus.body.allowGravity = false;
             cactus.setImmovable(true);
@@ -245,21 +271,34 @@ class GameScene extends Phaser.Scene {
             fill: '#535353',
             fontFamily: 'monospace',
             align: 'center'
-        }).setOrigin(0.5).setDepth(30); // Cho chữ Game Over nổi lên trên cùng
+        }).setOrigin(0.5).setDepth(30); 
     }
 
     update() {
         if (this.isGameOver) return;
 
-        if (this.dino.x > this.lastSpawnX - 600) {
-            this.spawnCactusCluster(this.lastSpawnX + Phaser.Math.Between(400, 700));
-            this.lastSpawnX += Phaser.Math.Between(600, 1000);
-        }
+        // --- BẮT ĐẦU PHẦN THÊM MỚI: Xử lý mây tự động trôi ---
+        this.clouds.getChildren().forEach(cloud => {
+            cloud.x -= 0.3; // Tốc độ trôi (bạn có thể thay đổi số này)
+            
+            // Nếu mây bay khuất hẳn màn hình bên trái, đưa nó vòng lại phía đuôi map bên phải
+            if (cloud.x < -200) {
+                cloud.x = this.MAP_WIDTH + 100;
+            }
+        });
 
-        if (this.cameras.main.scrollX + this.scale.width + 500 > this.lastDirtSpawnX) {
-            this.spawnDirtChunk(this.lastDirtSpawnX, this.lastDirtSpawnX + 1000);
-        }
+        // --- HÀM UPDATE ĐÃ ĐƯỢC DỌN DẸP SẠCH SẼ ---
+        // Không còn các hàm tự động sinh map hay hủy vật thể (destroy) nữa.
+        // Map bây giờ cố định 100%.
 
+        const isGrounded = this.dino.body.touching.down;
+        if (isGrounded && !this.wasGrounded) {
+             // file âm thanh tiếp đất:
+              this.sound.play('sound_jumpland');
+        }
+        this.wasGrounded = isGrounded;
+
+        // Xử lý di chuyển
         if (!this.isDashing) {
             this.dino.setVelocityX(this.joyDir * 200); 
 
@@ -274,6 +313,7 @@ class GameScene extends Phaser.Scene {
             }
         }
 
+        // Xử lý hướng mặt của nhân vật (lật trái/phải)
         if (!this.isDashing) {
             if (this.joyDir < -0.1) {
                 this.dino.setFlipX(true); 
@@ -281,17 +321,5 @@ class GameScene extends Phaser.Scene {
                 this.dino.setFlipX(false); 
             }
         }
-
-        this.obstacles.getChildren().forEach(obstacle => {
-            if (obstacle.x < this.cameras.main.scrollX - 200) {
-                obstacle.destroy();
-            }
-        });
-
-        this.groundDetails.getChildren().forEach(detail => {
-            if (detail.x < this.cameras.main.scrollX - 200) {
-                detail.destroy();
-            }
-        });
     }
 }
