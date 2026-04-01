@@ -3,17 +3,24 @@ body, html {
     padding: 0;
     width: 100%;
     height: 100%;
-    background-color: #f7f7f7; /* Màu nền xám nhạt cổ điển */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden; 
+    background-color: #f7f7f7; 
+    overflow: hidden; /* Bắt buộc để không bị hiện thanh cuộn khi vuốt camera */
+    /* Xóa display: flex ở đây để tránh xung đột khi Phaser tự resize */
 }
 
 #game-container {
     width: 100%;
     height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    margin: 0;
+    padding: 0;
+    position: absolute; /* Giúp container bám sát mép màn hình */
+    top: 0;
+    left: 0;
+}
+
+/* Thêm đoạn này để xóa bỏ khoảng hở mặc định bên dưới thẻ canvas */
+canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
 }
