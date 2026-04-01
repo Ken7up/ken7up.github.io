@@ -16,11 +16,26 @@ class BootScene extends Phaser.Scene {
             frameHeight: 32
         });
 
+        // TẢI ẢNH CÂY TRE (Giả sử kích thước 1 ô là 64x64, hãy sửa lại cho đúng với ảnh thực tế)
+        this.load.spritesheet('bamboo', 'assets/images/bamboo.png', {
+            frameWidth: 64, 
+            frameHeight: 64
+        });
+
         // TẢI NỀN NÚI
         this.load.image('mountain', 'assets/images/mountain.png');
 
         // TẢI NỀN MÂY
         this.load.image('cloud', 'assets/images/cloud.png');
+
+        // TẢI TẦNG MÂY CHO CÂY TRE
+        this.load.image('cloudlayer', 'assets/images/cloudlayer.png');
+
+        // TẢI ẢNH CẦU HP/MP (Kích thước mỗi frame khoảng 212x212)
+        this.load.spritesheet('life', 'assets/images/life.png', {
+            frameWidth: 128, 
+            frameHeight: 128
+        });
 
         // TẢI ÂM THANH NHẢY:
         this.load.audio('sound_jump', 'assets/audio/jump.ogg');
