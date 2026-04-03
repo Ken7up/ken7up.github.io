@@ -18,7 +18,7 @@ const config = {
         arcade: {
             gravity: { y: 0 },
             // Đổi false sang true để hiện khung va chạm
-            debug: true
+            debug: flash
         }
     }
 };
