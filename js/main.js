@@ -12,7 +12,7 @@ const config = {
     },
     parent: 'game-container',
     backgroundColor: '#87CEEB',
-    scene: [BootScene, GameScene],
+    scene: [bootscene, gamescene],
     physics: {
         default: 'arcade',
         arcade: {
