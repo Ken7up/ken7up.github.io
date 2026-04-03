@@ -1,30 +1,26 @@
-// Tính toán tỷ lệ thật của màn hình thiết bị
-const screenRatio = window.innerHeight / window.innerWidth;
-
-// Khóa chiều rộng ở mốc 600 để giữ nguyên khoảng cách các nút UI không bị đè
-const gameWidth = 600; 
-
-// Tự động kéo giãn chiều cao theo tỷ lệ của máy để xóa viền trắng
-const gameHeight = gameWidth * screenRatio;
+import BootScene from './scenes/BootScene.js';
+import GameScene from './scenes/GameScene.js';
 
 const config = {
     type: Phaser.AUTO,
     scale: {
-        mode: Phaser.Scale.FIT, // Quay lại FIT
+        // Đã đổi sang ENVELOP để tràn viền
+        mode: Phaser.Scale.ENVELOP, 
         autoCenter: Phaser.Scale.CENTER_BOTH,
-        width: gameWidth,
-        height: gameHeight,
-        parent: 'game-container'
+        width: 720,
+        height: 1280
     },
+    parent: 'game-container',
+    backgroundColor: '#87CEEB',
+    scene: [BootScene, GameScene],
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { y: 1200 }, 
-            debug: false
+            gravity: { y: 0 },
+            // Đổi false sang true để hiện khung va chạm
+            debug: true
         }
-    },
-    backgroundColor: '#f7f7f7',
-    scene: [BootScene, GameScene]
+    }
 };
 
 const game = new Phaser.Game(config);
