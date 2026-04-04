@@ -79,51 +79,42 @@ export default class GameScene extends Phaser.Scene {
         nui1.setScale(nui1ScaleRatio);
         nui1.setScrollFactor(0, 1);
 
-        // --- HÀNG RÀO XƯƠNG RỒNG TẠO CHIỀU SÂU ---
-        let soCâyXuongRong = 18; // Số lượng cây xương rồng mỗi bên
-        
-        // 1. Điểm GẦN NHẤT (Nằm sát mép dưới màn hình, kích thước to nhất)
-        let yGanNhat = height + groundOffsetY; 
-        let scaleGanNhat = 0.02 * heSoScale; // Kích thước to nhất 
-        let xGanTrai = 15;          // Nằm sát lề trái
-        let xGanPhai = width - 15;  // Nằm sát lề phải
-        
-        // 2. Điểm XA NHẤT (Nằm tít phía sau gần chân núi, kích thước nhỏ nhất)
-        let yXaNhat = mountainY - 40; 
-        let scaleXaNhat = 0.008 * heSoScale; // Kích thước nhỏ nhất
-        
-        // Gắn tọa độ X xa bằng X gần để tạo thành 2 đường thẳng song song dọc hai bên
-        let xXaTrai = xGanTrai;       
-        let xXaPhai = xGanPhai;
+        // --- ĐÁ XẾP CỐ ĐỊNH HAI BÊN ---
+        let yDaBatDau = mountainY - 60;
+        let yDaKetThuc = height + groundOffsetY + 50; 
+        let khoangCachDoc = 25; 
 
-        // 3. Vòng lặp vẽ từ XA đến GẦN để cây gần đè lên cây xa một cách tự nhiên
-        for (let i = soCâyXuongRong - 1; i >= 0; i--) {
-            // Tính tỷ lệ khoảng cách (progress chạy từ 0 đến 1)
-            let tiLe = i / (soCâyXuongRong - 1);
-            
-            // Tự động tính toán tọa độ và kích thước cho từng mốc
-            let hienTaiY = yGanNhat - (yGanNhat - yXaNhat) * tiLe;
-            let hienTaiScale = scaleGanNhat - (scaleGanNhat - scaleXaNhat) * tiLe;
-            let hienTaiXTrai = xGanTrai + (xXaTrai - xGanTrai) * tiLe;
-            let hienTaiXPhai = xGanPhai - (xGanPhai - xXaPhai) * tiLe;
-            
-            // Nâng mức thấp nhất từ 1.1 lên 1.3 để đè lên xuongrong2 (đang là 1.2)
-            let currentDepth = 1.3 + (1 - tiLe);
+        const raiDaCoDinh = (fixX, fixedScale) => {
+            let index = 0;
+            for (let y = yDaBatDau; y < yDaKetThuc; y += khoangCachDoc) {
+                let frameDa = index % 3; 
+                let rock = this.add.sprite(fixX, y, 'rock', frameDa);
+                rock.setScale(fixedScale * heSoScale); 
+                rock.setRotation(0);
+                if (index % 2 === 0) rock.setFlipX(true);
+                rock.setDepth(2.5 + (y / 10000));
+                rock.setScrollFactor(0, 1);
+                index++;
+            }
+        };
 
-            // Vẽ cây xương rồng BÊN TRÁI (Dùng frame 0)
-            let xrTrai = this.add.sprite(hienTaiXTrai, hienTaiY, 'hangrao2', 0)
-                .setOrigin(0.5, 1) // Set tâm ở dưới cùng chân cây
-                .setDepth(currentDepth)
-                .setScale(hienTaiScale)
-                .setScrollFactor(0, 1); // Khóa cuộn ngang, cuộn dọc bám theo nền đất
+        // --- CHỈNH VỊ TRÍ RIÊNG BIỆT TẠI ĐÂY ---
+        
+        // Bên Trái: Số càng nhỏ (hoặc càng âm) thì càng sát ra lề trái
+        let lechTrai = 15; 
+        // Bên Phải: Số càng lớn thì càng sát ra lề phải (ví dụ width + 10)
+        let lechPhai = width + 10; 
 
-            // Vẽ cây xương rồng BÊN PHẢI (Dùng frame 0)
-            let xrPhai = this.add.sprite(hienTaiXPhai, hienTaiY, 'hangrao2', 0)
-                .setOrigin(0.5, 1)
-                .setDepth(currentDepth)
-                .setScale(hienTaiScale)
-                .setScrollFactor(0, 1);
-        }
+        // Rải đá lớp 1
+        raiDaCoDinh(lechTrai, 0.04);  // Hàng bên trái
+        raiDaCoDinh(lechPhai, 0.04);  // Hàng bên phải
+
+        // Nếu muốn lớp đá thứ 2 cũng tách biệt:
+        let lechTrai_Lop2 = 5;
+        let lechPhai_Lop2 = width - 10;
+
+        raiDaCoDinh(lechTrai_Lop2, 0.04);
+        raiDaCoDinh(lechPhai_Lop2, 0.04);
 
         // --- HÀNG RÀO XƯƠNG RỒNG NGANG BÊN CHÂN NÚI ---
         let hangRaoY = mountainY - 39; // Nhích số này để chân cây cắm ngập xuống đất vừa ý
@@ -374,7 +365,7 @@ export default class GameScene extends Phaser.Scene {
         nuocGraphics.generateTexture('giotnuoc', 12, 12);
 
         // 2. CÁC BIẾN TÙY CHỈNH VỊ TRÍ Ô ĐẤT
-        let oDatX = 568; 
+        let oDatX = 567; 
         let oDatY = groundLevelY - 68; 
         let oDatScale = 0.08; 
 
