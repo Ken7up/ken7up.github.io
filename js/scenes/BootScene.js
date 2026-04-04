@@ -25,6 +25,11 @@ export default class BootScene extends Phaser.Scene {
             frameWidth: 2048,  // <-- Đổi số này cho đúng với kích thước 1/2 chiều ngang ảnh của bạn
             frameHeight: 2730  // <-- Đổi số này bằng chiều dọc ảnh của bạn
         });
+        // Tải viên đá
+        this.load.spritesheet('rock', 'assets/images/rock.png', {
+        frameWidth: 848,  // <-- BẠN HÃY SỬA SỐ NÀY = 1/2 chiều ngang ảnh rock.png của bạn
+        frameHeight: 833  // <-- BẠN HÃY SỬA SỐ NÀY = 1/2 chiều dọc ảnh rock.png của bạn
+        });
 
         this.load.spritesheet('congrao', 'assets/images/congrao.png', {
         frameWidth: 1600,  // <-- Thay số này bằng chiều ngang của ảnh
