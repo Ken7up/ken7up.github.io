@@ -4,8 +4,8 @@ import GameScene from './scenes/GameScene.js';
 const config = {
     type: Phaser.AUTO,
     scale: {
-        // Đã đổi sang ENVELOP để tràn viền
-        mode: Phaser.Scale.ENVELOP, 
+        // Đổi từ ENVELOP sang FIT để không bị cắt trên/dưới trên máy tính
+        mode: Phaser.Scale.FIT, 
         autoCenter: Phaser.Scale.CENTER_BOTH,
         width: 720,
         height: 1280
@@ -17,7 +17,6 @@ const config = {
         default: 'arcade',
         arcade: {
             gravity: { y: 0 },
-            // Đổi false sang true để hiện khung va chạm
             debug: false
         }
     }
