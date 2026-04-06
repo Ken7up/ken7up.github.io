@@ -1198,12 +1198,19 @@ export default class GameScene extends Phaser.Scene {
         this.cameras.main.setBounds(0, caoNhatCuaGame - 200, width, height - caoNhatCuaGame + 200);
 
         this.input.on('pointermove', (pointer) => {
-            
             // Nếu Shop đang mở thì ngắt ngay, không cho chạy code vuốt bên dưới
             if (this.isUIOpen) return; 
             
             if (!pointer.isDown) return; 
             this.cameras.main.scrollY -= (pointer.y - pointer.prevPosition.y);
+        });
+
+        // THÊM ĐOẠN NÀY ĐỂ HỖ TRỢ LĂN CHUỘT TRÊN MÁY TÍNH
+        this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY, deltaZ) => {
+            if (this.isUIOpen) return; // Không cho cuộn khi đang mở Shop
+            
+            // Tốc độ cuộn chuột (0.8 là vừa phải, có thể tăng/giảm nếu muốn)
+            this.cameras.main.scrollY += deltaY * 0.8;
         });
     }
     
