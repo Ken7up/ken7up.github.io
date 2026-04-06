@@ -7,6 +7,8 @@ export default class GameScene extends Phaser.Scene {
         this.isUIOpen = false;
         const width = this.scale.width;
         const height = this.scale.height;
+        let shopUI; 
+        let dauText;
 
         // --- BẦU TRỜI ---
         // Đẩy bầu trời lên cao hơn (số âm) để khi vuốt lên đỉnh không bị lộ viền đen
@@ -116,27 +118,43 @@ export default class GameScene extends Phaser.Scene {
         raiDaCoDinh(lechTrai_Lop2, 0.04);
         raiDaCoDinh(lechPhai_Lop2, 0.04);
 
-        // --- HÀNG RÀO XƯƠNG RỒNG NGANG BÊN CHÂN NÚI ---
-        let hangRaoY = mountainY - 39; // Nhích số này để chân cây cắm ngập xuống đất vừa ý
+        // --- HÀNG RÀO NGANG BÊN CHÂN NÚI ---
+        // Sử dụng daoDat_Y (biến đã có sẵn trong file của bạn) để tính vị trí hàng rào
+        let hangRaoBaseY = daoDat_Y; 
+        let hangRaoY = hangRaoBaseY + 323; 
 
-        // 1. Tự do điều chỉnh số lượng và kích thước
-        let soLuongCay = 25; // Tăng lên nếu muốn cây xếp khít hơn, giảm đi nếu muốn thưa ra
-        // Nhân thêm tỷ lệ màn hình để cây tự động to ra khi màn hình rộng
-        let hrScale = 0.008 * (width / 400);
+        // 1. Số lượng và kích thước
+        let soLuongCay = 3; 
+        let hrScale = 0.13 * (width / 400); 
 
-        // 2. Đổi tên biến thành 'khoangCachCay' để tránh trùng lặp
-        let khoangCachCay = width / (soLuongCay - 1); 
+        // 2. Biến chứa khoảng cách
+        let khoangCachCay = 0; 
+        let startX = 0; 
+        
+        // (Tùy chọn) Độ nối đè: Nếu thấy hở thì tăng số này lên 5 hoặc 10
+        let doCheKhuat = 0; 
 
         for (let i = 0; i < soLuongCay; i++) {
-          // Khởi tạo cây xương rồng (Dùng frame 1)
-          let hangRao = this.add.sprite(0, hangRaoY, 'hangrao2', 1)
-              .setOrigin(0.5, 1) // Đặt tâm ở giữa chân cây
-              .setDepth(1.05)     // Nổi lên trên mặt đất (1.0)
+          let hangRao = this.add.image(0, hangRaoY, 'hangrao')
+              .setOrigin(0.5, 1) 
+              .setDepth(1.05)    
               .setScale(hrScale)
               .setScrollFactor(0, 1);
          
-          // Xếp vị trí X: Cập nhật lại tên biến ở đây
-          hangRao.x = i * khoangCachCay;
+          // Ở vòng lặp đầu tiên, tính toán thông số để các cây sau bám theo
+          if (i === 0) {
+              // Lấy chiều rộng ảnh gốc (thường là 400-800px) nhân với tỷ lệ scale
+              let chieuRongThucTe = hangRao.width * hrScale;
+              
+              khoangCachCay = chieuRongThucTe - doCheKhuat; 
+              
+              // Căn lề: Để 3 hàng rào nằm cân đối ở giữa đảo đất
+              // Chúng ta bắt đầu từ tâm đảo đất (daoDat_X) trừ đi một khoảng để dàn đều
+              startX = daoDat_X - (khoangCachCay * (soLuongCay - 1)) / 2;
+          }
+
+          // Xếp vị trí X
+          hangRao.x = startX + i * khoangCachCay;
         }
 
         // --- MÂY BAY ---
@@ -337,7 +355,7 @@ export default class GameScene extends Phaser.Scene {
         // VIÊN GẠCH SỐ 23
         let gach23X = gach22X + 25; // +25 để xếp sang phải, -25 để xếp sang trái
         let gach23Y = gach22Y - 0;  // +15 để xếp xuống dưới, -15 để xếp lên trên
-        let gach23 = this.add.image(gach23X, gach17Y, 'gach');
+        let gach23 = this.add.image(gach23X, gach23Y, 'gach');
         gach23.setOrigin(0.5, 0.5);
         gach23.setDepth(1.02); 
         gach23.setScale(0.8,0.5);
@@ -375,6 +393,40 @@ export default class GameScene extends Phaser.Scene {
         oDat.setDepth(1.2); 
         oDat.setScale(oDatScale);
         oDat.setInteractive({ useHandCursor: true });
+
+        // --- 3 VIÊN ĐÁ LẤP KHOẢNG TRỐNG (TRÊN BÊN PHẢI Ô ĐẤT) ---
+
+        // Lấy tọa độ oDatX và oDatY làm gốc để đá luôn đi theo ô đất.
+        // BẠN HÃY CHỈNH SỬA CÁC THÔNG SỐ Ở DƯỚI ĐÂY:
+
+        // --- TÙY CHỈNH VIÊN ĐÁ 1 (Lớn nhất, tâm điểm) ---
+        let da1_X = oDatX + 120; // Trái/Phải: Tăng số (+120) để qua phải, giảm số (+80) để qua trái
+        let da1_Y = oDatY - 40;  // Lên/Xuống: Trừ nhiều hơn (-40) để đẩy lên cao, cộng/trừ ít hơn (0) để hạ xuống thấp
+        let da1_Scale = 0.05;    // To/Nhỏ: Tăng lên 0.05, 0.06 để to ra, hạ xuống 0.03 để nhỏ lại
+
+        let da1 = this.add.sprite(da1_X, da1_Y, 'rock', 0)
+            .setScale(da1_Scale)   
+            .setDepth(1.3)    // Lớn hơn ô đất (1.2) để đè lên trên
+            .setRotation(0.5); // Xoay nghiêng một chút cho tự nhiên
+
+        // --- TÙY CHỈNH VIÊN ĐÁ 2 (Nhỏ hơn, nằm lệch xuống dưới và sang phải) ---
+        let da2_X = oDatX + 125; 
+        let da2_Y = oDatY - 5;  
+        let da2_Scale = 0.04;   
+
+        let da2 = this.add.sprite(da2_X, da2_Y, 'rock', 1)
+            .setScale(da2_Scale)
+            .setDepth(1.3)
+            .setRotation(-0.3);
+
+        // --- TÙY CHỈNH VIÊN ĐÁ 3 (Nhỏ nhất, nằm chêm vào góc trái cụm đá) ---
+        let da3_X = oDatX + 120;  
+        let da3_Y = oDatY - 25;  
+        let da3_Scale = 0.04;    
+
+        let da3 = this.add.sprite(da3_X, da3_Y, 'rock', 2)
+            .setScale(da3_Scale)
+            .setDepth(1.3);
 
         // 3. THÊM MÁY BƠM (Đặt trên Ao cá)
         // Lấy tọa độ dựa theo pondX và pondY của ao cá
@@ -1010,7 +1062,7 @@ export default class GameScene extends Phaser.Scene {
         
         this.soDau = 9999; // Cấp số lượng Đậu giống ảnh mẫu để test
 
-        let shopUI = this.add.container(width / 2, height / 2);
+        shopUI = this.add.container(width / 2, height / 2);
         shopUI.setDepth(9999); 
         shopUI.setScrollFactor(0); 
         shopUI.setVisible(false);
@@ -1038,7 +1090,7 @@ export default class GameScene extends Phaser.Scene {
         currencyBg.fillStyle(0xf5f0e6, 1);
         currencyBg.fillRoundedRect(-250, -310, 500, 50, 25); // Bo góc 25 tạo hình viên thuốc
         // (Để đơn giản, mình hiển thị 1 loại tiền 🥜 như bạn yêu cầu trước đó, nhưng format giống ảnh)
-        let dauText = this.add.text(0, -285, '🥜 ' + this.soDau, { fontSize: '24px', fill: '#8B4513', fontStyle: 'bold' }).setOrigin(0.5);
+        dauText = this.add.text(0, -285, '🥜 ' + this.soDau, { fontSize: '24px', fill: '#8B4513', fontStyle: 'bold' }).setOrigin(0.5);
         
         // 5. Phân mục "Danh sách Hạt Giống"
         let subtitleText = this.add.text(-250, -230, '🌱 Danh sách Hạt Giống', { fontSize: '24px', fill: '#8B4513', fontStyle: 'bold' }).setOrigin(0, 0.5);
@@ -1056,18 +1108,20 @@ export default class GameScene extends Phaser.Scene {
         ];
 
         // 2. Tọa độ bắt đầu cho thẻ đầu tiên (Góc trái trên)
-        let startX = -140; 
+        let shopStartX = -140; // <-- Đổi tên thành shopStartX
         let startY = -100; 
-        let khoangCachX = 280; // Khoảng cách giữa 2 cột
-        let khoangCachY = 240; // Khoảng cách giữa 2 hàng
+        let khoangCachX = 280; 
+        let khoangCachY = 240; 
 
         // 3. DÙNG VÒNG LẶP ĐỂ VẼ 4 THẺ TỰ ĐỘNG
         shopItems.forEach((item, index) => {
-            let col = index % 2; 
-            let row = Math.floor(index / 2); 
+    let col = index % 2; 
+    let row = Math.floor(index / 2); 
 
-            let cardX = startX + (col * khoangCachX);
-            let cardY = startY + (row * khoangCachY);
+    // Sửa chữ startX ở đây thành shopStartX cho đồng bộ
+    let cardX = shopStartX + (col * khoangCachX); 
+    let cardY = startY + (row * khoangCachY);
+
 
             // a. Viền và nền trắng của thẻ
             let cardBg = this.add.graphics();
@@ -1227,7 +1281,6 @@ export default class GameScene extends Phaser.Scene {
     }
 
     // HÀM CHUẨN BỊ CHO TƯƠNG LAI: CHO CÁ ĂN
-    // Bạn dán hàm này nằm ngang hàng với create() và update() nhé
     caDopMoi(ca) {
         if (!ca || !ca.active) return;
 
