@@ -55,6 +55,25 @@ export default class GameScene extends Phaser.Scene {
         // Giả sử 400 là chiều rộng chuẩn trên điện thoại của bạn
         let heSoScale = width / 400;
 
+        // --- CON ĐƯỜNG NỐI TIẾP LIỀN MẠCH ---
+        
+        // 1. Lấy chiều cao gốc của ảnh con đường
+        let duongHeight = this.textures.get('duong').get().height;
+
+        // 2. CÁC THÔNG SỐ ĐỂ CHỈNH SỬA CON ĐƯỜNG:
+        let scaleConDuong = 0.1; // NHỎ LẠI: 1 là giữ nguyên, 0.75 là thu nhỏ lại 25%
+        let conDuongOffsetY = height - 0; // XÍCH XUỐNG: Lúc trước là (height - 50), giảm số 50 xuống 10 (hoặc 0) để đường nhích sát xuống đáy
+
+        // 3. Hiển thị con đường
+        // Lưu ý: Đã sửa lại width thành (width / scaleConDuong) để khi thu nhỏ, đường vẫn trải dài khít hết chiều ngang màn hình
+        let conDuong = this.add.tileSprite(0, conDuongOffsetY, width / scaleConDuong, duongHeight, 'duong')
+            .setOrigin(0, 1)   
+            .setDepth(2)      
+            .setScale(scaleConDuong); // Áp dụng độ thu nhỏ
+
+        // Hiệu ứng cuộn mượt mà khi vuốt màn hình
+        conDuong.setScrollFactor(0, 1);
+
         // --- NÚI ---
         // 1. Tính toán chiều cao thực tế của mặt đất trên màn hình sau khi đã scale
         let groundDisplayHeight = ground.height * scaleRatio;
@@ -83,7 +102,7 @@ export default class GameScene extends Phaser.Scene {
 
         // --- ĐÁ XẾP CỐ ĐỊNH HAI BÊN ---
         let yDaBatDau = mountainY - 60;
-        let yDaKetThuc = height + groundOffsetY + 50; 
+        let yDaKetThuc = height + groundOffsetY - 65; 
         let khoangCachDoc = 25; 
 
         const raiDaCoDinh = (fixX, fixedScale) => {
@@ -115,7 +134,7 @@ export default class GameScene extends Phaser.Scene {
         let lechTrai_Lop2 = 5;
         let lechPhai_Lop2 = width - 10;
 
-        raiDaCoDinh(lechTrai_Lop2, 0.04);
+        raiDaCoDinh(lechTrai_Lop2, 0.02);
         raiDaCoDinh(lechPhai_Lop2, 0.04);
 
         // --- HÀNG RÀO NGANG BÊN CHÂN NÚI ---
@@ -804,7 +823,7 @@ export default class GameScene extends Phaser.Scene {
 
         // Chỉnh số này để đưa nhà lên Cao (giảm số) hoặc xuống Thấp (tăng số)
         // Lưu ý: Vẫn nên giữ 'groundLevelY' cộng/trừ thêm để nhà luôn đứng trên mặt đất, không bị bay lơ lửng
-        let nhaY = groundLevelY + 380; 
+        let nhaY = groundLevelY + 230; 
 
         let nha = this.add.image(nhaX, nhaY, 'nha');
         
@@ -998,11 +1017,13 @@ export default class GameScene extends Phaser.Scene {
         let baseOriginY = height + groundOffsetY; 
 
         // TẠO BIẾN ĐIỀU CHỈNH CHỈ DÀNH RIÊNG CHO CỔNG:
-        let congDichXuong = 25; 
+        // SỬA THÀNH SỐ ÂM ĐỂ ĐẨY CỔNG LÊN CAO (VD: -120)
+        let congDichXuong = -50; 
         let viTriYCong = baseOriginY + congDichXuong;
 
         // TẠO BIẾN ĐIỀU CHỈNH DÀNH RIÊNG CHO HÀNG RÀO 2 BÊN:
-        let hrDichXuong = 30; // <-- Tăng số này lên (ví dụ 40, 50, 60) để hàng rào xích xuống sâu hơn
+        // SỬA THÀNH SỐ ÂM ĐỂ ĐẨY HÀNG RÀO LÊN CAO KHỚP VỚI CỔNG (VD: -115)
+        let hrDichXuong = -25; 
         let viTriYHangRao = baseOriginY + hrDichXuong;
 
         // 1. Cổng rào ở chính giữa màn hình (Sử dụng viTriYCong)
