@@ -12,25 +12,20 @@ export default class BootScene extends Phaser.Scene {
         // Tải ảnh bầu trời và mặt đất
         this.load.image('Sky', 'assets/images/canh.png');
         this.load.image('ground', 'assets/images/nen.png');
+        // Tải ảnh con đường
+        this.load.image('duong', 'assets/images/duong.png');
         // Tải ảnh đảo đất
         this.load.image('daodat', 'assets/images/daodat.png');
         // Tải ảnh gạch
         this.load.image('gach', 'assets/images/gach.png');
         // Tải ảnh hàng rào và cổng rào
         this.load.image('hangrao', 'assets/images/hangrao.png');
-        // Tải spritesheet xương rồng gộp (hangrao2)
-        // Lưu ý: Bạn nhớ mở ảnh hangrao2.png lên xem kích thước thật, 
-        // frameWidth = 1/2 chiều ngang của ảnh, frameHeight = chiều dọc của ảnh.
-        this.load.spritesheet('hangrao2', 'assets/images/hangrao2.png', {
-            frameWidth: 2048,  // <-- Đổi số này cho đúng với kích thước 1/2 chiều ngang ảnh của bạn
-            frameHeight: 2730  // <-- Đổi số này bằng chiều dọc ảnh của bạn
-        });
         // Tải viên đá
         this.load.spritesheet('rock', 'assets/images/rock.png', {
         frameWidth: 848,  // <-- BẠN HÃY SỬA SỐ NÀY = 1/2 chiều ngang ảnh rock.png của bạn
         frameHeight: 833  // <-- BẠN HÃY SỬA SỐ NÀY = 1/2 chiều dọc ảnh rock.png của bạn
         });
-
+        // Tải ảnh cổng rào
         this.load.spritesheet('congrao', 'assets/images/congrao.png', {
         frameWidth: 1600,  // <-- Thay số này bằng chiều ngang của ảnh
         frameHeight: 1000   // <-- Thay số này bằng 1/2 chiều dọc của ảnh
