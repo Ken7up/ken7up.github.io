@@ -18,17 +18,19 @@ export default class BootScene extends Phaser.Scene {
         this.load.image('daodat', 'assets/images/daodat.png');
         // Tải ảnh gạch
         this.load.image('gach', 'assets/images/gach.png');
-        // Tải ảnh hàng rào và cổng rào
+        // Tải ảnh hàng rào
         this.load.image('hangrao', 'assets/images/hangrao.png');
-        // Tải viên đá
-        this.load.spritesheet('rock', 'assets/images/rock.png', {
-        frameWidth: 848,  // <-- BẠN HÃY SỬA SỐ NÀY = 1/2 chiều ngang ảnh rock.png của bạn
-        frameHeight: 833  // <-- BẠN HÃY SỬA SỐ NÀY = 1/2 chiều dọc ảnh rock.png của bạn
-        });
         // Tải ảnh cổng rào
         this.load.spritesheet('congrao', 'assets/images/congrao.png', {
         frameWidth: 1600,  // <-- Thay số này bằng chiều ngang của ảnh
         frameHeight: 1000   // <-- Thay số này bằng 1/2 chiều dọc của ảnh
+        });
+        // Tải ảnh ô tướng
+        this.load.image('otuong', 'assets/images/otuong.png');
+        // Tải viên đá
+        this.load.spritesheet('rock', 'assets/images/rock.png', {
+        frameWidth: 848,  // <-- BẠN HÃY SỬA SỐ NÀY = 1/2 chiều ngang ảnh rock.png của bạn
+        frameHeight: 833  // <-- BẠN HÃY SỬA SỐ NÀY = 1/2 chiều dọc ảnh rock.png của bạn
         });
         // Tải ảnh núi
         this.load.image('nui', 'assets/images/nui.png');
@@ -37,10 +39,46 @@ export default class BootScene extends Phaser.Scene {
         this.load.image('maybay', 'assets/images/maybay.png');
         // Tải ảnh tầng mây
         this.load.image('tangmay', 'assets/images/tangmay.png');
+        // Tải ảnh chậu cây
+        this.load.spritesheet('chau', 'assets/images/chau.png', {
+            frameWidth: 1080,  // <-- BẠN HÃY SỬA SỐ NÀY = 1/2 chiều ngang ảnh chau.png
+            frameHeight: 1080  // <-- BẠN HÃY SỬA SỐ NÀY = 1/2 chiều dọc ảnh chau.png
+        });
         // Tải ảnh gốc tre (gấu trúc)
         this.load.image('goctre', 'assets/images/goctre.png');
+        // Tải ảnh búa chaos
+        this.load.image('buachaos', 'assets/images/buachaos.png');
+        // Tải ảnh cái đe
+        this.load.image('caide', 'assets/images/caide.png');
         // Tải ảnh cái ao
         this.load.image('ao', 'assets/images/ao.png');
+        // Tải ảnh cá trê
+        this.load.spritesheet('catre', 'assets/images/catre.png', {
+            frameWidth: 1080, 
+            frameHeight: 1080 
+       });
+        // Tải ảnh cá vồ
+        this.load.spritesheet('cavo', 'assets/images/cavo.png', {
+            frameWidth: 1080, 
+            frameHeight: 1080
+        });
+        // Tải ảnh cá tai tượng
+        this.load.spritesheet('cataituong', 'assets/images/cataituong.png', {
+            frameWidth: 1080, 
+            frameHeight: 1080
+        });
+        // Tải ảnh cá lau kính
+        this.load.spritesheet('calaukinh', 'assets/images/calaukinh.png', {
+            frameWidth: 1080,
+            frameHeight: 1080
+        });
+        // Tải máy bơm nước
+        this.load.image('maybom', 'assets/images/maybom.png');
+        // Tải ô đất
+        this.load.spritesheet('odat', 'assets/images/odat.png', {
+            frameWidth: 1024,  // <-- Thay bằng CHIỀU NGANG THẬT của ảnh
+            frameHeight: 512   // <-- Thay bằng 1/2 CHIỀU DỌC THẬT của ảnh
+        });
         // Tải ảnh ngôi nhà
         this.load.image('nha', 'assets/images/nha.png');
         // Tải ảnh nhà pet
@@ -62,33 +100,34 @@ export default class BootScene extends Phaser.Scene {
             frameWidth: 2048,  // Kích thước chiều rộng 1 hạt
             frameHeight: 2048  // Kích thước chiều cao 1 hạt
         });
-        // Tải ảnh cá trê
-        this.load.spritesheet('catre', 'assets/images/catre.png', {
-            frameWidth: 1080, 
-            frameHeight: 1080 
-       });
-        // Tải ảnh cá vồ
-        this.load.spritesheet('cavo', 'assets/images/cavo.png', {
-            frameWidth: 1080, 
-            frameHeight: 1080
+        // Tải ảnh cây mầm
+        this.load.spritesheet('caymam', 'assets/images/caymam.png', {
+            frameWidth: 2048,   // <-- THAY BẰNG: Chiều ngang ảnh / 2
+            frameHeight: 2048   // <-- THAY BẰNG: Chiều dọc ảnh
         });
-        // Tải ảnh cá tai tượng
-        this.load.spritesheet('cataituong', 'assets/images/cataituong.png', {
-            frameWidth: 1080, 
-            frameHeight: 1080
+
+        // Tải ảnh cây nguyên tố
+        // Hàng trên: 0 (trái), 1 (phải) - Giai đoạn trưởng thành
+        // Hàng dưới: 2 (trái), 3 (phải) - Giai đoạn thu hoạch
+        this.load.spritesheet('caynguyento', 'assets/images/caynguyento.png', {
+            frameWidth: 2048,   // <-- THAY BẰNG: Chiều ngang ảnh / 2
+            frameHeight: 3072   // <-- THAY BẰNG: Chiều dọc ảnh / 2
         });
-        // Tải ảnh cá lau kính
-        this.load.spritesheet('calaukinh', 'assets/images/calaukinh.png', {
-            frameWidth: 1080,
-            frameHeight: 1080
+        // Tải ảnh cây kim loại
+        this.load.spritesheet('caykimloai', 'assets/images/caykimloai.png', {
+            frameWidth: 2048,
+            frameHeight: 3072
         });
-        // Tải spritesheet ô đất (odat.png)
-        this.load.spritesheet('odat', 'assets/images/odat.png', {
-            frameWidth: 4096,  // <-- Thay bằng CHIỀU NGANG THẬT của ảnh
-            frameHeight: 1365   // <-- Thay bằng 1/2 CHIỀU DỌC THẬT của ảnh
+        // Tải ảnh cây tình yêu
+        this.load.spritesheet('caytinhyeu', 'assets/images/caytinhyeu.png', {
+            frameWidth: 2048,
+            frameHeight: 3072
         });
-        // Tải máy bơm nước
-        this.load.image('maybom', 'assets/images/maybom.png');
+        // Tải ảnh cây mật
+        this.load.spritesheet('caymat', 'assets/images/caymat.png', {
+            frameWidth: 2048,
+            frameHeight: 3072
+        });
     }
 
     create() {
