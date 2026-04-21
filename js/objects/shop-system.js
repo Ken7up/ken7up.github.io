@@ -1,4 +1,4 @@
-import { SEED_DATA } from './FarmingSystem.js';
+import { SEED_DATA } from './farming-system.js';
 
 const UI_COLORS = { BG_WHITE: 0xffffff, BG_CREAM: 0xf5f0e6, BG_GREEN_LIGHT: 0xe8f5e9, BTN_ORANGE: 0xFF9800, BTN_RED: 0xF44336 };
 
