@@ -1,30 +1,22 @@
-// js/objects/PetHouse.js
-export default class PetHouse extends Phaser.GameObjects.Image {
-    constructor(scene, screenWidth, screenHeight) {
-        // --- CHUYỂN HẰNG SỐ TỪ constants.js VÀO ĐÂY ---
-        const scaleNhaPet = 0.11;
-        const xRatio = 0.92;
-        const offsetY = -420;
-        const depthNhaPet = 2; // Mang từ DEPTHS.NHA_PET sang
+export default class House extends Phaser.GameObjects.Image {
+    /**
+     * @param {Phaser.Scene} scene - Truyền scene hiện tại vào
+     * @param {number} groundLevelY - Truyền mức đất vào để nhà tự tính vị trí Y
+     */
+    constructor(scene, groundLevelY) {
+        // Tọa độ X cố định là 355
+        const x = 355;
+        // Tọa độ Y tự tính toán dựa trên mức đất
+        const y = groundLevelY + 230;
 
-        // Tính toán tọa độ
-        const x = screenWidth * xRatio;
-        const y = screenHeight + offsetY;
+        super(scene, x, y, 'nha');
 
-        // Khởi tạo Image
-        super(scene, x, y, 'nhapet');
+        // Thêm vào scene
         scene.add.existing(this);
 
-        // Thiết lập các thuộc tính
-        this.setOrigin(0.5, 1);
-        this.setScale(scaleNhaPet);
-        this.setDepth(depthNhaPet); 
-
-        // Bật tương tác
-        this.setInteractive();
-        this.on('pointerdown', () => {
-            console.log("Đã click vào Nhà Pet!");
-            // Gọi hàm mở bảng mua pet ở đây sau này
-        });
+        // Các thông số cố định của ngôi nhà
+        this.setOrigin(0.5, 1); 
+        this.setDepth(4); 
+        this.setScale(0.20);
     }
 }
