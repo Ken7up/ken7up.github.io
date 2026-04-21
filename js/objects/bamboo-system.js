@@ -1,5 +1,3 @@
-// js/objects/BambooSystem.js
-
 export default class BambooSystem extends Phaser.GameObjects.Container {
     constructor(scene, screenWidth, groundLevelY) {
         let bambooX = 110;
