@@ -128,6 +128,11 @@ export default class BootScene extends Phaser.Scene {
             frameWidth: 2048,
             frameHeight: 3072
         });
+                // Tải mảnh nguyên liệu
+        this.load.spritesheet('manh', 'assets/images/manh.png', {
+            frameWidth: 2048,  // <-- THAY BẰNG: Chiều ngang thật của ảnh manh.png chia 2
+            frameHeight: 2048  // <-- THAY BẰNG: Chiều dọc thật của ảnh manh.png chia 2
+        });
     }
 
     create() {
@@ -147,6 +152,7 @@ export default class BootScene extends Phaser.Scene {
         graphics.fillRect(20, 15, 5, 70);
 
         graphics.generateTexture('bamboo', 70, 100);
+        graphics.destroy();
 
         // --- VẼ NGỌN TRE VÀ LÁ TỰ ĐỘNG ---
         let graphicsTip = this.make.graphics({x: 0, y: 0, add: false});
@@ -197,6 +203,7 @@ export default class BootScene extends Phaser.Scene {
 
         // Đóng gói thành Texture 'ngontre' (Rộng 150, Cao 120 để chứa đủ lá)
         graphicsTip.generateTexture('ngontre', 150, 120);
+        graphicsTip.destroy();
 
         // Chuyển sang cảnh chơi chính
         this.scene.start('GameScene');
