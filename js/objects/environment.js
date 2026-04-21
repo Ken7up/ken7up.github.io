@@ -52,8 +52,9 @@ export default class Environment {
 
     createGroundAndRoad() {
         this.ground = this.scene.add.image(0, this.height + this.groundOffsetY, 'ground').setOrigin(0, 1).setDepth(1);
-        this.scaleRatio = this.width / this.ground.width;
-        this.ground.setScale(this.scaleRatio);
+        this.ground = this.scene.add.image(0, this.height + this.groundOffsetY, 'ground').setOrigin(0, 1).setDepth(1);
+        this.ground.displayWidth = this.width; 
+        this.ground.scaleY = this.ground.scaleX; // Tự động co giãn đều
 
         let duongHeight = this.scene.textures.get('duong').get().height;
         let scaleConDuong = 0.1; 
@@ -82,12 +83,13 @@ export default class Environment {
                 if (index % 2 === 0) rock.setFlipX(true);
                 index++;
             }
-        };
+    };
 
-        raiDaCoDinh(15, 0.04); 
-        raiDaCoDinh(this.width + 10, 0.04); 
-        raiDaCoDinh(5, 0.02);
-        raiDaCoDinh(this.width - 10, 0.04);
+        // Thay vì để (this.width + 10) hay (this.width - 10), hãy thu vào:
+        raiDaCoDinh(15, 0.04);              // Khối đá sát lề trái
+        raiDaCoDinh(this.width + 10, 0.04); // Khối đá sát lề phải
+        raiDaCoDinh(5, 0.02);              // Khối đá nhỏ bên trái
+        raiDaCoDinh(this.width - 10, 0.04); // Khối đá nhỏ bên phải
     }
 
     createMayBay() {
