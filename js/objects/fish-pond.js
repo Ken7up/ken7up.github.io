@@ -1,5 +1,3 @@
-// js/objects/FishPond.js
-
 export default class FishPond {
     constructor(scene, screenWidth, screenHeight, groundLevelY) {
         this.scene = scene;
@@ -33,10 +31,13 @@ export default class FishPond {
         }
 
         // 3. TẠO TEXTURE GIỌT NƯỚC (Cho máy bơm)
-        let nuocGraphics = scene.make.graphics({x: 0, y: 0, add: false});
-        nuocGraphics.fillStyle(0x4FC3F7, 0.9); 
-        nuocGraphics.fillCircle(6, 6, 6); 
-        nuocGraphics.generateTexture('giotnuoc', 12, 12);
+        if (!scene.textures.exists('giotnuoc')) {
+            // Chỉ dùng 'let' 1 lần duy nhất ở đây
+            let nuocGraphics = scene.make.graphics({x: 0, y: 0, add: false});
+            nuocGraphics.fillStyle(0x4FC3F7, 1); 
+            nuocGraphics.fillCircle(6, 6, 6); 
+            nuocGraphics.generateTexture('giotnuoc', 12, 12);
+        }
 
         // 4. Ô ĐẤT & MÁY BƠM
         let oDat = scene.add.sprite(570, groundLevelY - 70, 'odat', 0).setOrigin(0.5, 0.5).setDepth(1.2).setScale(0.38).setInteractive({ useHandCursor: true });
@@ -147,7 +148,7 @@ export default class FishPond {
     // Hàm gọi liên tục ở update() của GameScene để lật mặt cá
     update() {
         this.fishes.forEach(fish => {
-            if (fish && fish.active) {
+            if (fish && fish.active && fish.body) {
                 if (fish.body.velocity.x > 0) fish.setFlipX(true); 
                 else if (fish.body.velocity.x < 0) fish.setFlipX(false);
             }
