@@ -15,12 +15,17 @@ export default class Environment {
         this.createFencesAndGate();
     }
 
-    createSky() {
-        let skyOffsetY = -3000; 
-        let sky = this.scene.add.image(0, skyOffsetY, 'Sky').setOrigin(0, 0).setDepth(0); 
-        sky.setDisplaySize(this.width, this.height * 3.5);
-        sky.setScrollFactor(0, 0.5);
-    }
+createSky() {
+    let skyOffsetY = -3000; 
+    let sky = this.scene.add.image(0, skyOffsetY, 'Sky').setOrigin(0, 0).setDepth(0); 
+    
+    // Thay vì setDisplaySize(this.width, ...), hãy dùng setScale để giữ tỷ lệ
+    // Tính toán scale theo chiều ngang của game (720px)
+    let scaleX = this.width / sky.width;
+    sky.setScale(scaleX); 
+    
+    sky.setScrollFactor(0, 0.5);
+}
 
     createDaoDat() {
         let daoDat_X = this.width / 2;
