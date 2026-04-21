@@ -1,12 +1,12 @@
-import House from '../objects/House.js';
-import PetHouse from '../objects/PetHouse.js';
-import HeroSlot from '../objects/HeroSlot.js';
-import Blacksmith from '../objects/Blacksmith.js';
-import FishPond from '../objects/FishPond.js';
-import BambooSystem from '../objects/BambooSystem.js';
-import Environment from '../objects/Environment.js';
-import ShopSystem from '../objects/ShopSystem.js';
-import FarmingSystem from '../objects/FarmingSystem.js';
+import House from '../objects/house.js';
+import PetHouse from '../objects/pet-house.js';
+import HeroSlot from '../objects/hero-slot.js';
+import Blacksmith from '../objects/blacksmith.js';
+import FishPond from '../objects/fish-pond.js';
+import BambooSystem from '../objects/bamboo-system.js';
+import Environment from '../objects/environment.js';
+import ShopSystem from '../objects/shop-system.js';
+import FarmingSystem from '../objects/farming-system.js';
 
 export default class GameScene extends Phaser.Scene {
     constructor() {
