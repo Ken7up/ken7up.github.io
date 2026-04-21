@@ -1,4 +1,3 @@
-// js/objects/Blacksmith.js
 export default class Blacksmith extends Phaser.GameObjects.Container {
     constructor(scene, screenWidth, screenHeight) {
         // Tọa độ gốc (giữa màn hình lệch trái 240px, gần đáy)
@@ -21,7 +20,7 @@ export default class Blacksmith extends Phaser.GameObjects.Container {
     buildStickman(scene) {
         const mauStickman = 0x222222;
 
-        let bua = scene.add.image(5, 25, 'buachaos').setScale(0.1).setAngle(-35);
+        let bua = scene.add.image(5, 25, 'buachaos').setScale(0.2).setAngle(-45);
         let than = scene.add.rectangle(0, 0, 8, 60, mauStickman).setOrigin(0.5, 0);
         let dau = scene.add.ellipse(0, -15, 30, 30, mauStickman);
         
