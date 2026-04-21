@@ -5,77 +5,45 @@ export default class Environment {
         this.height = height;
         this.groundLevelY = groundLevelY;
         this.groundOffsetY = 0;
-        this.daoDat_Y = 400; // Thay thế LAYOUT_SETTINGS.DAO_DAT.y
+        this.daoDat_Y = 400; // Tọa độ tĩnh của Đảo đất
 
         this.createSky();
-        this.createDaoDat();
-        this.createGroundAndRoad();
+        this.createGroundAndRoad(); 
         this.createMountainsAndRocks();
+        this.createDaoDat();
         this.createMayBay();
         this.createFencesAndGate();
     }
 
-createSky() {
-    let skyOffsetY = -3000; 
-    let sky = this.scene.add.image(0, skyOffsetY, 'Sky').setOrigin(0, 0).setDepth(0); 
-    
-    // Thay vì setDisplaySize(this.width, ...), hãy dùng setScale để giữ tỷ lệ
-    // Tính toán scale theo chiều ngang của game (720px)
-    let scaleX = this.width / sky.width;
-    sky.setScale(scaleX); 
-    
-    sky.setScrollFactor(0, 0.5);
-}
-
-    createDaoDat() {
-        let daoDat_X = this.width / 2;
-        this.daodat = this.scene.add.image(daoDat_X, this.daoDat_Y, 'daodat').setScale(0.15).setDepth(0.5); // Depth 0.5, Scale 0.15
-        this.scene.tweens.add({
-            targets: this.daodat,
-            y: this.daoDat_Y - 30, // Thay thế tweenOffset
-            duration: 2500,        // Thay thế tweenDuration
-            yoyo: true,
-            repeat: -1,
-            ease: 'Sine.easeInOut'
-        });
-
-        // Hàng rào ngang bên chân núi trên đảo
-        let hangRaoY = this.daoDat_Y + 323; 
-        let hrScale = 0.13 * (this.width / 400); 
-        let khoangCachCay = 0; 
-        let startX = 0; 
-
-        for (let i = 0; i < 3; i++) {
-            let hangRao = this.scene.add.image(0, hangRaoY, 'hangrao').setOrigin(0.5, 1).setDepth(1.05).setScale(hrScale).setScrollFactor(0, 1);
-            if (i === 0) {
-                khoangCachCay = hangRao.width * hrScale;
-                startX = daoDat_X - (khoangCachCay * 2) / 2;
-            }
-            hangRao.x = startX + i * khoangCachCay;
-        }
+    createSky() {
+        // Fix bầu trời: Cố định giữa màn hình, hiển thị full màn hình
+        let sky = this.scene.add.image(this.width / 2, this.height / 2, 'Sky').setOrigin(0.5, 0.5).setDepth(0); 
+        sky.setDisplaySize(this.width, this.height);
+        sky.setScrollFactor(0); // Giữ nguyên trên camera khi vuốt lên xuống
     }
 
     createGroundAndRoad() {
-        this.ground = this.scene.add.image(0, this.height + this.groundOffsetY, 'ground').setOrigin(0, 1).setDepth(1);
-        this.ground = this.scene.add.image(0, this.height + this.groundOffsetY, 'ground').setOrigin(0, 1).setDepth(1);
+        // Fix mặt đất: Đổi depth = 0.4 (Nằm sau đảo đất, nhưng che được chân núi phía xa)
+        this.ground = this.scene.add.image(0, this.height + this.groundOffsetY, 'ground').setOrigin(0, 1).setDepth(0.4);
         this.ground.displayWidth = this.width; 
-        this.ground.scaleY = this.ground.scaleX; // Tự động co giãn đều
+        this.ground.scaleY = this.ground.scaleX;
 
         let duongHeight = this.scene.textures.get('duong').get().height;
         let scaleConDuong = 0.1; 
         let conDuongOffsetY = this.height; 
         this.scene.add.tileSprite(0, conDuongOffsetY, this.width / scaleConDuong, duongHeight, 'duong')
-            .setOrigin(0, 1).setDepth(2).setScale(scaleConDuong).setScrollFactor(0, 1);
+            .setOrigin(0, 1).setDepth(0.45).setScale(scaleConDuong).setScrollFactor(0, 1);
     }
 
     createMountainsAndRocks() {
-        let groundDisplayHeight = this.ground.height * this.scaleRatio;
+        // Fix lỗi this.scaleRatio chưa được định nghĩa
+        let groundDisplayHeight = this.ground.height * this.ground.scaleY;
         this.mountainY = (this.height + this.groundOffsetY) - groundDisplayHeight + 50; 
         
-        let nui = this.scene.add.image(0, this.mountainY, 'nui').setOrigin(0, 1).setDepth(0.5).setScale(this.width / this.scene.textures.get('nui').get().width).setScrollFactor(0, 1);
-        let nui1 = this.scene.add.image(0, this.mountainY, 'nui1').setOrigin(0, 1).setDepth(0.6).setScale(this.width / this.scene.textures.get('nui1').get().width).setScrollFactor(0, 1);
+        // Cài đặt chiều sâu của núi (0.2, 0.3) bé hơn mặt đất (0.4) để núi có cảm giác nằm ở phía đường chân trời
+        let nui = this.scene.add.image(0, this.mountainY, 'nui').setOrigin(0, 1).setDepth(0.2).setScale(this.width / this.scene.textures.get('nui').get().width).setScrollFactor(0, 1);
+        let nui1 = this.scene.add.image(0, this.mountainY, 'nui1').setOrigin(0, 1).setDepth(0.3).setScale(this.width / this.scene.textures.get('nui1').get().width).setScrollFactor(0, 1);
 
-        // Rải đá
         let heSoScale = this.width / 400;
         let yDaBatDau = this.mountainY - 60;
         let yDaKetThuc = this.height + this.groundOffsetY - 65; 
@@ -84,21 +52,49 @@ createSky() {
             let index = 0;
             for (let y = yDaBatDau; y < yDaKetThuc; y += 25) {
                 let rock = this.scene.add.sprite(fixX, y, 'rock', index % 3);
-                rock.setScale(fixedScale * heSoScale).setRotation(0).setDepth(2.5 + (y / 10000)).setScrollFactor(0, 1);
+                rock.setScale(fixedScale * heSoScale).setRotation(0).setDepth(0.46 + (y / 10000)).setScrollFactor(0, 1);
                 if (index % 2 === 0) rock.setFlipX(true);
                 index++;
             }
-    };
+        };
 
-        // Thay vì để (this.width + 10) hay (this.width - 10), hãy thu vào:
-        raiDaCoDinh(15, 0.04);              // Khối đá sát lề trái
-        raiDaCoDinh(this.width + 10, 0.04); // Khối đá sát lề phải
-        raiDaCoDinh(5, 0.02);              // Khối đá nhỏ bên trái
-        raiDaCoDinh(this.width - 10, 0.04); // Khối đá nhỏ bên phải
+        raiDaCoDinh(15, 0.04);              
+        raiDaCoDinh(this.width + 10, 0.04); 
+        raiDaCoDinh(5, 0.02);              
+        raiDaCoDinh(this.width - 10, 0.04); 
+    }
+
+    createDaoDat() {
+        let daoDat_X = this.width / 2;
+        // Đảo đất nằm trước toàn bộ núi và mặt đất (Depth 0.5)
+        this.daodat = this.scene.add.image(daoDat_X, this.daoDat_Y, 'daodat').setScale(0.15).setDepth(0.5); 
+        this.scene.tweens.add({
+            targets: this.daodat,
+            y: this.daoDat_Y - 30, 
+            duration: 2500,        
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        });
+
+        let hangRaoY = this.daoDat_Y + 323; 
+        let hrScale = 0.13 * (this.width / 400); 
+        let khoangCachCay = 0; 
+        let startX = 0; 
+
+        for (let i = 0; i < 3; i++) {
+            let hangRao = this.scene.add.image(0, hangRaoY, 'hangrao').setOrigin(0.5, 1).setDepth(0.55).setScale(hrScale).setScrollFactor(0, 1);
+            if (i === 0) {
+                khoangCachCay = hangRao.width * hrScale;
+                startX = daoDat_X - (khoangCachCay * 2) / 2;
+            }
+            hangRao.x = startX + i * khoangCachCay;
+        }
     }
 
     createMayBay() {
-        this.maybay = this.scene.add.image(this.width + 150, this.mountainY - 300, 'maybay').setOrigin(0.5, 0.5).setDepth(0.7).setScale(0.3).setScrollFactor(0, 0.75);
+        // Mây bay lơ lửng nằm giữa vùng trời (0) và núi (0.2)
+        this.maybay = this.scene.add.image(this.width + 150, this.mountainY - 300, 'maybay').setOrigin(0.5, 0.5).setDepth(0.15).setScale(0.3).setScrollFactor(0, 0.75);
     }
 
     createFencesAndGate() {
@@ -108,6 +104,7 @@ createSky() {
         let viTriYCong = baseOriginY - 50;
         let viTriYHangRao = baseOriginY - 25;
 
+        // Depth rất cao vì nó nằm ở tiền cảnh (gần màn hình nhất)
         this.congRao = this.scene.add.sprite(this.width / 2, viTriYCong, 'congrao', 0).setOrigin(0.5, 1).setDepth(2000).setScrollFactor(0, 1).setScale(congRaoScale);
         let congRaoWidth = this.congRao.width * congRaoScale;
 
