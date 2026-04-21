@@ -1,4 +1,3 @@
-// Thay thế file constants.js cho phần nông trại
 export const SEED_DATA = [
     { id: 0, name: 'Hạt Nguyên Tố', frame: 0, price: 100, textureKey: 'caynguyento' },
     { id: 1, name: 'Hạt Kim Loại',  frame: 1, price: 100, textureKey: 'caykimloai' },
@@ -11,6 +10,13 @@ const PLANT_SETTINGS = {
     'caykimloai':  { truongThanh: { scale: 0.05, offsetX: 0, offsetY: -40 }, thuHoach: { scale: 0.05, offsetX: -1, offsetY: -53 } },
     'caymat':      { truongThanh: { scale: 0.04, offsetX: -5, offsetY: -67 }, thuHoach: { scale: 0.04, offsetX: -5, offsetY: -67 } },
     'caytinhyeu':  { truongThanh: { scale: 0.045, offsetX: 0, offsetY: -58 }, thuHoach: { scale: 0.045, offsetX: 0, offsetY: -58 } }
+};
+
+const REWARD_DATA = {
+    'caynguyento': { manhFrame: 0, seedId: 0, seedName: 'Hạt Nguyên Tố' }, // Frame 0: Góc trên trái
+    'caykimloai':  { manhFrame: 1, seedId: 1, seedName: 'Hạt Kim Loại' },  // Frame 1: Góc trên phải
+    'caytinhyeu':  { manhFrame: 2, seedId: 2, seedName: 'Hạt Tình Yêu' },  // Frame 2: Góc dưới trái
+    'caymat':      { manhFrame: 3, seedId: 3, seedName: 'Hạt Mật' }        // Frame 3: Góc dưới phải
 };
 
 const TIME_SETTINGS = { hatSangMam: 10000, mamSangTruongThanh: 30000, truongThanhSangThuHoach: 30000, thoiGianNhayMat: 10000 };
@@ -92,7 +98,8 @@ export default class FarmingSystem {
 
     trongCayNguyento(chau, thongTinHat) {
         chau.setData('daTrongCay', true);
-        let cay = this.scene.add.sprite(chau.x, chau.y - 65, 'hatmay', thongTinHat.frame).setOrigin(0.5, 1).setDepth(2500);
+        let cay = this.scene.add.sprite(chau.x, chau.y - 65, 'hatmay', thongTinHat.frame).setOrigin(0.5, 1);
+        cay.setDepth(chau.depth + 0.1); // Sử dụng depth động theo vị trí chậu
         cay.setScale(70 / cay.width);
         
         let textureKeyCuaHat = SEED_DATA.find(s => s.id === thongTinHat.id).textureKey;
@@ -172,9 +179,68 @@ export default class FarmingSystem {
         cay.setInteractive({ useHandCursor: true });
         cay.once('pointerdown', () => {
             blinkTimer.remove();
-            console.log(`Thu hoạch ${textureKey}!`);
+            
+            // 1. Xác định phần thưởng dựa trên loại cây
+            let rewardInfo = REWARD_DATA[textureKey];
+            
+            // 2. Cộng EXP cho nhân vật (Lưu tạm vào Scene chính)
+            this.scene.soEXP = (this.scene.soEXP || 0) + 100;
+            
+            // 3. Cộng x2 hạt giống vào túi
+            let seedInBag = this.tuiHatGiong.find(s => s.id === rewardInfo.seedId);
+            if (seedInBag) {
+                seedInBag.count += 2;
+            }
+
+            // (Tùy chọn) Lưu số lượng mảnh/vương miện/hũ mật vào một biến inventory khác ở đây
+            
+            // 4. Chạy hiệu ứng bay lên và mờ dần
+            // Truyền đối tượng 'cay' vào thay vì tọa độ x, y của chậu
+            this.taoHieuUngThuHoach(cay, rewardInfo);
+
+            console.log(`Thu hoạch ${textureKey}! Nhận 100 EXP, 2 ${rewardInfo.seedName}, 1 mảnh frame ${rewardInfo.manhFrame}`);
+            
             cay.destroy(); 
             chau.setData('daTrongCay', false);
         });
     }
+
+    taoHieuUngThuHoach(cay, rewardInfo) {
+        // 1. Lấy tọa độ thực tế của cây trên toàn thế giới (World Coordinates)
+        // Điều này khắc phục lỗi lệch vị trí khi cây nằm trong Container (bambooSystem)
+        let matrix = cay.getWorldTransformMatrix();
+        let worldX = matrix.tx;
+        let worldY = matrix.ty;
+
+        // 2. Tính vị trí xuất hiện (ở khoảng giữa thân cây)
+        let startY = worldY - (cay.displayHeight / 2); 
+
+        // 3. Sắp xếp các phần thưởng ngay tại tọa độ thực của cây
+        let expText = this.scene.add.text(worldX, startY - 20, '+100 EXP', { 
+            fontSize: '14px', fill: '#FFD700', fontStyle: 'bold', stroke: '#000', strokeThickness: 2 
+        }).setOrigin(0.5).setDepth(9999);
+
+        let seedText = this.scene.add.text(worldX, startY, '+2 ' + rewardInfo.seedName, { 
+            fontSize: '13px', fill: '#4CAF50', fontStyle: 'bold', stroke: '#000', strokeThickness: 2 
+        }).setOrigin(0.5).setDepth(9999);
+
+        let itemSprite = this.scene.add.sprite(worldX, startY + 20, 'manh', rewardInfo.manhFrame)
+            .setScale(0.025) 
+            .setDepth(9999); 
+
+        // 4. Hiệu ứng bay lên và mờ dần
+        this.scene.tweens.add({
+            targets: [expText, seedText, itemSprite],
+            y: '-=40',            
+            alpha: 0,             
+            duration: 1500,       
+            ease: 'Sine.easeOut', 
+            onComplete: () => {
+                expText.destroy();
+                seedText.destroy();
+                itemSprite.destroy();
+            }
+        });
+    }
 }
+
