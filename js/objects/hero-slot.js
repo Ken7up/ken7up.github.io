@@ -1,4 +1,3 @@
-// js/objects/HeroSlot.js
 export default class HeroSlot extends Phaser.GameObjects.Image {
     constructor(scene, screenWidth, screenHeight) {
         // --- CHUYỂN HẰNG SỐ TỪ constants.js VÀO ĐÂY ---
