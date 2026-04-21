@@ -70,7 +70,7 @@ export default class Environment {
     createDaoDat() {
         let daoDat_X = this.width / 2;
         // Đảo đất nằm trước toàn bộ núi và mặt đất (Depth 0.5)
-        this.daodat = this.scene.add.image(daoDat_X, this.daoDat_Y, 'daodat').setScale(0.15).setDepth(0.5); 
+        this.daodat = this.scene.add.image(daoDat_X, this.daoDat_Y, 'daodat').setScale(0.15).setDepth(0.1); 
         this.scene.tweens.add({
             targets: this.daodat,
             y: this.daoDat_Y - 30, 
