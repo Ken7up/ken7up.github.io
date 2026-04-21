@@ -36,11 +36,9 @@ export default class Environment {
     }
 
     createMountainsAndRocks() {
-        // Fix lỗi this.scaleRatio chưa được định nghĩa
         let groundDisplayHeight = this.ground.height * this.ground.scaleY;
         this.mountainY = (this.height + this.groundOffsetY) - groundDisplayHeight + 50; 
         
-        // Cài đặt chiều sâu của núi (0.2, 0.3) bé hơn mặt đất (0.4) để núi có cảm giác nằm ở phía đường chân trời
         let nui = this.scene.add.image(0, this.mountainY, 'nui').setOrigin(0, 1).setDepth(0.2).setScale(this.width / this.scene.textures.get('nui').get().width).setScrollFactor(0, 1);
         let nui1 = this.scene.add.image(0, this.mountainY, 'nui1').setOrigin(0, 1).setDepth(0.3).setScale(this.width / this.scene.textures.get('nui1').get().width).setScrollFactor(0, 1);
 
@@ -52,7 +50,12 @@ export default class Environment {
             let index = 0;
             for (let y = yDaBatDau; y < yDaKetThuc; y += 25) {
                 let rock = this.scene.add.sprite(fixX, y, 'rock', index % 3);
-                rock.setScale(fixedScale * heSoScale).setRotation(0).setDepth(0.46 + (y / 10000)).setScrollFactor(0, 1);
+                
+                // FIX: Tăng depth lên 0.6 để đá nằm TRÊN đảo đất (depth 0.5)
+                // Cộng thêm (y / 10000) để các viên đá phía dưới đè lên viên phía trên cho tự nhiên
+                rock.setDepth(1.3 + (y / 10000)); 
+                
+                rock.setScale(fixedScale * heSoScale).setRotation(0).setScrollFactor(0, 1);
                 if (index % 2 === 0) rock.setFlipX(true);
                 index++;
             }
@@ -83,7 +86,8 @@ export default class Environment {
         let startX = 0; 
 
         for (let i = 0; i < 3; i++) {
-            let hangRao = this.scene.add.image(0, hangRaoY, 'hangrao').setOrigin(0.5, 1).setDepth(0.55).setScale(hrScale).setScrollFactor(0, 1);
+            // FIX: Giảm depth của hàng rào xuống 0.43 để nó nằm dưới lớp đá (đang là 0.46)
+            let hangRao = this.scene.add.image(0, hangRaoY, 'hangrao').setOrigin(0.5, 1).setDepth(0.43).setScale(hrScale).setScrollFactor(0, 1);
             if (i === 0) {
                 khoangCachCay = hangRao.width * hrScale;
                 startX = daoDat_X - (khoangCachCay * 2) / 2;
