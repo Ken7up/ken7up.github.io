@@ -1,4 +1,3 @@
-// js/objects/House.js
 export default class House extends Phaser.GameObjects.Image {
     /**
      * @param {Phaser.Scene} scene - Truyền scene hiện tại vào
