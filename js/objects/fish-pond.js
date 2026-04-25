@@ -24,6 +24,17 @@ export default class FishPond {
         let toaDoX_HienTai = gocX - 205; 
         let toaDoY_HienTai = gocY + 15;  
 
+        // --- Thêm 3 viên gạch bên trái (dưới cái đe thợ rèn) ---
+        let gachTraiX = toaDoX_HienTai - 25; // Dịch sang trái 1 ô (25 pixel) so với ô gốc
+        let gachTraiY = toaDoY_HienTai + 15; // Lấy tọa độ Y của hàng ngang
+        for (let j = 0; j < 3; j++) {
+            scene.add.image(gachTraiX - (j * 25), gachTraiY, 'gach')
+                 .setOrigin(0.5, 0.5)
+                 .setDepth(1.02)
+                 .setScale(0.8, 0.5);
+        }
+
+        // Vòng lặp 25 viên gạch gốc
         for (let i = 1; i <= 25; i++) {
             let gach = scene.add.image(toaDoX_HienTai, toaDoY_HienTai, 'gach').setOrigin(0.5, 0.5).setDepth(1.02).setScale(0.8, 0.5);
             if (i === 1) toaDoY_HienTai += 15;
@@ -96,6 +107,9 @@ export default class FishPond {
         cauCaTra.body.setSize(cauCaTra.width * 0.60, cauCaTra.height * 0.20);
         cauCaTra.body.setOffset(0, cauCaTra.height * 0.95);
         
+        // THÊM DÒNG NÀY ĐỂ ÉP MÀU HITBOX THÀNH XANH DƯƠNG:
+        cauCaTra.body.debugBodyColor = 0x0000ff;
+        
         let thanhCauHitbox = scene.add.rectangle(pondX - 110 + 35, pondY + 35 - 15, 30, 5, 0x000000, 0);
         scene.physics.add.existing(thanhCauHitbox, true);
 
@@ -111,7 +125,7 @@ export default class FishPond {
             scene.add.rectangle((bX - wWidth/2) + 45/2 + 10, (bY - wHeight/2) + 55/2 + 10, 45, 55, 0x000000, 0), // cornerTopLeft
             scene.add.rectangle((bX + wWidth/2) - 40/2 - 10, (bY - wHeight/2) + 25/2 + 10, 40, 25, 0x000000, 0), // cornerTopRight
             scene.add.rectangle((bX - wWidth/2) + 68/2 + 10, (bY + wHeight/2) - 1/2 - 65, 68, 1, 0x000000, 0),   // cornerBottomLeft
-            scene.add.rectangle((bX + wWidth/2) - 5/2 - 20, (bY + wHeight/2) - 5/2 - 65, 5, 5, 0x000000, 0),     // cornerBottomRight
+            scene.add.rectangle((bX + wWidth/2) - 5/2 - 20, (bY + wHeight/2) - 5/2 - 80, 5, 30, 0x000000, 0),     // cornerBottomRight
             scene.add.rectangle((bX - wWidth/2) + 45/2 + 10 + 45, (bY - wHeight/2) + 55/2 + 10 - 15, 20, 20, 0x000000, 0), // extraTopLeft
             scene.add.rectangle((bX + wWidth/2) - 5/2 - 20 + 5, (bY + wHeight/2) - 5/2 - 65 + 45, 5, 5, 0x000000, 0),      // extraBottomRight
             scene.add.rectangle((bX + wWidth/2) - 40/2 - 10 - 45, (bY - wHeight/2) + 25/2 + 10, 10, 10, 0x000000, 0),      // extraTopRight
@@ -123,6 +137,7 @@ export default class FishPond {
 
         let hitboxOngBom = scene.add.rectangle(mayBomX - 25, mayBomY + 20, 5, 5, 0xff0000, 0); 
         scene.physics.add.existing(hitboxOngBom, true);
+        walls.push(hitboxOngBom); // Thêm dòng này để đưa ống bơm vào danh sách vật cản
 
         // 7. ĐÀN CÁ BƠI LỘI
         Object.keys(FISH_SETTINGS).forEach(loaiCa => {
