@@ -16,7 +16,13 @@ export default class GameScene extends Phaser.Scene {
     create() {
         this.isUIOpen = false;
         this.soDau = 9999; // Dữ liệu của người chơi lưu ở Scene chính
+        this.khoNguyenLieu = [];
         
+        // --- THÊM DỮ LIỆU LÒ RÈN  ---
+        // Vị trí mảng tương ứng với: [Sọ dừa, Chậu Đồng, Chậu Bạc, Chậu Vàng]
+        this.tuiChau = [0, 0, 0, 0]; 
+        this.dangRen = null; // Sẽ chứa thông tin khi đang rèn: { id: 1, timer: Phaser.Time.TimerEvent }
+
         const width = this.scale.width;
         const height = this.scale.height;
         const groundLevelY = height - 460;
