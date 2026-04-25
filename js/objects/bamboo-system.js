@@ -12,9 +12,24 @@ export default class BambooSystem extends Phaser.GameObjects.Container {
         this.danhSachChau = []; // Chứa danh sách các chậu
 
         // --- MANG HẰNG SỐ VÀO ĐÂY ---
-        const BAMBOO_SETTINGS = { soDotTre: 57, chieuCaoMotDot: 100, chau_Scale: 0.1, chau_SpacingX: 100, soChauMoiTang: 5 };
+        const BAMBOO_SETTINGS = { soDotTre: 57, chieuCaoMotDot: 100, chau_Scale: 0.11, chau_SpacingX: 100, soChauMoiTang: 5 };
         let baseDepth = 2.8; 
         this.setDepth(baseDepth);
+
+        // --- BỤI TRE ---
+        
+        // Bụi tre trang trí bên trái (Bụi nhỏ hơn, bị lật ngược)
+        this.buiTreTrai = scene.add.image(-50, 15, 'buitre').setOrigin(0.5, 1);
+        this.buiTreTrai.setDepth(baseDepth - 1.5); 
+        this.buiTreTrai.setScale(0.6); 
+        this.buiTreTrai.setFlipX(true); 
+        this.add(this.buiTreTrai);
+
+        // Bụi tre trang trí bên phải (Bụi lớn hơn)
+        this.buiTrePhai = scene.add.image(60, 10, 'buitre').setOrigin(0.5, 1);
+        this.buiTrePhai.setDepth(baseDepth - 1); 
+        this.buiTrePhai.setScale(0.8); 
+        this.add(this.buiTrePhai);
 
         // 1. TẠO CÁC ĐỐT TRE VÀ MÂY
         for (let i = 0; i < BAMBOO_SETTINGS.soDotTre; i++) {
@@ -42,7 +57,7 @@ export default class BambooSystem extends Phaser.GameObjects.Container {
                     let currentChauX = startChauX + (j * BAMBOO_SETTINGS.chau_SpacingX);
                     let chau = scene.add.sprite(currentChauX, cloudY, 'chau', 0);
                     
-                    chau.setOrigin(0.5, 1); 
+                    chau.setOrigin(0.5, 0.98); 
                     chau.setScale(BAMBOO_SETTINGS.chau_Scale);
                     chau.setDepth(baseDepth + i + 0.6);
 
@@ -92,7 +107,24 @@ export default class BambooSystem extends Phaser.GameObjects.Container {
         let progress = (scrollY - startY) / (endY - startY);
         progress = Phaser.Math.Clamp(progress, 0, 1);
         
+        // Scale hiện tại của cả cụm tre
         let currentScale = 0.4 + (1.0 - 0.4) * progress;
         this.setScale(currentScale);
+
+        // ĐẢM BẢO BỤI TRE KHÔNG PHÓNG TO VÀ KHÔNG BỊ DI CHUYỂN
+        if (this.buiTreTrai && this.buiTrePhai) {
+            // 1. Giữ nguyên kích thước
+            this.buiTreTrai.setScale(0.24 / currentScale); // Bụi bên trái (Scale gốc 0.6)
+            this.buiTrePhai.setScale(0.32 / currentScale); // Bụi bên phải (Scale gốc 0.8)
+
+            // 2. Giữ nguyên vị trí tuyệt đối (chống trượt ra 2 bên)
+            // Bụi tre trái
+            this.buiTreTrai.x = - 30 / currentScale;
+            this.buiTreTrai.y = 6 / currentScale;
+
+            // Bụi tre phải
+            this.buiTrePhai.x = 35 / currentScale;
+            this.buiTrePhai.y = 20 / currentScale;
+        }
     }
 }
