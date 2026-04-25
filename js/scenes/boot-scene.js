@@ -4,12 +4,48 @@ export default class BootScene extends Phaser.Scene {
     }
 
     preload() {
-        let loadingText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, 'Đang tải...', {
-            fontSize: '32px',
-            fill: '#ffffff'
+        let width = this.cameras.main.width;
+        let height = this.cameras.main.height;
+
+        // Vẽ khung chứa thanh loading
+        let progressBox = this.add.graphics();
+        progressBox.fillStyle(0x222222, 0.8);
+        progressBox.fillRoundedRect(width / 2 - 160, height / 2 - 25, 320, 50, 10);
+
+        // Vẽ thanh tiến trình chạy bên trong
+        let progressBar = this.add.graphics();
+
+        // Chữ phần trăm
+        let percentText = this.add.text(width / 2, height / 2, '0%', {
+            fontSize: '24px', fill: '#ffffff', fontStyle: 'bold'
         }).setOrigin(0.5);
 
-        // Tải ảnh bầu trời và mặt đất
+        // Chữ hiển thị đang tải file nào
+        let assetText = this.add.text(width / 2, height / 2 + 50, 'Đang chuẩn bị dữ liệu...', {
+            fontSize: '18px', fill: '#ffffff'
+        }).setOrigin(0.5);
+
+        // Lắng nghe sự kiện tải để cập nhật thanh loading
+        this.load.on('progress', function (value) {
+            percentText.setText(parseInt(value * 100) + '%');
+            progressBar.clear();
+            progressBar.fillStyle(0x4CAF50, 1); // Màu xanh lá
+            progressBar.fillRoundedRect(width / 2 - 150, height / 2 - 15, 300 * value, 30, 8);
+        });
+
+        this.load.on('fileprogress', function (file) {
+            assetText.setText('Đang tải: ' + file.key);
+        });
+
+        // Xóa thanh loading khi tải xong
+        this.load.on('complete', function () {
+            progressBar.destroy();
+            progressBox.destroy();
+            percentText.destroy();
+            assetText.destroy();
+        });
+
+        // BẮT ĐẦU TẢI ẢNH TỪ ĐÂY
         this.load.image('Sky', 'assets/images/canh.png');
         this.load.image('ground', 'assets/images/nen.png');
         // Tải ảnh con đường
@@ -41,11 +77,13 @@ export default class BootScene extends Phaser.Scene {
         this.load.image('tangmay', 'assets/images/tangmay.png');
         // Tải ảnh chậu cây
         this.load.spritesheet('chau', 'assets/images/chau.png', {
-            frameWidth: 1080,  // <-- BẠN HÃY SỬA SỐ NÀY = 1/2 chiều ngang ảnh chau.png
-            frameHeight: 1080  // <-- BẠN HÃY SỬA SỐ NÀY = 1/2 chiều dọc ảnh chau.png
+            frameWidth: 1024,  // <-- BẠN HÃY SỬA SỐ NÀY = 1/2 chiều ngang ảnh chau.png
+            frameHeight: 1024  // <-- BẠN HÃY SỬA SỐ NÀY = 1/2 chiều dọc ảnh chau.png
         });
         // Tải ảnh gốc tre (gấu trúc)
         this.load.image('goctre', 'assets/images/goctre.png');
+        // Tải ảnh bụi tre
+        this.load.image('buitre', 'assets/images/buitre.png');
         // Tải ảnh búa chaos
         this.load.image('buachaos', 'assets/images/buachaos.png');
         // Tải ảnh cái đe
@@ -54,23 +92,23 @@ export default class BootScene extends Phaser.Scene {
         this.load.image('ao', 'assets/images/ao.png');
         // Tải ảnh cá trê
         this.load.spritesheet('catre', 'assets/images/catre.png', {
-            frameWidth: 1080, 
-            frameHeight: 1080 
+            frameWidth: 1024, 
+            frameHeight: 1024 
        });
         // Tải ảnh cá vồ
         this.load.spritesheet('cavo', 'assets/images/cavo.png', {
-            frameWidth: 1080, 
-            frameHeight: 1080
+            frameWidth: 1024, 
+            frameHeight: 1024
         });
         // Tải ảnh cá tai tượng
         this.load.spritesheet('cataituong', 'assets/images/cataituong.png', {
-            frameWidth: 1080, 
-            frameHeight: 1080
+            frameWidth: 1024, 
+            frameHeight: 1024
         });
         // Tải ảnh cá lau kính
         this.load.spritesheet('calaukinh', 'assets/images/calaukinh.png', {
-            frameWidth: 1080,
-            frameHeight: 1080
+            frameWidth: 1024,
+            frameHeight: 1024
         });
         // Tải máy bơm nước
         this.load.image('maybom', 'assets/images/maybom.png');
@@ -97,41 +135,41 @@ export default class BootScene extends Phaser.Scene {
         });
         // Tải spritesheet Hạt Mây (Lưu ý: Chỉnh frameWidth/frameHeight theo đúng 1/2 kích thước thật của ảnh)
         this.load.spritesheet('hatmay', 'assets/images/hatmay.png', {
-            frameWidth: 2048,  // Kích thước chiều rộng 1 hạt
-            frameHeight: 2048  // Kích thước chiều cao 1 hạt
+            frameWidth: 1024,  // Kích thước chiều rộng 1 hạt
+            frameHeight: 1024  // Kích thước chiều cao 1 hạt
         });
         // Tải ảnh cây mầm
         this.load.spritesheet('caymam', 'assets/images/caymam.png', {
-            frameWidth: 2048,   // <-- THAY BẰNG: Chiều ngang ảnh / 2
-            frameHeight: 2048   // <-- THAY BẰNG: Chiều dọc ảnh
+            frameWidth: 1024,   // <-- THAY BẰNG: Chiều ngang ảnh / 2
+            frameHeight: 1024   // <-- THAY BẰNG: Chiều dọc ảnh
         });
 
         // Tải ảnh cây nguyên tố
         // Hàng trên: 0 (trái), 1 (phải) - Giai đoạn trưởng thành
         // Hàng dưới: 2 (trái), 3 (phải) - Giai đoạn thu hoạch
         this.load.spritesheet('caynguyento', 'assets/images/caynguyento.png', {
-            frameWidth: 2048,   // <-- THAY BẰNG: Chiều ngang ảnh / 2
-            frameHeight: 3072   // <-- THAY BẰNG: Chiều dọc ảnh / 2
+            frameWidth: 682.5,   // <-- THAY BẰNG: Chiều ngang ảnh / 2
+            frameHeight: 1024   // <-- THAY BẰNG: Chiều dọc ảnh / 2
         });
         // Tải ảnh cây kim loại
         this.load.spritesheet('caykimloai', 'assets/images/caykimloai.png', {
-            frameWidth: 2048,
-            frameHeight: 3072
+            frameWidth: 682.5,
+            frameHeight: 1024
         });
         // Tải ảnh cây tình yêu
         this.load.spritesheet('caytinhyeu', 'assets/images/caytinhyeu.png', {
-            frameWidth: 2048,
-            frameHeight: 3072
+            frameWidth: 682.5,
+            frameHeight: 1024
         });
         // Tải ảnh cây mật
         this.load.spritesheet('caymat', 'assets/images/caymat.png', {
-            frameWidth: 2048,
-            frameHeight: 3072
+            frameWidth: 682.5,
+            frameHeight: 1024
         });
                 // Tải mảnh nguyên liệu
         this.load.spritesheet('manh', 'assets/images/manh.png', {
-            frameWidth: 2048,  // <-- THAY BẰNG: Chiều ngang thật của ảnh manh.png chia 2
-            frameHeight: 2048  // <-- THAY BẰNG: Chiều dọc thật của ảnh manh.png chia 2
+            frameWidth: 1024,  // <-- THAY BẰNG: Chiều ngang thật của ảnh manh.png chia 2
+            frameHeight: 1024  // <-- THAY BẰNG: Chiều dọc thật của ảnh manh.png chia 2
         });
     }
 
