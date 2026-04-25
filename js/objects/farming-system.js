@@ -6,10 +6,10 @@ export const SEED_DATA = [
 ];
 
 const PLANT_SETTINGS = {
-    'caynguyento': { truongThanh: { scale: 0.05, offsetX: 0, offsetY: -52 }, thuHoach: { scale: 0.05, offsetX: -4, offsetY: -61 } },
-    'caykimloai':  { truongThanh: { scale: 0.05, offsetX: 0, offsetY: -40 }, thuHoach: { scale: 0.05, offsetX: -1, offsetY: -53 } },
-    'caymat':      { truongThanh: { scale: 0.04, offsetX: -5, offsetY: -67 }, thuHoach: { scale: 0.04, offsetX: -5, offsetY: -67 } },
-    'caytinhyeu':  { truongThanh: { scale: 0.045, offsetX: 0, offsetY: -58 }, thuHoach: { scale: 0.045, offsetX: 0, offsetY: -58 } }
+    'caynguyento': { truongThanh: { scale: 0.15, offsetX: 0, offsetY: -52 }, thuHoach: { scale: 0.15, offsetX: -4, offsetY: -61 } },
+    'caykimloai':  { truongThanh: { scale: 0.15, offsetX: 0, offsetY: -40 }, thuHoach: { scale: 0.15, offsetX: -1, offsetY: -53 } },
+    'caymat':      { truongThanh: { scale: 0.125, offsetX: -5, offsetY: -67 }, thuHoach: { scale: 0.125, offsetX: -5, offsetY: -67 } },
+    'caytinhyeu':  { truongThanh: { scale: 0.135, offsetX: 0, offsetY: -58 }, thuHoach: { scale: 0.135, offsetX: 0, offsetY: -58 } }
 };
 
 const REWARD_DATA = {
@@ -112,7 +112,7 @@ export default class FarmingSystem {
         this.scene.time.delayedCall(TIME_SETTINGS.hatSangMam, () => {
             if (cay && cay.active) { 
                 this.scene.tweens.killTweensOf(cay); 
-                cay.setScale(90 / 2048); 
+                cay.setScale(90 / 1024); 
                 this.giaiDoanMam(cay, chau); 
             }
         });
@@ -192,7 +192,18 @@ export default class FarmingSystem {
                 seedInBag.count += 2;
             }
 
-            // (Tùy chọn) Lưu số lượng mảnh/vương miện/hũ mật vào một biến inventory khác ở đây
+            // Thay thế cho dòng // (Tùy chọn) Lưu số lượng mảnh...
+            if (!this.scene.khoNguyenLieu) this.scene.khoNguyenLieu = [];
+            
+            let existingMaterial = this.scene.khoNguyenLieu.find(m => m.frame === rewardInfo.manhFrame);
+            if (existingMaterial) {
+                existingMaterial.count += 1;
+            } else {
+                this.scene.khoNguyenLieu.push({
+                    frame: rewardInfo.manhFrame,
+                    count: 1
+                });
+            }
             
             // 4. Chạy hiệu ứng bay lên và mờ dần
             // Truyền đối tượng 'cay' vào thay vì tọa độ x, y của chậu
