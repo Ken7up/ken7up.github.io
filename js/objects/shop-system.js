@@ -1,6 +1,6 @@
 import { SEED_DATA } from './farming-system.js';
 
-const UI_COLORS = { BG_WHITE: 0xffffff, BG_CREAM: 0xf5f0e6, BG_GREEN_LIGHT: 0xe8f5e9, BTN_ORANGE: 0xFF9800, BTN_RED: 0xF44336 };
+const UI_COLORS = { BG_WHITE: 0xffffff, BG_CREAM: 0xf5f0e6, BG_GREEN_LIGHT: 0xe8f5e9, BTN_ORANGE: 0xFF9800, BTN_RED: 0xF44336, BTN_PURPLE: 0x9C27B0 };
 
 export default class ShopSystem {
     constructor(scene, width, height, groundLevelY) {
@@ -8,8 +8,13 @@ export default class ShopSystem {
         this.width = width;
         this.height = height;
         
+        if (typeof this.scene.vuongMien === 'undefined') {
+            this.scene.vuongMien = 0; 
+        }
+
         this.createClouds(groundLevelY);
         this.createShopUI();
+        this.createEventUI(); 
     }
 
     createClouds(groundLevelY) {
@@ -20,9 +25,6 @@ export default class ShopSystem {
         // Mây Trắng (Shop)
         let shopCloud = this.scene.add.sprite(shopCloudX, shopCloudY, 'maytrang', 0).setOrigin(0.5, 0.5).setScale(0.15).setDepth(50);
         this.scene.tweens.add({ targets: shopCloud, y: shopCloud.y - 15, duration: 2000, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-        this.scene.time.addEvent({ delay: 15000, loop: true, callback: () => {
-            shopCloud.setFrame(1); this.scene.time.delayedCall(200, () => shopCloud.setFrame(0));
-        }});
         
         shopCloud.setInteractive({ useHandCursor: true });
         shopCloud.on('pointerdown', () => {
@@ -35,15 +37,81 @@ export default class ShopSystem {
         // Mây Đen (Sự kiện)
         let darkCloud = this.scene.add.sprite(shopCloudX + 150, shopCloudY - 15, 'mayden', 0).setOrigin(0.5, 0.5).setScale(0.17).setDepth(50);
         this.scene.tweens.add({ targets: darkCloud, y: darkCloud.y + 15, duration: 2000, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-        this.scene.time.addEvent({ delay: 15000, loop: true, callback: () => {
-            darkCloud.setFrame(1); this.scene.time.delayedCall(200, () => darkCloud.setFrame(0));
-        }});
 
         darkCloud.setInteractive({ useHandCursor: true });
         darkCloud.on('pointerdown', () => {
             if (this.scene.isUIOpen) return;
-            console.log("Sẵn sàng mở giao diện sự kiện.");
+            this.scene.isUIOpen = true;
+            this.eventDauText.setText('🥜 ' + this.scene.soDau);
+            this.eventVuongMienText.setText('👑 ' + this.scene.vuongMien);
+            this.eventUI.setVisible(true);
         });
+    }
+
+    createEventUI() {
+        this.eventUI = this.scene.add.container(this.width / 2, this.height / 2).setDepth(10000).setScrollFactor(0).setVisible(false);
+        
+        let overlay = this.scene.add.rectangle(0, 0, this.width, this.height, 0x000000, 0.6).setInteractive().setScrollFactor(0);
+        overlay.on('pointerdown', (p, x, y, e) => e.stopPropagation());
+        
+        let bgGraphics = this.scene.add.graphics().fillStyle(UI_COLORS.BG_CREAM, 1).fillRoundedRect(-250, -300, 500, 600, 30); 
+        let titleText = this.scene.add.text(0, -250, '🌩️ SỰ KIỆN MÂY ĐEN', { fontSize: '30px', fill: '#4A148C', fontStyle: '900' }).setOrigin(0.5);
+        
+        let currencyBg = this.scene.add.graphics().fillStyle(UI_COLORS.BG_WHITE, 1).fillRoundedRect(-200, -200, 400, 50, 15);
+        this.eventDauText = this.scene.add.text(-100, -175, '🥜 0', { fontSize: '22px', fill: '#8B4513', fontStyle: 'bold' }).setOrigin(0.5);
+        this.eventVuongMienText = this.scene.add.text(100, -175, '👑 0', { fontSize: '22px', fill: '#FF8F00', fontStyle: 'bold' }).setOrigin(0.5);
+
+        // --- Card Vật phẩm Teru Bozu ---
+        let cardBg = this.scene.add.graphics().fillStyle(UI_COLORS.BG_WHITE, 1).lineStyle(3, 0x9C27B0, 1).fillRoundedRect(-120, -120, 240, 280, 20).strokeRoundedRect(-120, -120, 240, 280, 20);
+        
+        // SPRITE TERU BOZU CỐ ĐỊNH
+        // Chúng ta chỉ khởi tạo sprite và để nó ở frame 0, không gọi lệnh .play()
+        let teruImg = this.scene.add.sprite(0, -20, 'terubozu', 0).setScale(1.5);
+
+        let itemName = this.scene.add.text(0, 60, 'Teru Teru Bozu', { fontSize: '20px', fill: '#5D4037', fontStyle: 'bold' }).setOrigin(0.5);
+        let itemPrice = this.scene.add.text(0, 95, 'Giá: 1000 🥜 + 100 👑', { fontSize: '18px', fill: '#D32F2F', fontStyle: 'bold' }).setOrigin(0.5);
+
+        let buyBtnBg = this.scene.add.graphics().fillStyle(UI_COLORS.BTN_PURPLE, 1).fillRoundedRect(-80, 120, 160, 40, 15);
+        let buyBtnText = this.scene.add.text(0, 140, 'Đổi Vật Phẩm', { fontSize: '18px', fill: '#ffffff', fontStyle: 'bold' }).setOrigin(0.5);
+        let buyBtnHit = this.scene.add.rectangle(0, 140, 160, 40, 0x000000, 0).setInteractive({ useHandCursor: true }).setScrollFactor(0);
+
+        buyBtnHit.on('pointerdown', () => {
+            if (this.scene.soDau >= 1000 && this.scene.vuongMien >= 100) {
+                this.scene.soDau -= 1000;
+                this.scene.vuongMien -= 100;
+                this.eventDauText.setText('🥜 ' + this.scene.soDau);
+                this.eventVuongMienText.setText('👑 ' + this.scene.vuongMien);
+
+                if (this.scene.bambooSystem && this.scene.bambooSystem.danhSachTeru) {
+                    this.scene.bambooSystem.danhSachTeru.forEach(teru => {
+                        teru.setTint(0xFFD700); 
+                    });
+                }
+                buyBtnText.setText('Đổi Thành Công!');
+                this.scene.time.delayedCall(1500, () => { buyBtnText.setText('Đã Sở Hữu'); });
+                buyBtnHit.disableInteractive();
+            } else {
+                buyBtnText.setText('Không đủ tài nguyên!');
+                this.scene.time.delayedCall(1000, () => { buyBtnText.setText('Đổi Vật Phẩm'); });
+            }
+        });
+
+        let closeBtnBg = this.scene.add.graphics().fillStyle(UI_COLORS.BTN_RED, 1).fillRoundedRect(-200, 200, 400, 50, 20);
+        let closeBtnText = this.scene.add.text(0, 225, 'Đóng', { fontSize: '24px', fill: '#ffffff', fontStyle: 'bold' }).setOrigin(0.5);
+        let closeBtnHit = this.scene.add.rectangle(0, 225, 400, 50, 0x000000, 0).setInteractive({ useHandCursor: true }).setScrollFactor(0);
+        
+        closeBtnHit.on('pointerdown', () => {
+            this.scene.isUIOpen = false; 
+            this.eventUI.setVisible(false);
+        });
+
+        this.eventUI.add([
+            overlay, bgGraphics, titleText, currencyBg, 
+            this.eventDauText, this.eventVuongMienText,
+            cardBg, teruImg, itemName, itemPrice, 
+            buyBtnBg, buyBtnText, buyBtnHit,
+            closeBtnBg, closeBtnText, closeBtnHit
+        ]);
     }
 
     createShopUI() {
@@ -59,7 +127,6 @@ export default class ShopSystem {
         
         this.shopUI.add([overlay, bgGraphics, titleText, currencyBg, this.dauText, subtitleText]);
 
-        // Render Hạt Giống
         let shopStartX = -140, startY = -100, khoangCachX = 280, khoangCachY = 240; 
         SEED_DATA.forEach((item, index) => {
             let cardX = shopStartX + ((index % 2) * khoangCachX); 
