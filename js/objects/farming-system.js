@@ -176,46 +176,39 @@ export default class FarmingSystem {
             }, loop: true
         });
 
+        // --- LƯU TRẠNG THÁI VÀO CHẬU DÀNH CHO PET AUTO ---
+        chau.setData('sanSangThuHoach', true);
+        chau.setData('cayDangThuHoach', cay);
+        chau.setData('rewardInfo', REWARD_DATA[textureKey]);
+        chau.setData('blinkTimer', blinkTimer);
+
         cay.setInteractive({ useHandCursor: true });
-        cay.once('pointerdown', () => {
-            blinkTimer.remove();
-            
-            // 1. Xác định phần thưởng dựa trên loại cây
-            let rewardInfo = REWARD_DATA[textureKey];
-            
-            // 2. Cộng EXP cho nhân vật (Lưu tạm vào Scene chính)
-            this.scene.soEXP = (this.scene.soEXP || 0) + 100;
-            
-            // 3. Cộng x2 hạt giống vào túi
-            let seedInBag = this.tuiHatGiong.find(s => s.id === rewardInfo.seedId);
-            if (seedInBag) {
-                seedInBag.count += 2;
-            }
+        
+        // Dùng .on thay vì .once để người chơi có thể click gọi lại chữ AUTO nếu nó lỡ biến mất
+        cay.on('pointerdown', () => {
+            // Nếu chữ AUTO đang hiện trên đầu rồi thì không làm gì cả
+            if (chau.getData('autoBtn')) return; 
 
-            // Thay thế cho dòng // (Tùy chọn) Lưu số lượng mảnh...
-            if (!this.scene.khoNguyenLieu) this.scene.khoNguyenLieu = [];
-            
-            let existingMaterial = this.scene.khoNguyenLieu.find(m => m.frame === rewardInfo.manhFrame);
-            if (existingMaterial) {
-                existingMaterial.count += 1;
+            // 1. Tìm xem tầng mây chứa chậu này có Pet hay không
+            let tang = chau.getData('tang');
+            let pet = this.scene.danhSachPet && this.scene.danhSachPet.find(p => p.getData('tang') === tang);
+
+            if (pet) {
+                // TRƯỜNG HỢP 1: CÓ PET -> Gọi hàm hiển thị nút AUTO
+                this.hienThiNutAuto(chau, pet);
             } else {
-                this.scene.khoNguyenLieu.push({
-                    frame: rewardInfo.manhFrame,
-                    count: 1
-                });
+                // TRƯỜNG HỢP 2: KHÔNG CÓ PET -> Thu hoạch bằng tay ngay lập tức
+                blinkTimer.remove();
+                
+                // Khóa cây lại không cho click nữa để tránh bị lỗi click đúp nhận thưởng 2 lần
+                cay.disableInteractive(); 
+                
+                let rewardInfo = REWARD_DATA[textureKey];
+                this.tienHanhThuHoach(cay, chau, rewardInfo);
             }
-            
-            // 4. Chạy hiệu ứng bay lên và mờ dần
-            // Truyền đối tượng 'cay' vào thay vì tọa độ x, y của chậu
-            this.taoHieuUngThuHoach(cay, rewardInfo);
-
-            console.log(`Thu hoạch ${textureKey}! Nhận 100 EXP, 2 ${rewardInfo.seedName}, 1 mảnh frame ${rewardInfo.manhFrame}`);
-            
-            cay.destroy(); 
-            chau.setData('daTrongCay', false);
         });
     }
-
+            
     taoHieuUngThuHoach(cay, rewardInfo) {
         // 1. Lấy tọa độ thực tế của cây trên toàn thế giới (World Coordinates)
         // Điều này khắc phục lỗi lệch vị trí khi cây nằm trong Container (bambooSystem)
@@ -250,6 +243,113 @@ export default class FarmingSystem {
                 expText.destroy();
                 seedText.destroy();
                 itemSprite.destroy();
+            }
+        });
+    }
+
+    // HÀM 1: Tách logic nhận thưởng ra riêng để dùng chung
+    tienHanhThuHoach(cay, chau, rewardInfo) {
+        this.scene.soEXP = (this.scene.soEXP || 0) + 100;
+        
+        let seedInBag = this.tuiHatGiong.find(s => s.id === rewardInfo.seedId);
+        if (seedInBag) seedInBag.count += 2;
+
+        if (!this.scene.khoNguyenLieu) this.scene.khoNguyenLieu = [];
+        let existingMaterial = this.scene.khoNguyenLieu.find(m => m.frame === rewardInfo.manhFrame);
+        if (existingMaterial) {
+            existingMaterial.count += 1;
+        } else {
+            this.scene.khoNguyenLieu.push({ frame: rewardInfo.manhFrame, count: 1 });
+        }
+
+        this.taoHieuUngThuHoach(cay, rewardInfo);
+        
+        cay.destroy(); 
+        chau.setData('daTrongCay', false);
+        chau.setData('sanSangThuHoach', false); // Tắt cờ sẵn sàng
+    }
+
+    // HÀM 2: Hiển thị chữ AUTO phía trên chậu
+    hienThiNutAuto(chau, pet) {
+        if (chau.getData('autoBtn') || pet.getData('isBusy')) return;
+
+        let autoBtn = this.scene.add.text(chau.x, chau.y - 130, 'AUTO', {
+            fontSize: '18px', fill: '#FFFFFF', backgroundColor: '#E91E63', padding: { x: 8, y: 5 }, fontStyle: 'bold'
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true }).setDepth(chau.depth + 1);
+
+        this.scene.bambooSystem.add(autoBtn);
+        chau.setData('autoBtn', autoBtn);
+
+        // Nút sẽ tự biến mất sau 3 giây nếu người chơi không bấm
+        let timeout = this.scene.time.delayedCall(3000, () => {
+            if (autoBtn && autoBtn.active) {
+                autoBtn.destroy();
+                chau.setData('autoBtn', null);
+            }
+        });
+
+        autoBtn.on('pointerdown', () => {
+            timeout.remove();
+            autoBtn.destroy();
+            chau.setData('autoBtn', null);
+            this.petDiThuHoach(pet, chau);
+        });
+    }
+
+    // HÀM 3: Logic Pet chạy tới, hoạt ảnh thu hoạch và quay về
+    petDiThuHoach(pet, chau) {
+        pet.setData('isBusy', true);
+        
+        let cay = chau.getData('cayDangThuHoach');
+        let rewardInfo = chau.getData('rewardInfo');
+        let blinkTimer = chau.getData('blinkTimer');
+
+        // Tắt khả năng click thủ công vào cây
+        if(cay && cay.active) cay.disableInteractive(); 
+        
+        let homeX = pet.getData('homeX');
+        let targetX = chau.x - 30;
+
+        // Lật mặt pet về hướng chậu
+        pet.setFlipX(targetX > pet.x);
+
+        // ==========================================
+        // CÁCH SỬA LỖI LỚP ẢNH (Z-INDEX) TẠI ĐÂY
+        // ==========================================
+        // 1. Ép Người đá lên lớp trên cùng của hệ thống tre/mây
+        if (this.scene.bambooSystem) {
+            this.scene.bambooSystem.bringToTop(pet);
+        }
+        // 2. Dự phòng thêm depth siêu cao để đè mọi thứ trên Scene (trừ UI)
+        pet.setDepth(1000); 
+        // ==========================================
+
+        // Bước 1: Đi tới chậu
+        this.scene.tweens.add({
+            targets: pet,
+            x: targetX,
+            duration: Math.abs(targetX - pet.x) * 5, 
+            onComplete: () => {
+                // ... (Phần code bên dưới của bạn giữ nguyên không đổi)
+                pet.play('nguoida_harvest');
+                
+                this.scene.time.delayedCall(1500, () => { 
+                    if (blinkTimer) blinkTimer.remove();
+                    this.tienHanhThuHoach(cay, chau, rewardInfo);
+
+                    pet.play('nguoida_idle');
+                    pet.setFlipX(homeX > pet.x);
+
+                    this.scene.tweens.add({
+                        targets: pet,
+                        x: homeX,
+                        duration: Math.abs(homeX - pet.x) * 5,
+                        onComplete: () => {
+                            pet.setFlipX(true); 
+                            pet.setData('isBusy', false); 
+                        }
+                    });
+                });
             }
         });
     }
