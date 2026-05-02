@@ -16,6 +16,22 @@ export default class BambooSystem extends Phaser.GameObjects.Container {
         let baseDepth = 2.8; 
         this.setDepth(baseDepth);
 
+        // --- Teru Bozu ---
+        
+        // 1. Tạo "giỏ" trống để chứa các con búp bê
+        this.danhSachTeru = []; 
+
+        // 2. Tạo hiệu ứng chuyển động có tên là 'teru_quay'
+        // Lệnh if giúp kiểm tra: nếu game chưa có hiệu ứng này thì mới tạo, tránh lỗi tạo trùng.
+        if (!scene.anims.exists('teru_quay')) {
+            scene.anims.create({
+                key: 'teru_quay',
+                frames: scene.anims.generateFrameNumbers('terubozu', { start: 0, end: 3 }), // Dùng ảnh số 0, 1, 2, 3
+                frameRate: 1, // 1 giây chiếu 6 ảnh (bạn có thể tăng số này lên nếu muốn búp bê lắc nhanh hơn)
+                repeat: -1    // Số -1 nghĩa là lặp lại vô tận
+            });
+        }
+
         // --- BỤI TRE ---
         
         // Bụi tre trang trí bên trái (Bụi nhỏ hơn, bị lật ngược)
@@ -40,23 +56,27 @@ export default class BambooSystem extends Phaser.GameObjects.Container {
             this.add(dotTre);
             
             if (i >= 20 && (i - 20) % 4 === 0 && i <= 54) {
+                // 1. TẠO MÂY
                 let cloudX = (screenWidth / 2) - bambooX - 10;
                 let cloudY = toaDoY - BAMBOO_SETTINGS.chieuCaoMotDot + 40;
 
                 let cloud = scene.add.image(cloudX, cloudY, 'tangmay').setOrigin(0.5, 0.5);
                 cloud.setScale(0.8);
-                // Giữ nguyên logic layer: tre xuyên qua mây
                 cloud.setDepth(baseDepth + i + 0.5); 
                 this.add(cloud);
 
+                // 2. TÍNH TOÁN VỊ TRÍ X BẮT ĐẦU CỦA DÀN CHẬU
                 let chau_OffsetX = 70;      
                 let startChauX = (cloudX + chau_OffsetX) - (BAMBOO_SETTINGS.chau_SpacingX * (BAMBOO_SETTINGS.soChauMoiTang - 1)) / 2;
                 let tangIndex = (i - 20) / 4; 
 
+                // 3. VÒNG LẶP TẠO 5 CHẬU VÀ 5 BÚP BÊ
                 for (let j = 0; j < BAMBOO_SETTINGS.soChauMoiTang; j++) {
+                    // Tọa độ X chung cho cả chậu và búp bê tại vị trí j
                     let currentChauX = startChauX + (j * BAMBOO_SETTINGS.chau_SpacingX);
-                    let chau = scene.add.sprite(currentChauX, cloudY, 'chau', 0);
                     
+                    // --- TẠO CHẬU ---
+                    let chau = scene.add.sprite(currentChauX, cloudY, 'chau', 0);
                     chau.setOrigin(0.5, 0.98); 
                     chau.setScale(BAMBOO_SETTINGS.chau_Scale);
                     chau.setDepth(baseDepth + i + 0.6);
@@ -67,21 +87,43 @@ export default class BambooSystem extends Phaser.GameObjects.Container {
                     chau.setData('daTrongCay', false);
 
                     chau.setInteractive({ useHandCursor: true });
-                    chau.on('pointerdown', () => {
-                    if (scene.isUIOpen) return; 
-                   
-                    if (chau.getData('daTrongCay')) {
-                    console.log("Chậu này đã trồng cây rồi!");
-                    return; 
-                    }
-    
-                    // GỌI HÀM TỪ FARMINGSYSTEM THÔNG QUA GAMESCENE
-                    scene.farmingSystem.moTuiHatGiong(chau);
-                    });
+chau.on('pointerdown', () => {
+                        if (scene.isUIOpen) return; 
 
+                        // Nếu chậu đang có cây đã chín (Sẵn sàng thu hoạch)
+                        if (chau.getData('sanSangThuHoach')) {
+                            let tang = chau.getData('tang');
+                            // Tìm xem tầng này có con Pet nào không
+                            let pet = scene.danhSachPet && scene.danhSachPet.find(p => p.getData('tang') === tang);
+                            if (pet) {
+                                scene.farmingSystem.hienThiNutAuto(chau, pet);
+                            }
+                            return; // Ngăn lệnh phía dưới
+                        }
+
+                        if (chau.getData('daTrongCay')) {
+                            console.log("Chậu này đã trồng cây rồi!");
+                            return; 
+                        }
+                        scene.farmingSystem.moTuiHatGiong(chau);
+                    });
 
                     this.add(chau);
                     this.danhSachChau.push(chau);
+
+                    // --- TẠO TERU BOZU ---
+                    // Tâm mây là cloudY. Búp bê treo xuống một chút (cộng 15 pixel).
+                    // Nếu muốn búp bê xích lên nữa, đổi 15 thành 10 hoặc 5.
+                    let teruY = cloudY + 10; 
+
+                    let teru = scene.add.sprite(currentChauX, teruY, 'terubozu', 0);
+                    teru.setOrigin(0.5, 0); 
+                    teru.setScale(1.5); 
+                    teru.setDepth(cloud.depth - 0.1); 
+                    teru.play('teru_quay');
+
+                    this.add(teru);
+                    this.danhSachTeru.push(teru); // Đưa vào mảng để hàm update() xử lý phóng to/thu nhỏ
                 }
             }
         }
