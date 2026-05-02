@@ -75,10 +75,21 @@ export default class BootScene extends Phaser.Scene {
         this.load.image('maybay', 'assets/images/maybay.png');
         // Tải ảnh tầng mây
         this.load.image('tangmay', 'assets/images/tangmay.png');
+        // Tải spritesheet Người đá (2 cột, 3 hàng)
+        // GIẢ SỬ ẢNH CÓ KÍCH THƯỚC LÀ: Rộng 1000px, Cao 1500px
+        this.load.spritesheet('nguoida', 'assets/images/nguoida.png', {
+            frameWidth: 256,  // <--- THAY BẰNG: Chiều RỘNG thật của ảnh chia 2
+            frameHeight: 256  // <--- THAY BẰNG: Chiều CAO thật của ảnh chia 3
+        });
         // Tải ảnh chậu cây
         this.load.spritesheet('chau', 'assets/images/chau.png', {
             frameWidth: 1024,  // <-- BẠN HÃY SỬA SỐ NÀY = 1/2 chiều ngang ảnh chau.png
             frameHeight: 1024  // <-- BẠN HÃY SỬA SỐ NÀY = 1/2 chiều dọc ảnh chau.png
+        });
+        // Tải spritesheet Búp bê thời tiết (4 frame ngang, mỗi frame 200x160)
+        this.load.spritesheet('terubozu', 'assets/images/terubozu.png', {
+            frameWidth: 56,
+            frameHeight: 65
         });
         // Tải ảnh gốc tre (gấu trúc)
         this.load.image('goctre', 'assets/images/goctre.png');
