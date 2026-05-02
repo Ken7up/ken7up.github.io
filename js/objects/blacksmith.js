@@ -13,8 +13,7 @@ export default class Blacksmith extends Phaser.GameObjects.Container {
         const x = screenWidth / 2 - 240;
         const y = screenHeight - 160;
 
-        // 1. CHỈNH THỢ RÈN XÍCH LÊN: Thay đổi y từ -395 thành -425 (Kéo toàn bộ nhân vật lên 30px)
-        super(scene, x - 50, y - 400);
+        super(scene, x - 50, y - 410);
         scene.add.existing(this);
 
         this.scene = scene;
@@ -23,6 +22,8 @@ export default class Blacksmith extends Phaser.GameObjects.Container {
 
         this.setDepth(2000);
         this.setScale(0.5);
+        
+        this.chauDaRenXong = false; // Biến kiểm tra xem có chậu chờ thu hoạch trên đe không
 
         this.buildStickman(scene);
         this.buildAnvil(scene);
@@ -41,23 +42,24 @@ export default class Blacksmith extends Phaser.GameObjects.Container {
         let chanPhai = scene.add.rectangle(0, 55, 7, 50, mauStickman).setOrigin(0.5, 0).setAngle(-15);
         let chanTrai = scene.add.rectangle(0, 55, 7, 50, mauStickman).setOrigin(0.5, 0).setAngle(15);
 
+        // --- CÂY BÚA DEO SAU LƯNG ---
+        this.buaSauLung = scene.add.image(5, 25, 'buachaos').setScale(0.2).setAngle(-45);
+
         // --- TẠO CÁNH TAY CẦM BÚA ---
         this.tayCamBua = scene.add.container(0, 5); 
-        
-        // Vẽ cánh tay dài 45px
         let tayPhai = scene.add.rectangle(0, 0, 6, 45, mauStickman).setOrigin(0.5, 0);
         
-        // 2. CẦM NGAY CÁN BÚA: 
-        // - Dời Origin Y về 0.95 (điểm gốc nằm ở cuối cán búa thay vì 0.8 như cũ)
-        // - Đặt búa ở y = 42 (thu lại 3px so với chiều dài tay 45px để bàn tay đè lên cán búa tạo cảm giác cầm nắm)
-        let bua = scene.add.image(- 15, 80, 'buachaos').setScale(0.2).setOrigin(0.5, 0.95).setAngle(90);
+        // --- CÂY BÚA TRONG TAY ---
+        this.buaTrongTay = scene.add.image(- 15, 80, 'buachaos').setScale(0.2).setOrigin(0.5, 0.95).setAngle(90);
+        this.buaTrongTay.setVisible(false); 
         
-        this.tayCamBua.add([tayPhai, bua]);
+        this.tayCamBua.add([tayPhai, this.buaTrongTay]);
         this.tayCamBua.setAngle(-30); 
 
-        this.add([chanTrai, tayTrai, than, dau, chanPhai, this.tayCamBua]);
+        this.add([this.buaSauLung, chanTrai, tayTrai, than, dau, chanPhai, this.tayCamBua]);
 
-        this.thoRenParts = [than, dau, tayTrai, chanTrai, chanPhai, this.tayCamBua];
+        this.thoRenParts = [this.buaSauLung, than, dau, tayTrai, chanTrai, chanPhai, this.tayCamBua];
+
         this.thoRenParts.forEach(part => part.setData('startY', part.y));
 
         this.idleTween = scene.tweens.add({
@@ -72,11 +74,7 @@ export default class Blacksmith extends Phaser.GameObjects.Container {
 
     buildAnvil(scene) {
         let lechTraiPhai = 0;  
-        
-        // 3. GIỮ NGUYÊN CÁI ĐE: Tăng lệch y thêm 30px (từ 50 lên 80) để bù trừ cho việc thợ rèn bị kéo lên bên trên.
-        // Như vậy thợ rèn sẽ cao hơn đe, khoảng cách đập búa sẽ chuẩn hơn.
-        let lechLenXuong = 80; 
-        
+        let lechLenXuong = 63; 
         let tiLeToNho = 0.05;     
 
         let caiDe = scene.add.image(this.x + lechTraiPhai, this.y + lechLenXuong, 'caide');
@@ -96,6 +94,39 @@ export default class Blacksmith extends Phaser.GameObjects.Container {
             scene.tweens.add({
                 targets: caiDe, scaleY: tiLeToNho * 0.9, y: "+=5", duration: 100, yoyo: true, ease: 'Power1'
             });
+
+            // LOGIC THU HOẠCH: Nếu chậu đã rèn xong, click vào sẽ cất chậu thay vì mở UI
+            if (this.chauDaRenXong) {
+                this.chauDaRenXong = false; // Reset trạng thái để tránh click đúp
+
+                // 1. Cộng chậu vào túi kho đồ
+                if (this.choThuHoachId !== undefined) {
+                    this.scene.tuiChau[this.choThuHoachId] = (this.scene.tuiChau[this.choThuHoachId] || 0) + 1;
+                }
+
+                // 2. Tạo một bản sao của chậu để làm hiệu ứng bay lên
+                let chauBayLen = scene.add.sprite(this.chauTrenDe.x, this.chauTrenDe.y, 'chau', this.chauTrenDe.frame.name);
+                chauBayLen.setScale(this.chauTrenDe.scale);
+                chauBayLen.setDepth(2010); // Đảm bảo chậu nổi lên trên cùng
+
+                // 3. Ẩn chậu gốc ngay lập tức
+                this.chauTrenDe.setVisible(false);
+
+                // 4. Tween hiệu ứng bay lên và mờ dần
+                scene.tweens.add({
+                    targets: chauBayLen,
+                    y: "-=100",           // Bay lên 100px
+                    alpha: 0,             // Mờ dần
+                    duration: 800,        // Tốc độ bay (0.8 giây)
+                    ease: 'Cubic.easeOut',
+                    onComplete: () => {
+                        chauBayLen.destroy(); // Hủy sprite bản sao sau khi xong
+                    }
+                });
+
+                this.showToast("Đã cất chậu vào Nhà Kho!");
+                return; // Ngăn lệnh mở bảng Lò Rèn bên dưới
+            }
             
             this.openBlacksmithUI();
         });
@@ -108,24 +139,26 @@ export default class Blacksmith extends Phaser.GameObjects.Container {
 
         this.thoRenParts.forEach(p => p.y = p.getData('startY'));
 
+        // CHUYỂN BÚA VÀO TAY
+        this.buaSauLung.setVisible(false);
+        this.buaTrongTay.setVisible(true);
+
         if (this.chauTrenDe) {
             this.chauTrenDe.setFrame(reqFrame);
             this.chauTrenDe.y = this.chauTrenDeY;
             this.chauTrenDe.setVisible(true);
         }
 
-        // 1. Hoạt ảnh xoay nguyên cánh tay vung búa từ sau lưng tới trước
         if (!this.swingTween) {
             this.swingTween = this.scene.tweens.add({
                 targets: this.tayCamBua,
-                angle: { from: -150, to: 45 }, // -150: tít sau lưng, 45: gõ xuống đe
-                duration: 200,  // Đập rất nhanh cho có lực
+                angle: { from: -130, to: 10 }, 
+                duration: 1500,  
                 yoyo: true,
                 repeat: -1,
-                ease: 'Cubic.easeIn' // Nhanh dần khi giáng búa xuống
+                ease: 'Cubic.easeIn' 
             });
             
-            // 2. Cả người cũng giật nhẹ theo nhịp búa
             this.hammerBodyTween = this.scene.tweens.add({
                 targets: this.thoRenParts,
                 y: "+=3",
@@ -145,9 +178,11 @@ export default class Blacksmith extends Phaser.GameObjects.Container {
             this.swingTween.pause();
             this.hammerBodyTween.pause();
             
-            // Trả tay cầm búa về tư thế vác búa sau khi rèn xong
             this.tayCamBua.setAngle(-30);
             this.thoRenParts.forEach(p => p.y = p.getData('startY'));
+
+            this.buaSauLung.setVisible(true);
+            this.buaTrongTay.setVisible(false);
         }
 
         if (this.idleTween) {
@@ -156,18 +191,15 @@ export default class Blacksmith extends Phaser.GameObjects.Container {
 
         if (this.chauTrenDe) {
             this.chauTrenDe.setFrame(resultFrame);
+            this.chauDaRenXong = true; // Bật cờ chờ người chơi click thu hoạch
             
             this.scene.tweens.add({
                 targets: this.chauTrenDe,
                 y: "-=25",
                 duration: 250,
                 yoyo: true,
-                repeat: 1, 
-                onComplete: () => {
-                    this.scene.time.delayedCall(1500, () => {
-                        this.chauTrenDe.setVisible(false);
-                    });
-                }
+                repeat: 1 
+                // Đã xóa phần onComplete (tự động tàng hình chậu) ở đây
             });
         }
     }
@@ -229,7 +261,7 @@ export default class Blacksmith extends Phaser.GameObjects.Container {
             let btnActionText = recipe.time === 0 ? 'MUA' : 'RÈN';
             let btnColor = this.scene.dangRen ? UI_COLORS.BTN_GREY : UI_COLORS.BTN_ORANGE; 
             
-            let btnHit = this.scene.add.rectangle(180, rowY, 100, 45, btnColor, 1).setInteractive({ useHandCursor: !this.scene.dangRen });
+            let btnHit = this.scene.add.rectangle(180, rowY, 100, 45, btnColor, 1).setInteractive({ useHandCursor: !this.scene.dangRen }).setScrollFactor(0);
             let btnLabel = this.scene.add.text(180, rowY, btnActionText, { fontSize: '18px', fill: '#ffffff', fontStyle: 'bold' }).setOrigin(0.5);
 
             btnHit.on('pointerdown', () => {
@@ -290,7 +322,9 @@ export default class Blacksmith extends Phaser.GameObjects.Container {
             let timerEvent = this.scene.time.addEvent({
                 delay: recipe.time,
                 callback: () => {
-                    this.scene.tuiChau[recipe.id] += 1;
+                    // Lưu lại ID của chậu vừa rèn xong để chờ người chơi click thu hoạch
+                    this.choThuHoachId = recipe.id; 
+                    
                     this.scene.dangRen = null;
                     if (this.uiContainer.visible) this.refreshUI();
                     
