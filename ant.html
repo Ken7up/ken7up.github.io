@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Game Nuôi Kiến</title>
+    <!-- Tải thư viện Phaser 3 -->
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            overflow: hidden; 
+            touch-action: none; 
+        }
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container"></div>
+
+<script>
+    // Kích thước thế giới game đúng chuẩn 2048x2048 theo kích thước ảnh texture.png
+    const WORLD_WIDTH = 2048;
+    const WORLD_HEIGHT = 2048;
+    
+    // Chiều cao bảng UI
+    const UI_HEIGHT = 150; 
+
+    class MainScene extends Phaser.Scene {
+        constructor() {
+            super({ key: 'MainScene' });
+            
+            // Số lượng kiến ban đầu đã được giảm xuống 10
+            this.totalAnts = 10;
+        }
+
+        preload() {
+            // Tải ảnh nền
+            this.load.image('texture', 'texture.png');
+            
+            // Tải ảnh tổ kiến
+            this.load.image('anthill', 'anthill.png');
+            
+            // Tải spritesheet kiến đen (4 cột, 5 hàng)
+            this.load.spritesheet('black_ant', 'black_ant.png', { 
+                frameWidth: 32, 
+                frameHeight: 32 
+            });
+        }
+
+        create() {
+            let width = this.scale.width;
+            let height = this.scale.height;
+
+            // Kích thước và tọa độ Minimap trên màn hình
+            this.mapSize = 130; 
+            this.mapX = 10;
+            this.mapY = height - this.mapSize - 10; 
+
+            // ==========================================
+            // TẠO ANIMATION CHO KIẾN
+            // ==========================================
+            
+            // Hàng 1 (frames 0-3): Kiến di chuyển sang trái
+            this.anims.create({
+                key: 'walk_left',
+                frames: this.anims.generateFrameNumbers('black_ant', { start: 0, end: 3 }),
+                frameRate: 15,
+                repeat: -1
+            });
+
+            // Hàng 3 (frames 8-11): Kiến di chuyển xuống
+            this.anims.create({
+                key: 'walk_down',
+                frames: this.anims.generateFrameNumbers('black_ant', { start: 8, end: 11 }),
+                frameRate: 15,
+                repeat: -1
+            });
+
+            // ==========================================
+            // 1. GAME WORLD & CAMERA CHÍNH
+            // ==========================================
+            
+            this.cameras.main.setViewport(0, 0, width, height - UI_HEIGHT);
+            this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+
+            this.bg = this.add.image(0, 0, 'texture').setOrigin(0, 0);
+
+            // Thêm tổ kiến vào giữa bản đồ
+            this.anthill = this.add.image(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, 'anthill');
+
+            // Tạo đàn kiến
+            this.ants = [];
+            for (let i = 0; i < this.totalAnts; i++) {
+                let ant = this.add.sprite(
+                    Phaser.Math.Between(0, WORLD_WIDTH), 
+                    Phaser.Math.Between(0, WORLD_HEIGHT), 
+                    'black_ant'
+                );
+                
+                ant.setScale(0.7);
+                
+                // Thuộc tính tốc độ ngẫu nhiên nhưng CHẬM LẠI
+                ant.speed = Phaser.Math.FloatBetween(0.3, 0.7);
+
+                // --- MÀU SẮC ĐẠI DIỆN TRÊN MINIMAP ---
+                // Kiến đen thì đặt màu là đen. Sau này thêm kiến lửa bạn có thể set 0xff0000 v.v.
+                ant.minimapColor = 0x000000; 
+                
+                // Hàm để kiến chọn ngẫu nhiên 1 trong 4 hướng (Không đi xéo)
+                ant.pickRandomDirection = function() {
+                    const directions = [
+                        { vx: this.speed, vy: 0 },   // Sang phải
+                        { vx: -this.speed, vy: 0 },  // Sang trái
+                        { vx: 0, vy: this.speed },   // Đi xuống
+                        { vx: 0, vy: -this.speed }   // Đi lên
+                    ];
+                    let dir = Phaser.Utils.Array.GetRandom(directions);
+                    this.vx = dir.vx;
+                    this.vy = dir.vy;
+                };
+
+                // Khởi tạo hướng đi ban đầu
+                ant.pickRandomDirection();
+
+                this.ants.push(ant);
+            }
+
+            // ==========================================
+            // 2. PHẦN GIAO DIỆN (UI) Ở DƯỚI CÙNG
+            // ==========================================
+            
+            this.uiCamera = this.cameras.add(0, height - UI_HEIGHT, width, UI_HEIGHT);
+            this.uiCamera.setScroll(0, 0);
+
+            this.uiContainer = this.add.container(0, 0);
+            
+            let uiBg = this.add.rectangle(0, 0, width, UI_HEIGHT, 0x1a1a1a).setOrigin(0, 0);
+            this.uiContainer.add(uiBg);
+
+            // Nút Menu
+            let btnWidth = 50;
+            let btnHeight = 25;
+            let btnX = width - btnWidth - 10;
+            let btnY = 10;
+            
+            let menuBtnBg = this.add.rectangle(btnX, btnY, btnWidth, btnHeight, 0x888888).setOrigin(0, 0);
+            menuBtnBg.setStrokeStyle(2, 0xaaaaaa);
+            menuBtnBg.setInteractive({ useHandCursor: true });
+            
+            let menuBtnText = this.add.text(btnX + btnWidth/2, btnY + btnHeight/2, 'Menu', { font: '18px Arial', fill: '#ffffff' }).setOrigin(0.5);
+            
+            menuBtnBg.on('pointerdown', () => { menuBtnBg.setFillStyle(0x555555); });
+            menuBtnBg.on('pointerup', () => { 
+                menuBtnBg.setFillStyle(0x888888); 
+                // Có thể thêm logic mở menu ở đây sau này
+            });
+            menuBtnBg.on('pointerout', () => { menuBtnBg.setFillStyle(0x888888); });
+
+            this.uiContainer.add([menuBtnBg, menuBtnText]);
+
+            this.cameras.main.ignore(this.uiContainer);
+            // Ẩn background, kiến và tổ kiến khỏi Camera của thanh UI
+            this.uiCamera.ignore([this.bg, this.anthill, ...this.ants]);
+
+            // ==========================================
+            // 3. MINI-MAP
+            // ==========================================
+            
+            let mapZoom = this.mapSize / WORLD_WIDTH;
+
+            this.minimap = this.cameras.add(this.mapX, this.mapY, this.mapSize, this.mapSize).setZoom(mapZoom);
+            // Nếu ảnh nền của bạn màu tối/đen, bạn có thể cân nhắc đổi màu nền minimap 
+            // hoặc màu kiến để tránh trùng lặp màu đen không nhìn thấy được.
+            this.minimap.setBackgroundColor(0x888888); 
+            this.minimap.centerOn(WORLD_WIDTH / 2, WORLD_HEIGHT / 2);
+            this.minimap.ignore(this.uiContainer);
+            
+            // ẨN CÁC CON KIẾN GỐC KHỎI MINIMAP (Vì thu nhỏ quá sẽ không thấy)
+            this.minimap.ignore(this.ants); 
+
+            // --- TẠO ĐỐI TƯỢNG ĐỒ HỌA ĐẠI DIỆN CHO KIẾN TRÊN MINIMAP ---
+            this.minimapAntGraphics = this.add.graphics();
+            // Chỉ cho phép minimap thấy đồ họa này, ẩn khỏi 2 camera kia
+            this.cameras.main.ignore(this.minimapAntGraphics); 
+            this.uiCamera.ignore(this.minimapAntGraphics);
+
+            // Khung viền bản đồ nhỏ
+            this.mapBorder = this.add.rectangle(this.mapX, UI_HEIGHT - this.mapSize - 10, this.mapSize, this.mapSize, 0x000000, 0).setOrigin(0,0);
+            this.mapBorder.setStrokeStyle(2, 0xffffff);
+            this.uiContainer.add(this.mapBorder);
+
+            // Ô vuông hiển thị phạm vi camera hiện tại
+            this.minimapViewRect = this.add.rectangle(0, 0, 100, 100, 0x00ff00, 0).setOrigin(0,0);
+            this.minimapViewRect.setStrokeStyle(15, 0x00ff00);
+            
+            this.cameras.main.ignore(this.minimapViewRect);
+            this.uiCamera.ignore(this.minimapViewRect);
+            
+            // --- XỬ LÝ SỰ KIỆN CHẠM & KÉO THẢ ---
+            this.input.on('pointerdown', (pointer) => {
+                this.checkMinimapInteraction(pointer);
+            });
+
+            this.input.on('pointermove', (pointer) => {
+                if (!pointer.isDown) return;
+
+                if (this.checkMinimapInteraction(pointer)) {
+                    return; 
+                }
+
+                if (pointer.y < height - UI_HEIGHT) {
+                    this.cameras.main.scrollX -= (pointer.x - pointer.prevPosition.x) / this.cameras.main.zoom;
+                    this.cameras.main.scrollY -= (pointer.y - pointer.prevPosition.y) / this.cameras.main.zoom;
+                }
+            });
+
+            this.scale.on('resize', this.resize, this);
+        }
+
+        checkMinimapInteraction(pointer) {
+            if (pointer.x >= this.mapX && pointer.x <= this.mapX + this.mapSize &&
+                pointer.y >= this.mapY && pointer.y <= this.mapY + this.mapSize) {
+                
+                let percentX = (pointer.x - this.mapX) / this.mapSize;
+                let percentY = (pointer.y - this.mapY) / this.mapSize;
+
+                let targetWorldX = percentX * WORLD_WIDTH;
+                let targetWorldY = percentY * WORLD_HEIGHT;
+
+                this.cameras.main.centerOn(targetWorldX, targetWorldY);
+                return true; 
+            }
+            return false;
+        }
+
+        update() {
+            // Xoá đồ họa đại diện của frame trước
+            this.minimapAntGraphics.clear();
+
+            this.ants.forEach(ant => {
+                ant.x += ant.vx;
+                ant.y += ant.vy;
+
+                if (Phaser.Math.Between(0, 1000) < 5) {
+                    ant.pickRandomDirection();
+                }
+
+                if (ant.vx !== 0) {
+                    ant.play('walk_left', true);
+                    ant.flipY = false;
+                    if (ant.vx < 0) {
+                        ant.flipX = false; 
+                    } else {
+                        ant.flipX = true;  
+                    }
+                } else if (ant.vy !== 0) {
+                    ant.play('walk_down', true);
+                    ant.flipX = false;
+                    if (ant.vy > 0) {
+                        ant.flipY = false; 
+                    } else {
+                        ant.flipY = true;  
+                    }
+                }
+
+                if (ant.x < 0 || ant.x > WORLD_WIDTH) ant.vx *= -1;
+                if (ant.y < 0 || ant.y > WORLD_HEIGHT) ant.vy *= -1;
+
+                // THIẾT LẬP MÀU CHO TỪNG CON KIẾN TRÊN MINIMAP
+                this.minimapAntGraphics.fillStyle(ant.minimapColor, 1);
+                
+                // Vẽ 1 hình chữ nhật to đại diện cho kiến tại vị trí hiện tại
+                this.minimapAntGraphics.fillRect(ant.x - 20, ant.y - 20, 40, 40);
+            });
+
+            this.minimapViewRect.x = this.cameras.main.scrollX;
+            this.minimapViewRect.y = this.cameras.main.scrollY;
+            this.minimapViewRect.width = this.cameras.main.width;
+            this.minimapViewRect.height = this.cameras.main.height;
+        }
+
+        resize(gameSize) {
+            let width = gameSize.width;
+            let height = gameSize.height;
+
+            this.mapY = height - this.mapSize - 10;
+
+            this.cameras.main.setViewport(0, 0, width, height - UI_HEIGHT);
+            
+            this.uiCamera.setPosition(0, height - UI_HEIGHT);
+            this.uiCamera.setSize(width, UI_HEIGHT);
+            
+            this.minimap.setPosition(this.mapX, this.mapY);
+            
+            this.mapBorder.setPosition(this.mapX, UI_HEIGHT - this.mapSize - 10);
+        }
+    }
+
+    const config = {
+        type: Phaser.CANVAS,
+        parent: 'game-container',
+        scale: {
+            mode: Phaser.Scale.RESIZE,
+            width: window.innerWidth,
+            height: window.innerHeight
+        },
+        pixelArt: true,
+        scene: MainScene
+    };
+
+    const game = new Phaser.Game(config);
+</script>
+
+</body>
+</html>
